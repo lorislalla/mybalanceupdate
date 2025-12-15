@@ -6,10 +6,11 @@ import { SummaryViewComponent } from './components/summary-view/summary-view.com
 import { ImportExportComponent } from './components/import-export/import-export.component';
 import { GlobalNotesComponent } from './components/global-notes/global-notes.component';
 import { LoginComponent } from './components/login/login.component';
+import { CalculatorComponent } from './components/calculator/calculator.component';
 import { SupabaseService } from './services/supabase.service';
 import { toSignal } from '@angular/core/rxjs-interop';
 
-type View = 'monthly' | 'summary' | 'import-export';
+type View = 'monthly' | 'summary' | 'import-export' | 'calculator';
 
 @Component({
   selector: 'app-root',
@@ -22,7 +23,8 @@ type View = 'monthly' | 'summary' | 'import-export';
     SummaryViewComponent,
     ImportExportComponent,
     GlobalNotesComponent,
-    LoginComponent
+    LoginComponent,
+    CalculatorComponent
   ],
 })
 export class AppComponent {

@@ -1,0 +1,83 @@
+<div class="space-y-8">
+  <div class="bg-gray-800 p-4 sm:p-6 rounded-lg shadow-lg">
+    <h1 class="text-2xl font-bold text-indigo-400 mb-6 text-center">Calcolatore Rapido</h1>
+    
+    <!-- Add New Item -->
+    <div class="flex flex-col sm:flex-row items-end gap-3 mb-8 bg-gray-900 p-4 rounded-md">
+       <div class="w-full sm:flex-grow">
+          <label class="block text-xs font-medium text-gray-400 mb-1">Nuova Voce</label>
+          <input 
+            type="text" 
+            [ngModel]="newItemDescription()" 
+            (ngModelChange)="newItemDescription.set($event)"
+            placeholder="Es. Conto in banca" 
+            class="w-full bg-gray-800 border border-gray-700 rounded-md p-2 text-gray-200 focus:ring-2 focus:ring-indigo-500 transition"
+            (keyup.enter)="addItem()"
+          >
+       </div>
+       <div class="w-full sm:w-40">
+           <label class="block text-xs font-medium text-gray-400 mb-1">Importo (€)</label>
+            <input 
+            type="number" 
+            [ngModel]="newItemAmount()" 
+            (ngModelChange)="newItemAmount.set($event)"
+            placeholder="0.00" 
+            class="w-full bg-gray-800 border border-gray-700 rounded-md p-2 text-gray-200 focus:ring-2 focus:ring-indigo-500 transition"
+            (keyup.enter)="addItem()"
+            >
+       </div>
+       <button 
+        (click)="addItem()" 
+        [disabled]="!newItemDescription() || newItemAmount() === null"
+        class="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-700 disabled:text-gray-500 text-white font-semibold py-2 px-4 rounded-md transition-colors"
+       >
+         Aggiungi
+       </button>
+    </div>
+
+    <!-- Items List -->
+    <div class="space-y-3">
+       @for(item of items(); track item.id) {
+         <div class="flex flex-col sm:flex-row items-center gap-3 bg-gray-900 p-3 rounded-md animate-fade-in group">
+             <!-- Description Input -->
+             <input 
+                type="text" 
+                [ngModel]="item.description" 
+                (ngModelChange)="updateItem(item.id, 'description', $event)"
+                class="flex-grow w-full bg-transparent border-b border-transparent hover:border-gray-600 focus:border-indigo-500 focus:outline-none p-1 text-gray-300 transition"
+              >
+             
+             <!-- Amount Input -->
+             <div class="flex items-center gap-3 w-full sm:w-auto">
+                <input 
+                    type="number" 
+                    [ngModel]="item.amount" 
+                    (ngModelChange)="updateItem(item.id, 'amount', +$event)"
+                    class="w-32 bg-transparent border-b border-transparent hover:border-gray-600 focus:border-indigo-500 focus:outline-none p-1 text-right font-mono transition"
+                    [class.text-green-400]="item.amount >= 0"
+                    [class.text-red-400]="item.amount < 0"
+                >
+                <button (click)="removeItem(item.id)" class="text-gray-600 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity p-1" title="Rimuovi">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                </button>
+             </div>
+         </div>
+       } @empty {
+         <div class="text-center py-8 text-gray-500">
+           <p>Aggiungi voci per calcolare il totale.</p>
+         </div>
+       }
+    </div>
+
+    <!-- Total -->
+    @if(items().length > 0) {
+        <div class="mt-8 pt-6 border-t border-gray-700 flex flex-col items-center">
+            <span class="text-gray-400 mb-1 uppercase tracking-wider text-sm">Totale Calcolato</span>
+            <div class="text-4xl font-extrabold" [class.text-green-400]="total() >= 0" [class.text-red-400]="total() < 0">
+                {{ total() | number:'1.2-2' }} €
+            </div>
+        </div>
+    }
+
+  </div>
+</div>

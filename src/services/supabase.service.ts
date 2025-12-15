@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { createClient, SupabaseClient, User, RealtimeChannel } from '@supabase/supabase-js';
 import { environment } from '../environments/environment';
-import { MonthlyReport } from '../models/financial-data.model';
+import { MonthlyReport, CalculatorItem } from '../models/financial-data.model';
 import { BehaviorSubject, from, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
@@ -19,6 +19,9 @@ export class SupabaseService {
 
   private globalNotesSubject = new BehaviorSubject<string>('');
   public globalNotes$ = this.globalNotesSubject.asObservable();
+
+  private calculatorItemsSubject = new BehaviorSubject<CalculatorItem[]>([]);
+  public calculatorItems$ = this.calculatorItemsSubject.asObservable();
 
   constructor() {
     this.supabase = createClient(environment.supabaseUrl, environment.supabaseKey);
@@ -90,6 +93,19 @@ export class SupabaseService {
     } else {
       this.globalNotesSubject.next(notes?.notes || '');
     }
+
+    // Load Calculator Items
+    const { data: calcData, error: calcError } = await this.supabase
+      .from('calculator_data')
+      .select('*')
+      .limit(1)
+      .single();
+
+    if (calcError && calcError.code !== 'PGRST116') {
+      console.error('Error loading calculator data:', calcError);
+    } else {
+      this.calculatorItemsSubject.next(calcData?.items || []);
+    }
   }
 
   async upsertReport(report: MonthlyReport) {
@@ -105,6 +121,7 @@ export class SupabaseService {
         month: report.month,
         payday: report.payday,
         balance: report.balance,
+        salary: report.salary || 0,
         notes: report.notes,
         expenses: report.expenses
       }, { onConflict: 'user_id, year, month' })
@@ -118,10 +135,7 @@ export class SupabaseService {
     const user = this.userSubject.value;
     if (!user) return;
     
-    // First try to find existing record to get ID, or just upsert based on user_id if we had a unique constraint on user_id (checking schema)
-    // The schema doesn't strictly enforce unique user_id for global_notes but logic implies one per user.
-    // Let's get the ID if we have it, or insert.
-    
+    // Check for existing
     const { data: existing } = await this.supabase
         .from('global_notes')
         .select('id')
@@ -139,6 +153,32 @@ export class SupabaseService {
 
     const { error } = await this.supabase
       .from('global_notes')
+      .upsert(payload, { onConflict: 'id' });
+
+    if (error) throw error;
+  }
+
+  async updateCalculatorItems(items: CalculatorItem[]) {
+    const user = this.userSubject.value;
+    if (!user) return;
+
+    const { data: existing } = await this.supabase
+        .from('calculator_data')
+        .select('id')
+        .limit(1)
+        .single();
+
+    const payload: any = {
+      user_id: user.id,
+      items: items
+    };
+
+    if (existing) {
+      payload.id = existing.id;
+    }
+
+    const { error } = await this.supabase
+      .from('calculator_data')
       .upsert(payload, { onConflict: 'id' });
 
     if (error) throw error;
@@ -170,6 +210,15 @@ export class SupabaseService {
             }
         }
       )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'calculator_data', filter: `user_id=eq.${user.id}` },
+        (payload) => {
+             if (payload.new && 'items' in payload.new) {
+                this.calculatorItemsSubject.next((payload.new as any).items);
+            }
+        }
+      )
       .subscribe();
   }
 
@@ -191,12 +240,7 @@ export class SupabaseService {
             this.reportsSubject.next([...currentReports, updatedReport].sort(this.sortReports));
         }
     } else if (payload.eventType === 'DELETE') {
-        const oldRecord = payload.old; // May only contain ID
-        // Since we key by year/month usually, but here we might need to match by ID if possible or refetch.
-        // If we don't have ID in MonthlyReport interface, we might need to reload. 
-        // For simplicity, let's reload all on delete to be safe, or check if we can match.
-        // Our interface doesn't strictly have 'id' but the DB does.
-        // Let's just reload to be safe.
+        // Reload to be safe
         this.loadInitialData();
     }
   }
@@ -212,5 +256,6 @@ export class SupabaseService {
     }
     this.reportsSubject.next([]);
     this.globalNotesSubject.next('');
+    this.calculatorItemsSubject.next([]);
   }
 }

@@ -126,11 +126,26 @@ export class SummaryViewComponent {
       .append('g')
         .attr('transform', `translate(${margin.left},${margin.top})`);
         
+    // --- Scale ---
     const x = d3.scaleTime()
       .domain(d3.extent(data, (d: ChartDataPoint) => d.date) as [Date, Date])
       .range([0, width]);
 
-    // --- Smart X-Axis Ticks ---
+    const y = d3.scaleLinear()
+      .domain([0, d3.max(data, (d: ChartDataPoint) => d.balance * 1.1) || 1000])
+      .range([height, 0]);
+
+    // --- Clipping ---
+    // Unique ID for clip path
+    const clipId = 'clip-' + (options.isLast12Months ? 'last12' : 'full') + '-' + Math.random().toString(36).substr(2, 9);
+    
+    svg.append("defs").append("clipPath")
+        .attr("id", clipId)
+        .append("rect")
+        .attr("width", width)
+        .attr("height", height);
+
+    // --- Axes ---
     let xAxis = d3.axisBottom(x);
     if (options.isLast12Months) {
        xAxis.ticks(d3.timeMonth.every(1)).tickFormat(d3.timeFormat("%b"));
@@ -147,42 +162,42 @@ export class SummaryViewComponent {
       }
     }
 
-    svg.append('g')
+    const xAxisGroup = svg.append('g')
+      .attr('class', 'x-axis')
       .attr('transform', `translate(0, ${height})`)
-      .call(xAxis)
-      .selectAll("text")
+      .call(xAxis);
+      
+    xAxisGroup.selectAll("text")
         .style("fill", "#9ca3af")
         .style("font-size", "11px");
-        
-    const y = d3.scaleLinear()
-      .domain([0, d3.max(data, (d: ChartDataPoint) => d.balance * 1.1) || 1000])
-      .range([height, 0]);
 
+    const yAxis = d3.axisLeft(y).tickFormat((d: number) => `${d/1000}k`);
+    
     svg.append('g')
-      .call(d3.axisLeft(y).tickFormat((d: number) => `${d/1000}k`))
+      .attr('class', 'y-axis')
+      .call(yAxis)
       .selectAll("text")
         .style("fill", "#9ca3af")
         .style("font-size", "11px");
+
+    // --- Line & Circles Group (Clipped) ---
+    const chartBody = svg.append('g')
+        .attr("clip-path", `url(#${clipId})`);
 
     const line = d3.line()
       .x((d: ChartDataPoint) => x(d.date))
       .y((d: ChartDataPoint) => y(d.balance))
       .curve(d3.curveMonotoneX);
 
-    svg.append('path')
+    const path = chartBody.append('path')
       .datum(data)
+      .attr('class', 'line')
       .attr('fill', 'none')
       .attr('stroke', '#818cf8')
       .attr('stroke-width', 2.5)
       .attr('d', line);
-      
-    // --- Tooltip ---
-    const tooltip = d3.select(el)
-      .append("div")
-      .attr("class", "chart-tooltip")
-      .style("opacity", 0);
 
-    svg.selectAll('circle')
+    const circles = chartBody.selectAll('circle')
         .data(data)
         .enter().append('circle')
         .attr('cx', (d: ChartDataPoint) => x(d.date))
@@ -191,7 +206,15 @@ export class SummaryViewComponent {
         .style('fill', '#6366f1')
         .attr('stroke', '#1f2937')
         .attr('stroke-width', 2)
-        .style('cursor', 'pointer')
+        .style('cursor', 'pointer');
+
+    // --- Tooltip ---
+    const tooltip = d3.select(el)
+      .append("div")
+      .attr("class", "chart-tooltip")
+      .style("opacity", 0);
+
+    circles
         .on('mouseover', (event: MouseEvent, d: ChartDataPoint) => {
             tooltip.transition().duration(200).style('opacity', 1);
             
@@ -210,5 +233,43 @@ export class SummaryViewComponent {
              d3.select(event.currentTarget as SVGCircleElement)
               .transition().duration(150).attr('r', 5).style('fill', '#6366f1');
         });
+
+    // --- Zoom ---
+    const zoom = d3.zoom()
+        .scaleExtent([1, 10]) // Max zoom 10x
+        .extent([[0, 0], [width, height]])
+        .translateExtent([[0, 0], [width, height]]) // Create invisible rect for zoom to work everywhere
+        .on("zoom", (event: any) => updateChart(event));
+
+    // Invisible rect to capture zoom events
+    svg.append("rect")
+        .attr("width", width)
+        .attr("height", height)
+        .style("fill", "none")
+        .style("pointer-events", "all")
+        .lower() // Keep behind everything
+        .call(zoom);
+
+    function updateChart(event: any) {
+        // recover the new scale
+        const newX = event.transform.rescaleX(x);
+
+        // update axes with these new boundaries
+        xAxis.scale(newX);
+        xAxisGroup.call(xAxis as any);
+        
+        xAxisGroup.selectAll("text")
+            .style("fill", "#9ca3af")
+            .style("font-size", "11px");
+
+        // update line position
+        // @ts-ignore
+        line.x((d: ChartDataPoint) => newX(d.date));
+        path.attr('d', line);
+        
+        // update circles
+        circles
+           .attr('cx', (d: ChartDataPoint) => newX(d.date));
+    }
   }
 }

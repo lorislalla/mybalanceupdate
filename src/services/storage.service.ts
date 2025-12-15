@@ -7,7 +7,7 @@ import { SupabaseService } from './supabase.service';
 })
 export class StorageService {
   // We keep the appData signal structure for compatibility with existing components
-  appData: WritableSignal<AppData> = signal({ reports: [], globalNotes: '' });
+  appData: WritableSignal<AppData> = signal({ reports: [], globalNotes: '', calculatorItems: [] });
 
   constructor(private supabase: SupabaseService) {
     // Subscribe to Supabase data streams
@@ -17,6 +17,10 @@ export class StorageService {
 
     this.supabase.globalNotes$.subscribe(globalNotes => {
       this.appData.update(current => ({ ...current, globalNotes }));
+    });
+
+    this.supabase.calculatorItems$.subscribe(calculatorItems => {
+        this.appData.update(current => ({ ...current, calculatorItems }));
     });
   }
 
@@ -67,5 +71,14 @@ export class StorageService {
     } catch (e) {
         console.error('Error syncing global notes:', e);
     }
+  }
+
+  async updateCalculatorItems(items: any[]) { // CalculatorItem[]
+      this.appData.update(data => ({...data, calculatorItems: items}));
+      try {
+          await this.supabase.updateCalculatorItems(items);
+      } catch (e) {
+          console.error('Error syncing calculator items:', e);
+      }
   }
 }

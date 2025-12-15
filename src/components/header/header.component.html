@@ -22,6 +22,12 @@
               Riepilogo
             </button>
             <button
+              (click)="setView('calculator')"
+              [class]="currentView() === 'calculator' ? 'bg-gray-900 text-white' : 'text-gray-300 hover:bg-gray-700 hover:text-white'"
+              class="px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200">
+              Calcolo
+            </button>
+            <button
               (click)="setView('import-export')"
               [class]="currentView() === 'import-export' ? 'bg-gray-900 text-white' : 'text-gray-300 hover:bg-gray-700 hover:text-white'"
               class="px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200">
@@ -63,6 +69,7 @@
       <button (click)="setView('monthly')" [class]="currentView() === 'monthly' ? 'bg-gray-900 text-white' : 'text-gray-300 hover:bg-gray-700 hover:text-white'" class="block w-full text-left px-3 py-2 rounded-md text-base font-medium transition-colors duration-200">Resoconto Mensile</button>
       <button (click)="setView('summary')" [class]="currentView() === 'summary' ? 'bg-gray-900 text-white' : 'text-gray-300 hover:bg-gray-700 hover:text-white'" class="block w-full text-left px-3 py-2 rounded-md text-base font-medium transition-colors duration-200">Riepilogo</button>
       <button (click)="setView('import-export')" [class]="currentView() === 'import-export' ? 'bg-gray-900 text-white' : 'text-gray-300 hover:bg-gray-700 hover:text-white'" class="block w-full text-left px-3 py-2 rounded-md text-base font-medium transition-colors duration-200">Importa / Esporta</button>
+      <button (click)="setView('calculator')" [class]="currentView() === 'calculator' ? 'bg-gray-900 text-white' : 'text-gray-300 hover:bg-gray-700 hover:text-white'" class="block w-full text-left px-3 py-2 rounded-md text-base font-medium transition-colors duration-200">Calcolo</button>
     </div>
   </div>
   }
