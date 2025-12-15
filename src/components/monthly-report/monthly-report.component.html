@@ -1,0 +1,185 @@
+<div class="space-y-8">
+  <!-- Month Selector -->
+  <div class="flex items-center justify-between bg-gray-800 p-4 rounded-lg shadow-md">
+    <h1 class="text-2xl font-bold text-indigo-400">Resoconto Mensile</h1>
+    <div class="flex items-center gap-2">
+      <button (click)="changeMonth(-1)" title="Mese precedente" class="p-2 rounded-full bg-gray-700 hover:bg-gray-600 transition-colors">
+        <svg class="w-5 h-5 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+      </button>
+      
+      <div class="relative">
+         <button (click)="openMonthPicker()" 
+            class="bg-gray-900 border border-gray-700 rounded-md p-2 pl-4 pr-10 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition w-44 text-center relative">
+          <span class="font-medium">{{ selectedMonthDisplay() }}</span>
+          <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-400">
+             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+          </div>
+        </button>
+        
+        @if (isMonthPickerOpen()) {
+        <div class="absolute top-full mt-2 w-64 bg-gray-800/80 backdrop-blur-sm border border-gray-700 rounded-lg shadow-xl z-20 p-4 animate-fade-in-up origin-top-right right-0 lg:origin-top lg:right-auto lg:left-1/2 lg:-translate-x-1/2">
+            <!-- Year navigator -->
+            <div class="flex justify-between items-center mb-4">
+                <button (click)="changePickerYear(-1)" title="Anno precedente" class="p-2 rounded-full hover:bg-gray-700 transition-colors">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+                </button>
+                <span class="text-lg font-semibold text-gray-200">{{ pickerYear() }}</span>
+                <button (click)="changePickerYear(1)" title="Anno successivo" class="p-2 rounded-full hover:bg-gray-700 transition-colors">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+                </button>
+            </div>
+            <!-- Months grid -->
+            <div class="grid grid-cols-4 gap-2">
+                @for(month of monthPickerShortNames; track $index) {
+                    <button 
+                        (click)="selectMonth($index)"
+                        class="p-2 rounded-md text-sm font-medium transition-colors"
+                        [class]="pickerYear() == currentMonthYear().split('-')[0] && $index + 1 == currentMonthYear().split('-')[1] ? 'bg-indigo-600 text-white font-bold' : 'hover:bg-gray-700 text-gray-300'">
+                        {{ month }}
+                    </button>
+                }
+            </div>
+            <!-- Actions -->
+            <div class="mt-4 pt-4 border-t border-gray-700 flex justify-between">
+                 <button (click)="closeMonthPicker()" class="text-sm text-gray-400 hover:text-white transition-colors">Cancella</button>
+                 <button (click)="goToThisMonth()" class="text-sm font-semibold text-indigo-400 hover:text-indigo-300 transition-colors">Questo mese</button>
+            </div>
+        </div>
+        }
+      </div>
+      
+      <button (click)="changeMonth(1)" title="Mese successivo" class="p-2 rounded-full bg-gray-700 hover:bg-gray-600 transition-colors">
+        <svg class="w-5 h-5 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+      </button>
+    </div>
+  </div>
+
+  @if (report(); as currentReport) {
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <!-- Main Data & Expenses Column -->
+    <div class="lg:col-span-2 space-y-8">
+      <!-- Payday & Balance -->
+      <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
+        <h2 class="text-xl font-semibold mb-4 text-gray-300">Dati Principali del Mese</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label for="payday" class="block text-sm font-medium text-gray-400 mb-1">Giorno dello Stipendio</label>
+            <input type="date" id="payday" [ngModel]="currentReport.payday"
+              (ngModelChange)="updateReportField('payday', $event)"
+              class="w-full bg-gray-900 border border-gray-700 rounded-md p-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
+          </div>
+          <div>
+            <label for="balance" class="block text-sm font-medium text-gray-400 mb-1">Saldo a Giorno Stipendio (€)</label>
+            <input type="number" id="balance" [ngModel]="currentReport.balance"
+              (ngModelChange)="updateReportField('balance', +$event)"
+              class="w-full bg-gray-900 border border-gray-700 rounded-md p-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
+          </div>
+        </div>
+      </div>
+
+      <!-- Expenses -->
+      <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
+        <h2 class="text-xl font-semibold mb-4 text-gray-300">Spese Mensili (&ge; 50€)</h2>
+        <form [formGroup]="newExpenseForm" (ngSubmit)="addExpense()" class="flex flex-col sm:flex-row sm:items-start gap-4 mb-6">
+          <input type="text" formControlName="description" placeholder="Descrizione spesa"
+            class="flex-grow bg-gray-900 border border-gray-700 rounded-md p-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
+          <input type="number" formControlName="amount" placeholder="Importo €"
+            class="w-full sm:w-32 bg-gray-900 border border-gray-700 rounded-md p-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
+          <button type="submit" [disabled]="newExpenseForm.invalid"
+            class="w-full sm:w-auto bg-indigo-600 text-white px-4 py-2 rounded-md font-semibold hover:bg-indigo-700 disabled:bg-gray-600 disabled:cursor-not-allowed transition-colors">
+            Aggiungi
+          </button>
+        </form>
+
+        <div class="space-y-3 max-h-96 overflow-y-auto pr-2">
+          @for (expense of currentReport.expenses; track expense.id) {
+            @if (editingExpenseId() === expense.id) {
+            <!-- Editing View -->
+            <form [formGroup]="editExpenseForm" (ngSubmit)="saveExpense()" class="flex flex-col sm:flex-row items-center gap-2 bg-gray-900 p-3 rounded-md animate-fade-in">
+                <input type="text" formControlName="description" class="flex-grow w-full sm:w-auto bg-gray-700 border border-gray-600 rounded-md p-2 focus:ring-2 focus:ring-indigo-500 transition">
+                <input type="number" formControlName="amount" class="w-full sm:w-32 bg-gray-700 border border-gray-600 rounded-md p-2 focus:ring-2 focus:ring-indigo-500 transition">
+                <div class="flex gap-2 self-end sm:self-center">
+                    <button type="submit" title="Salva" [disabled]="editExpenseForm.invalid" class="p-2 text-green-400 hover:text-green-300 disabled:text-gray-600 disabled:cursor-not-allowed transition-colors">
+                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+                    </button>
+                    <button type="button" title="Annulla" (click)="cancelEditing()" class="p-2 text-gray-400 hover:text-white transition-colors">
+                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                </div>
+            </form>
+            } @else {
+            <!-- Default View -->
+            <div class="flex justify-between items-center bg-gray-900 p-3 rounded-md animate-fade-in">
+              <span class="text-gray-300 break-all pr-2">{{ expense.description }}</span>
+              <div class="flex items-center space-x-3 flex-shrink-0">
+                <span class="font-mono text-red-400">-{{ expense.amount | number:'1.2-2' }} €</span>
+                <button (click)="startEditing(expense)" title="Modifica" class="text-gray-500 hover:text-indigo-400 transition-colors">
+                  <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L16.732 3.732z" /></svg>
+                </button>
+                <button (click)="promptDeleteExpense(expense)" title="Elimina" class="text-gray-500 hover:text-red-500 transition-colors">
+                  <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                </button>
+              </div>
+            </div>
+            }
+          } @empty {
+          <div class="text-center py-8 text-gray-500">
+            <p>Nessuna spesa &ge; 50€ registrata per questo mese.</p>
+          </div>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Summary & Notes Column -->
+    <div class="space-y-8">
+      <!-- Summary -->
+      <div class="bg-gray-800 p-6 rounded-lg shadow-lg text-center">
+        <h2 class="text-xl font-semibold mb-6 text-gray-300">Riepilogo del Mese</h2>
+        <div class="space-y-6">
+            <div>
+              <p class="text-lg text-gray-400">Saldo a Giorno Stipendio</p>
+              <p class="text-4xl font-extrabold text-green-400">{{ currentReport.balance | number:'1.2-2' }} €</p>
+            </div>
+             <div>
+              <p class="text-lg text-gray-400">Totale Spese Mensili</p>
+              <p class="text-4xl font-extrabold text-red-400">-{{ totalExpenses() | number:'1.2-2' }} €</p>
+            </div>
+        </div>
+      </div>
+      
+      <!-- Notes -->
+      <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
+        <h2 class="text-xl font-semibold mb-4 text-gray-300">Note del Mese</h2>
+        <textarea [ngModel]="currentReport.notes" (ngModelChange)="updateReportField('notes', $event)"
+          placeholder="Aggiungi annotazioni particolari per questo mese..."
+          class="w-full h-40 p-3 bg-gray-900 border border-gray-700 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"></textarea>
+      </div>
+    </div>
+  </div>
+  }
+</div>
+
+<!-- Delete Confirmation Modal -->
+@if (showDeleteConfirmation()) {
+<div class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 transition-opacity" (click)="cancelDelete()">
+  <div class="bg-gray-800 rounded-lg shadow-2xl p-6 w-full max-w-sm mx-4 text-gray-200 animate-fade-in-up" (click)="$event.stopPropagation()">
+    <h3 class="text-lg font-semibold text-white">Conferma Eliminazione</h3>
+    <div class="mt-2">
+        @if (expenseToDelete(); as expense) {
+          <p class="text-sm text-gray-400">
+            Sei sicuro di voler eliminare la spesa "{{ expense.description }}" di {{ expense.amount | number:'1.2-2' }}€?
+          </p>
+        }
+    </div>
+    <div class="mt-6 flex justify-end space-x-3">
+      <button (click)="cancelDelete()" class="px-4 py-2 rounded-md bg-gray-600 hover:bg-gray-700 text-white font-semibold transition-colors">
+        Annulla
+      </button>
+      <button (click)="confirmDelete()" class="px-4 py-2 rounded-md bg-red-600 hover:bg-red-700 text-white font-semibold transition-colors">
+        Elimina
+      </button>
+    </div>
+  </div>
+</div>
+}

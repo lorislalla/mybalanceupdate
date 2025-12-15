@@ -1,0 +1,71 @@
+<div class="space-y-8">
+  <!-- Search Expenses -->
+  <div class="bg-gray-800 p-4 sm:p-6 rounded-lg shadow-lg">
+    <h2 class="text-2xl font-bold text-indigo-400 mb-4">Cerca Spese</h2>
+    <div class="mb-4">
+      <input 
+        type="text" 
+        placeholder="Cerca per descrizione (es. 'rata affitto', 'samsung')..."
+        [ngModel]="searchQuery()"
+        (ngModelChange)="searchQuery.set($event)"
+        class="w-full bg-gray-900 border border-gray-700 rounded-md p-3 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition text-gray-200"
+      />
+    </div>
+
+    <div class="space-y-3 max-h-96 overflow-y-auto pr-2">
+      @if (searchResults().length > 0) {
+        @for(result of searchResults(); track $index) {
+          <div class="flex justify-between items-center bg-gray-900 p-3 rounded-md animate-fade-in">
+            <div>
+              <p class="font-semibold text-gray-300 break-all pr-2">{{ result.description }}</p>
+              <p class="text-sm text-gray-500">{{ getMonthName(result.month) }} {{ result.year }}</p>
+            </div>
+            <span class="font-mono text-red-400 flex-shrink-0">-{{ result.amount | number:'1.2-2' }} €</span>
+          </div>
+        }
+      } @else if (searchQuery()) {
+        <div class="text-center py-8 text-gray-500">
+          <p>Nessuna spesa trovata per "{{ searchQuery() }}".</p>
+        </div>
+      } @else {
+        <div class="text-center py-8 text-gray-500">
+          <p>Inizia a digitare per cercare tra tutte le tue spese registrate.</p>
+        </div>
+      }
+    </div>
+  </div>
+  
+  <!-- Overall Balance Chart -->
+  <div class="bg-gray-800 p-4 sm:p-6 rounded-lg shadow-lg">
+    <h1 class="text-2xl font-bold text-indigo-400 mb-4">Andamento del Saldo Complessivo</h1>
+
+    @if (chartData().length > 1) {
+      <div #chartContainer class="w-full h-[400px] relative"></div>
+    } @else {
+      <div class="flex flex-col items-center justify-center h-[400px] text-center text-gray-500 bg-gray-900 rounded-md">
+        <svg class="w-16 h-16 mb-4 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" />
+        </svg>
+        <h2 class="text-xl font-semibold">Dati insufficienti per il grafico</h2>
+        <p class="mt-1">Registra il saldo per almeno due mesi per visualizzare l'andamento.</p>
+      </div>
+    }
+  </div>
+
+  <!-- Last 12 Months Balance Chart -->
+  <div class="bg-gray-800 p-4 sm:p-6 rounded-lg shadow-lg">
+    <h1 class="text-2xl font-bold text-indigo-400 mb-4">Andamento Ultimo Anno</h1>
+
+    @if (last12MonthsChartData().length > 1) {
+      <div #last12MonthsChartContainer class="w-full h-[400px] relative"></div>
+    } @else {
+      <div class="flex flex-col items-center justify-center h-[400px] text-center text-gray-500 bg-gray-900 rounded-md">
+        <svg class="w-16 h-16 mb-4 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" />
+        </svg>
+        <h2 class="text-xl font-semibold">Dati insufficienti per il grafico</h2>
+        <p class="mt-1">Registra il saldo per almeno due mesi nell'ultimo anno per visualizzare l'andamento.</p>
+      </div>
+    }
+  </div>
+</div>

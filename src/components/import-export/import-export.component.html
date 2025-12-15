@@ -1,0 +1,82 @@
+<div class="bg-gray-800 p-4 sm:p-6 rounded-lg shadow-lg">
+  <!-- Tabs -->
+  <div class="border-b border-gray-700">
+    <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+      <button (click)="setActiveTab('import')"
+        [class]="activeTab() === 'import' ? 'border-indigo-500 text-indigo-400' : 'border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500'"
+        class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors">
+        Importa con AI
+      </button>
+      <button (click)="setActiveTab('export')"
+        [class]="activeTab() === 'export' ? 'border-indigo-500 text-indigo-400' : 'border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500'"
+        class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors">
+        Esporta Dati
+      </button>
+    </nav>
+  </div>
+
+  <!-- Content -->
+  <div class="pt-6">
+    @if (activeTab() === 'import') {
+      <div class="space-y-6">
+        <div>
+          <label for="text-to-parse" class="block text-sm font-medium text-gray-300">Testo da Analizzare</label>
+          <p class="text-xs text-gray-500 mb-2">Incolla qui i dati del tuo resoconto o carica un file di testo (.txt, .csv, .md).</p>
+          <textarea id="text-to-parse" rows="10" 
+            [ngModel]="textToParse()" (ngModelChange)="textToParse.set($event)"
+            class="w-full bg-gray-900 border border-gray-700 rounded-md p-3 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
+            placeholder="Es: Gennaio 2024, saldo 3500€ il 27. Spese: Supermercato 120€, Benzina 60€."></textarea>
+          <div class="mt-2 text-right">
+            <label for="file-upload" class="cursor-pointer text-sm font-medium text-indigo-400 hover:text-indigo-300">
+              O carica un file...
+            </label>
+            <input id="file-upload" name="file-upload" type="file" class="sr-only" (change)="onFileSelected($event)" accept=".txt,.csv,.md">
+          </div>
+        </div>
+
+        <div>
+          <label for="ai-instructions" class="block text-sm font-medium text-gray-300">Istruzioni per l'AI (Opzionale)</label>
+          <p class="text-xs text-gray-500 mb-2">Aiuta l'IA a capire i tuoi dati. Es: "La colonna 'Uscite' contiene le spese." o "'Sal.' sta per saldo."</p>
+          <textarea id="ai-instructions" rows="3"
+            [ngModel]="userInstructions()" (ngModelChange)="userInstructions.set($event)"
+            class="w-full bg-gray-900 border border-gray-700 rounded-md p-3 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
+            placeholder="Scrivi qui le istruzioni..."></textarea>
+        </div>
+        
+        <div class="flex items-center justify-between">
+          <div class="h-10">
+            @if (errorMessage()) {
+              <p class="text-red-400 text-sm">{{ errorMessage() }}</p>
+            }
+            @if (successMessage()) {
+              <p class="text-green-400 text-sm">{{ successMessage() }}</p>
+            }
+          </div>
+          <button (click)="handleImport()" [disabled]="isLoading() || !textToParse()"
+            class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-gray-600 disabled:cursor-not-allowed transition-all">
+            @if (isLoading()) {
+              <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              Analisi in corso...
+            } @else {
+              Avvia Importazione
+            }
+          </button>
+        </div>
+      </div>
+    }
+
+    @if (activeTab() === 'export') {
+      <div class="text-center">
+        <h2 class="text-lg font-medium text-gray-300">Esporta tutti i tuoi dati</h2>
+        <p class="mt-1 text-sm text-gray-500">Salva una copia di backup dei tuoi resoconti in formato JSON o CSV.</p>
+        <div class="mt-6 flex justify-center gap-4">
+          <button (click)="exportData('json')" class="px-5 py-2.5 font-medium bg-gray-700 hover:bg-gray-600 text-gray-200 rounded-lg text-sm transition-colors">Esporta in JSON</button>
+          <button (click)="exportData('csv')" class="px-5 py-2.5 font-medium bg-gray-700 hover:bg-gray-600 text-gray-200 rounded-lg text-sm transition-colors">Esporta in CSV</button>
+        </div>
+      </div>
+    }
+  </div>
+</div>
