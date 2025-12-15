@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@angular/build": "^20.3.0",
+    "@angular/cdk": "^21.0.3",
     "@angular/cli": "^20.3.0",
     "@angular/common": "^20.3.0",
     "@angular/compiler": "^20.3.0",

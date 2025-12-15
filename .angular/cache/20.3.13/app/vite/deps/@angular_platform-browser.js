@@ -1,13 +1,13 @@
 import {
+  withHttpTransferCache
+} from "./chunk-YC7D64SO.js";
+import {
   CommonModule,
   DomAdapter,
   PLATFORM_BROWSER_ID,
   getDOM,
   setRootDomAdapter
 } from "./chunk-NDECEMC7.js";
-import {
-  withHttpTransferCache
-} from "./chunk-YC7D64SO.js";
 import {
   XhrFactory,
   parseCookieValue

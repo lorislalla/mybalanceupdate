@@ -1,6 +1,7 @@
 import { Component, ChangeDetectionStrategy, inject, signal, computed, effect } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { DragDropModule, CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { StorageService } from '../../services/storage.service';
 import { MonthlyReport, Expense } from '../../models/financial-data.model';
 
@@ -8,9 +9,41 @@ import { MonthlyReport, Expense } from '../../models/financial-data.model';
   selector: 'app-monthly-report',
   templateUrl: './monthly-report.component.html',
   providers: [DatePipe],
-  imports: [CommonModule, FormsModule, ReactiveFormsModule]
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, DragDropModule],
+  styles: [`
+    .cdk-drag-preview {
+        box-sizing: border-box;
+        border-radius: 6px;
+        box-shadow: 0 5px 5px -3px rgba(0, 0, 0, 0.2), 0 8px 10px 1px rgba(0, 0, 0, 0.14), 0 3px 14px 2px rgba(0, 0, 0, 0.12);
+        background-color: #1f2937;
+        color: #e5e7eb;
+        opacity: 0.95;
+    }
+    .cdk-drag-placeholder {
+        opacity: 0.3;
+        background: #374151;
+        border: 2px dashed #4b5563;
+        border-radius: 6px;
+    }
+    .cdk-drag-animating {
+        transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+    }
+    .cdk-drop-list-dragging .cdk-drag {
+        transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+    }
+  `]
 })
 export class MonthlyReportComponent {
+  // --- Drag & Drop ---
+  drop(event: CdkDragDrop<Expense[]>) {
+    const currentReport = this.report();
+    if (currentReport) {
+      const expenses = [...currentReport.expenses];
+      moveItemInArray(expenses, event.previousIndex, event.currentIndex);
+      this.updateReportField('expenses', expenses);
+    }
+  }
+
   private storageService = inject(StorageService);
   private fb = inject(FormBuilder);
   // FIX: Explicitly type `datePipe` to `DatePipe` to resolve type inference issue.
@@ -135,6 +168,50 @@ export class MonthlyReportComponent {
       this.updateReportField('expenses', updatedExpenses);
       this.cancelEditing(); // Exit editing mode
     }
+  }
+
+  // --- Repeat Expense Method ---
+  async repeatExpense(expense: Expense) {
+    const [year, month] = this.currentMonthYear().split('-').map(Number);
+    // Calculate next month
+    let nextMonth = month + 1;
+    let nextYear = year;
+    if (nextMonth > 12) {
+      nextMonth = 1;
+      nextYear += 1;
+    }
+
+    // Attempt to load report for key month, or create a fresh one if it doesn't exist in local store
+    // Note: getReport is synchronous from the signal store.
+    let nextReport = this.storageService.getReport(nextYear, nextMonth);
+
+    if (!nextReport) {
+      nextReport = {
+        year: nextYear,
+        month: nextMonth,
+        payday: '',
+        balance: 0,
+        expenses: [],
+        notes: ''
+      };
+    }
+
+    // Add the expense
+    const newExpense: Expense = {
+      ...expense,
+      id: crypto.randomUUID() // Ensure valid new ID
+    };
+
+    const updatedNextReport = {
+      ...nextReport,
+      expenses: [...nextReport.expenses, newExpense]
+    };
+
+    // Save
+    await this.storageService.updateReport(updatedNextReport);
+    
+    // Optional: User feedback (could use a snackbar, but for now console/alert or just UI update if we were looking at that month)
+    alert(`Spesa "${expense.description}" copiata nel mese di ${this.monthPickerLongNames[nextMonth - 1]} ${nextYear}`);
   }
 
   // --- Delete Expense Methods ---
