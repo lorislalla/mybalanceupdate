@@ -65,7 +65,7 @@
           <div>
             <label for="payday" class="block text-sm font-medium text-gray-400 mb-1">Giorno dello Stipendio</label>
             <input type="date" id="payday" [ngModel]="currentReport.payday"
-              (ngModelChange)="updateReportField('payday', $event)"
+              (ngModelChange)="onPaydayChange($event)"
               class="w-full bg-gray-900 border border-gray-700 rounded-md p-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
           </div>
           <div>

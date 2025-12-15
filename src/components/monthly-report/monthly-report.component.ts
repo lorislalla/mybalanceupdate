@@ -50,7 +50,7 @@ export class MonthlyReportComponent {
   private datePipe: DatePipe = inject(DatePipe);
 
   today = new Date();
-  currentMonthYear = signal(this.datePipe.transform(this.today, 'yyyy-MM')!);
+  currentMonthYear = signal<string>(this.getDateString(this.today)); // Initial value, updated in effect
   
   report = signal<MonthlyReport | undefined>(undefined);
   
@@ -81,9 +81,12 @@ export class MonthlyReportComponent {
     return `${this.monthPickerLongNames[month - 1]} ${year}`;
   });
 
+  private initialized = false;
+
   constructor() {
     effect(() => {
-      this.cancelEditing(); // Reset editing state when month changes
+      // 1. Load specific report for currentMonthYear
+      this.cancelEditing(); 
       const [year, month] = this.currentMonthYear().split('-').map(Number);
       const loadedReport = this.storageService.getReport(year, month);
       
@@ -92,11 +95,46 @@ export class MonthlyReportComponent {
         month: month,
         payday: '',
         balance: 0,
+        salary: 0,
         expenses: [],
         notes: ''
       };
       this.report.set(newReport);
-    });
+    }, { allowSignalWrites: true });
+
+    effect(() => {
+        // 2. One-time initialization logic: find first incomplete month
+        const reports = this.storageService.appData().reports; // Track changes
+        if (!this.initialized && reports.length > 0) {
+            this.initialized = true;
+            
+            // Find the *earliest* report that has no payday (meaning it's incomplete/to-do)
+            // But we probably want the earliest *future* or *current* one?
+            // "il primo mese dove NON c'è impostato il giorno dello stipendio"
+            // Let's assume reports are sorted descending by date in storage.
+            // We want to find the oldest one that is empty? No, that would be very old.
+            // Logic: Sort Ascending. Find first without payday.
+            
+            const sortedAsc = [...reports].sort((a,b) => 
+                new Date(a.year, a.month - 1).getTime() - new Date(b.year, b.month - 1).getTime()
+            );
+
+            const firstIncomplete = sortedAsc.find(r => !r.payday);
+
+            if (firstIncomplete) {
+                const dateStr = `${firstIncomplete.year}-${firstIncomplete.month.toString().padStart(2, '0')}`;
+                this.currentMonthYear.set(dateStr);
+            } else {
+                // All completed? Default to today or next month after latest?
+                // Let's stay on today as fallback.
+                this.currentMonthYear.set(this.getDateString(this.today));
+            }
+        }
+    }, { allowSignalWrites: true });
+  }
+
+  private getDateString(date: Date): string {
+    return this.datePipe.transform(date, 'yyyy-MM')!;
   }
 
   totalExpenses = computed(() => {
@@ -105,10 +143,23 @@ export class MonthlyReportComponent {
 
   changeMonth(delta: number) {
     const [year, month] = this.currentMonthYear().split('-').map(Number);
-    // Create date on the 15th to avoid timezone/daylight saving issues
+    // Create date on the 15th
     const currentDate = new Date(year, month - 1, 15);
     currentDate.setMonth(currentDate.getMonth() + delta);
-    this.currentMonthYear.set(this.datePipe.transform(currentDate, 'yyyy-MM')!);
+    this.currentMonthYear.set(this.getDateString(currentDate));
+  }
+  
+  onPaydayChange(newPayday: string) {
+      if (newPayday) {
+          this.updateReportField('payday', newPayday);
+          // "Appena inserisco... passa al mese successivo"
+          // Add a small delay for UX so user sees value set
+          setTimeout(() => {
+              this.changeMonth(1);
+          }, 500);
+      } else {
+          this.updateReportField('payday', newPayday);
+      }
   }
 
   updateReportField<K extends keyof MonthlyReport>(field: K, value: MonthlyReport[K]) {

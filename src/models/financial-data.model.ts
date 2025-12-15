@@ -18,6 +18,7 @@ export interface CalculatorItem {
   id: string;
   description: string;
   amount: number;
+  color?: string;
 }
 
 export interface AppData {
