@@ -10,6 +10,8 @@ export interface MonthlyReport {
   payday: string; // YYYY-MM-DD
   balance: number;
   salary?: number; // Optional strictly speaking for old data, but we'll default to 0
+  salary13?: number; // Tredicesima (December)
+  salary14?: number; // Quattordicesima (June)
   expenses: Expense[];
   notes: string;
 }

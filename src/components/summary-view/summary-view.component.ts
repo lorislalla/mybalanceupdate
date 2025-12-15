@@ -9,6 +9,7 @@ declare var d3: any;
 interface ChartDataPoint {
   date: Date;
   balance: number;
+  label?: string;
 }
 
 interface SearchResult {
@@ -32,6 +33,7 @@ export class SummaryViewComponent {
   
   chartContainer = viewChild<ElementRef>('chartContainer');
   last12MonthsChartContainer = viewChild<ElementRef>('last12MonthsChartContainer');
+  salaryChartContainer = viewChild<ElementRef>('salaryChartContainer');
   
   reports = computed(() => {
     return this.storageService.appData().reports
@@ -39,11 +41,51 @@ export class SummaryViewComponent {
       .sort((a, b) => new Date(a.year, a.month - 1).getTime() - new Date(b.year, b.month - 1).getTime());
   });
 
+  salaryReports = computed(() => {
+      // For salary chart, we might want even months with 0 balance if salary is set?
+      // But consistency with other charts implies we use same filter or just all?
+      // Let's use all reports that have salary > 0
+      return this.storageService.appData().reports
+        .filter(r => (r.salary || 0) > 0)
+        .sort((a, b) => new Date(a.year, a.month - 1).getTime() - new Date(b.year, b.month - 1).getTime());
+  });
+
   chartData = computed<ChartDataPoint[]>(() => {
     return this.reports().map(r => ({
       date: new Date(r.year, r.month - 1),
       balance: r.balance
     }));
+  });
+
+  salaryChartData = computed<ChartDataPoint[]>(() => {
+      const points: ChartDataPoint[] = [];
+      for (const r of this.salaryReports()) {
+          // Main Salary
+          points.push({
+              date: new Date(r.year, r.month - 1, 1),
+              balance: r.salary || 0,
+              label: 'Stipendio'
+          });
+          
+          // 14th
+          if (r.month === 6 && (r.salary14 || 0) > 0) {
+              points.push({
+                  date: new Date(r.year, 5, 15), // June 15
+                  balance: r.salary14!,
+                  label: '14ª Mensilità'
+              });
+          }
+          
+          // 13th
+          if (r.month === 12 && (r.salary13 || 0) > 0) {
+               points.push({
+                  date: new Date(r.year, 11, 15), // Dec 15
+                  balance: r.salary13!,
+                  label: '13ª Mensilità'
+              });
+          }
+      }
+      return points.sort((a, b) => a.date.getTime() - b.date.getTime());
   });
 
   last12MonthsChartData = computed<ChartDataPoint[]>(() => {
@@ -101,6 +143,9 @@ export class SummaryViewComponent {
     });
     effect(() => {
       this.drawGenericChart(this.last12MonthsChartData(), this.last12MonthsChartContainer(), { isLast12Months: true });
+    });
+    effect(() => {
+      this.drawGenericChart(this.salaryChartData(), this.salaryChartContainer(), { isLast12Months: false });
     });
   }
   
@@ -221,17 +266,17 @@ export class SummaryViewComponent {
             const formattedDate = this.datePipe.transform(d.date, 'MMMM yyyy');
             const formattedBalance = formatCurrency(d.balance, 'it-IT', getLocaleCurrencySymbol('it-IT')!);
             
-            tooltip.html(`<strong>${formattedDate}</strong><br/>Saldo: ${formattedBalance}`)
+            tooltip.html(`<strong>${formattedDate}</strong><br/>${d.label || 'Saldo'}: ${formattedBalance}`)
               .style('left', `${event.pageX - el.getBoundingClientRect().left + 15}px`)
               .style('top', `${event.pageY - el.getBoundingClientRect().top - 10}px`);
 
             d3.select(event.currentTarget as SVGCircleElement)
-              .transition().duration(150).attr('r', 7).style('fill', '#a78bfa');
+              .transition().duration(150).attr('r', 7).style('fill', d.label?.includes('Mensilità') ? '#facc15' : '#a78bfa');
         })
-        .on('mouseout', (event: MouseEvent) => {
+        .on('mouseout', (event: MouseEvent, d: ChartDataPoint) => {
             tooltip.transition().duration(400).style('opacity', 0);
              d3.select(event.currentTarget as SVGCircleElement)
-              .transition().duration(150).attr('r', 5).style('fill', '#6366f1');
+              .transition().duration(150).attr('r', 5).style('fill', d.label?.includes('Mensilità') ? '#fbbf24' : '#6366f1');
         });
 
     // --- Zoom ---

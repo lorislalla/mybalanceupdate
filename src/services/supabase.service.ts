@@ -69,7 +69,7 @@ export class SupabaseService {
     if (!this.userSubject.value) return;
 
     // Load Reports
-    const { data: reports, error: reportsError } = await this.supabase
+    const { data: reportsData, error: reportsError } = await this.supabase
       .from('monthly_reports')
       .select('*')
       .order('year', { ascending: false })
@@ -78,7 +78,12 @@ export class SupabaseService {
     if (reportsError) {
       console.error('Error loading reports:', reportsError);
     } else {
-      this.reportsSubject.next(reports || []);
+      const reports = (reportsData || []).map((r: any) => ({
+          ...r,
+          salary13: r.salary_13,
+          salary14: r.salary_14
+      })) as MonthlyReport[];
+      this.reportsSubject.next(reports);
     }
 
     // Load Global Notes
@@ -122,6 +127,8 @@ export class SupabaseService {
         payday: report.payday,
         balance: report.balance,
         salary: report.salary || 0,
+        salary_13: report.salary13 || 0,
+        salary_14: report.salary14 || 0,
         notes: report.notes,
         expenses: report.expenses
       }, { onConflict: 'user_id, year, month' })
@@ -225,11 +232,18 @@ export class SupabaseService {
   private handleReportChange(payload: any) {
     const currentReports = this.reportsSubject.value;
     
+    // Helper to map DB snake_case to Model camelCase
+    const mapReport = (r: any): MonthlyReport => ({
+        ...r,
+        salary13: r.salary_13,
+        salary14: r.salary_14
+    });
+
     if (payload.eventType === 'INSERT') {
-        const newReport = payload.new as MonthlyReport;
+        const newReport = mapReport(payload.new);
         this.reportsSubject.next([...currentReports, newReport].sort(this.sortReports));
     } else if (payload.eventType === 'UPDATE') {
-        const updatedReport = payload.new as MonthlyReport;
+        const updatedReport = mapReport(payload.new);
         const index = currentReports.findIndex(r => r.year === updatedReport.year && r.month === updatedReport.month);
         if (index > -1) {
             const updatedReports = [...currentReports];

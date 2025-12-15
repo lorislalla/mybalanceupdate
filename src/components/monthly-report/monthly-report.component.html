@@ -149,30 +149,52 @@
 
     <!-- Summary & Notes Column -->
     <div class="space-y-8">
-      <!-- Summary -->
+      <!-- Summary merged with Salary -->
       <div class="bg-gray-800 p-6 rounded-lg shadow-lg text-center">
         <h2 class="text-xl font-semibold mb-6 text-gray-300 text-center">Riepilogo del Mese</h2>
         <div class="space-y-6">
+             <!-- Saldo a Giorno Stipendio -->
             <div>
               <p class="text-lg text-gray-400">Saldo a Giorno Stipendio</p>
-              <p class="text-4xl font-extrabold text-green-400">{{ currentReport.balance | number:'1.2-2' }} €</p>
+              <p class="text-4xl font-extrabold text-gray-200">{{ currentReport.balance | number:'1.2-2' }} €</p>
             </div>
+
+            <!-- Stipendio Netto -->
+            <div>
+               <p class="text-lg text-gray-400 mb-2">Stipendio Netto</p>
+               <input type="number" id="salary" [ngModel]="currentReport.salary"
+                  (ngModelChange)="updateReportField('salary', +$event)"
+                  class="w-full max-w-xs text-center text-3xl font-bold bg-transparent border-b border-gray-600 focus:border-green-500 focus:outline-none text-green-400 transition placeholder-gray-600 p-1"
+                  placeholder="0.00">
+            </div>
+
+             <!-- 14a Mensilità -->
+             @if (currentReport.month === 6) {
+               <div>
+                  <p class="text-lg text-yellow-400 mb-2">14ª Mensilità</p>
+                  <input type="number" id="salary14" [ngModel]="currentReport.salary14"
+                    (ngModelChange)="updateReportField('salary14', +$event)"
+                    class="w-full max-w-xs text-center text-2xl font-bold bg-transparent border-b border-yellow-600 focus:border-yellow-500 focus:outline-none text-yellow-400 transition placeholder-gray-600 p-1"
+                    placeholder="0.00">
+               </div>
+             }
+
+             <!-- 13a Mensilità -->
+             @if (currentReport.month === 12) {
+               <div>
+                  <p class="text-lg text-yellow-400 mb-2">13ª Mensilità</p>
+                  <input type="number" id="salary13" [ngModel]="currentReport.salary13"
+                    (ngModelChange)="updateReportField('salary13', +$event)"
+                    class="w-full max-w-xs text-center text-2xl font-bold bg-transparent border-b border-yellow-600 focus:border-yellow-500 focus:outline-none text-yellow-400 transition placeholder-gray-600 p-1"
+                    placeholder="0.00">
+               </div>
+             }
+
+             <!-- Totale Spese -->
              <div>
               <p class="text-lg text-gray-400">Totale Spese Mensili</p>
               <p class="text-4xl font-extrabold text-red-400">-{{ totalExpenses() | number:'1.2-2' }} €</p>
             </div>
-        </div>
-      </div>
-      
-      <!-- Salary Section (New) -->
-      <div class="bg-gray-800 p-6 rounded-lg shadow-lg text-center">
-        <h2 class="text-xl font-semibold mb-4 text-gray-300 text-center">Stipendio Mensile</h2>
-        <div class="flex flex-col items-center">
-             <label for="salary" class="block text-sm font-medium text-gray-400 mb-2">Importo Netto (€)</label>
-             <input type="number" id="salary" [ngModel]="currentReport.salary"
-              (ngModelChange)="updateReportField('salary', +$event)"
-              class="w-full max-w-xs text-center text-2xl font-bold bg-gray-900 border border-gray-700 rounded-md p-3 focus:ring-2 focus:ring-green-500 focus:border-green-500 text-green-400 transition placeholder-gray-600"
-              placeholder="0.00">
         </div>
       </div>
 
