@@ -6,18 +6,28 @@ import { MonthlyReport } from '../models/financial-data.model';
   providedIn: 'root'
 })
 export class GeminiService {
-  private ai: GoogleGenAI;
+  private ai: GoogleGenAI | null = null;
+  private apiKeyKey = 'GEMINI_API_KEY';
 
   constructor() {
-    if (typeof process === 'undefined' || !process.env['API_KEY']) {
-        console.error("API_KEY environment variable not set.");
-        // In a real app, you might want to handle this more gracefully.
-        // For this applet environment, we'll proceed but API calls will fail.
-        // @ts-ignore
-        this.ai = new GoogleGenAI({apiKey: "FAKE_KEY_FOR_DEV"});
-    } else {
-        this.ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const storedKey = this.getStoredApiKey();
+    if (storedKey) {
+      this.ai = new GoogleGenAI({ apiKey: storedKey });
     }
+  }
+
+  setApiKey(key: string) {
+    if (!key) return;
+    localStorage.setItem(this.apiKeyKey, key);
+    this.ai = new GoogleGenAI({ apiKey: key });
+  }
+
+  getStoredApiKey(): string | null {
+    return localStorage.getItem(this.apiKeyKey);
+  }
+
+  hasApiKey(): boolean {
+    return !!this.ai;
   }
 
   async parseFinancialData(textToParse: string, userInstructions: string): Promise<MonthlyReport[]> {
@@ -72,6 +82,10 @@ ${userInstructions || 'Nessuna istruzione specifica fornita. Analizza il testo b
 Analizza il testo e restituisci i dati come oggetto JSON contenente un array di resoconti mensili.
 Se una spesa non ha un importo valido, ignorala. Assicurati che ogni resoconto abbia anno, mese, data stipendio e saldo.
 `;
+
+    if (!this.ai) {
+        throw new Error("API Key Gemini non configurata. Inseriscila nella sezione dedicata.");
+    }
 
     try {
       const response = await this.ai.models.generateContent({

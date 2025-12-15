@@ -26,6 +26,33 @@ export class ImportExportComponent {
   isLoading = signal(false);
   errorMessage = signal('');
   successMessage = signal('');
+  
+  // API Key management
+  apiKey = signal('');
+  showApiKeyInput = signal(false);
+
+  constructor() {
+    // Pre-fill if exists
+    const stored = this.geminiService.getStoredApiKey();
+    if (stored) {
+        this.apiKey.set(stored);
+    } else {
+        this.showApiKeyInput.set(true);
+    }
+  }
+
+  toggleApiKeyInput() {
+    this.showApiKeyInput.update(v => !v);
+  }
+
+  saveApiKey() {
+    if (this.apiKey()) {
+        this.geminiService.setApiKey(this.apiKey());
+        this.successMessage.set('API Key salvata con successo.');
+        this.showApiKeyInput.set(false);
+        setTimeout(() => this.successMessage.set(''), 3000);
+    }
+  }
 
   setActiveTab(tab: Tab) {
     this.activeTab.set(tab);

@@ -19,6 +19,38 @@
   <div class="pt-6">
     @if (activeTab() === 'import') {
       <div class="space-y-6">
+        <!-- API Key Configuration -->
+        <div class="bg-gray-700/50 p-4 rounded-md border border-gray-600">
+            <div class="flex justify-between items-center mb-4 cursor-pointer" (click)="toggleApiKeyInput()">
+                <h3 class="text-sm font-medium text-gray-200 flex items-center">
+                    <svg class="w-5 h-5 mr-2 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path></svg>
+                    Configurazione API Key Gemini
+                </h3>
+                <svg [class.rotate-180]="showApiKeyInput()" class="w-5 h-5 text-gray-400 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            
+            @if (showApiKeyInput()) {
+                <div class="space-y-3 animate-fade-in">
+                    <div>
+                        <label for="api-key" class="block text-xs font-medium text-gray-400 mb-1">Google Gemini API Key</label>
+                        <div class="flex gap-2">
+                            <input type="password" id="api-key" 
+                                [ngModel]="apiKey()" (ngModelChange)="apiKey.set($event)"
+                                class="flex-1 bg-gray-900 border border-gray-600 rounded-md py-2 px-3 text-sm text-white focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+                                placeholder="Inserisci la tua API Key qui...">
+                            <button (click)="saveApiKey()" class="px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-md transition-colors">
+                                Salva
+                            </button>
+                        </div>
+                        <p class="mt-1 text-xs text-gray-500">La chiave è necessaria per l'analisi e viene salvata solo nel tuo browser.</p>
+                        <p class="mt-1 text-xs text-gray-500"><a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-indigo-400 underline">Ottieni una chiave qui</a></p>
+                    </div>
+                </div>
+            }
+        </div>
+
         <div>
           <label for="text-to-parse" class="block text-sm font-medium text-gray-300">Testo da Analizzare</label>
           <p class="text-xs text-gray-500 mb-2">Incolla qui i dati del tuo resoconto o carica un file di testo (.txt, .csv, .md).</p>
