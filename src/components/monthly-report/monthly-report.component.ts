@@ -81,6 +81,23 @@ export class MonthlyReportComponent {
     return `${this.monthPickerLongNames[month - 1]} ${year}`;
   });
 
+  monthsWithData = computed(() => {
+    const reports = this.storageService.appData().reports;
+    const dataSet = new Set<string>();
+    reports.forEach(r => {
+      if (r.payday) {
+        dataSet.add(`${r.year}-${r.month}`);
+      }
+    });
+    return dataSet;
+  });
+
+  hasDataForMonth(monthIndex: number): boolean {
+    const year = this.pickerYear();
+    const month = monthIndex + 1;
+    return this.monthsWithData().has(`${year}-${month}`);
+  }
+
   private initialized = false;
 
   constructor() {

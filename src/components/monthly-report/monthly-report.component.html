@@ -33,9 +33,12 @@
                 @for(month of monthPickerShortNames; track $index) {
                     <button 
                         (click)="selectMonth($index)"
-                        class="p-2 rounded-md text-sm font-medium transition-colors"
+                        class="p-2 rounded-md text-sm font-medium transition-colors relative flex flex-col items-center justify-center h-10"
                         [class]="pickerYear() == currentMonthYear().split('-')[0] && $index + 1 == currentMonthYear().split('-')[1] ? 'bg-indigo-600 text-white font-bold' : 'hover:bg-gray-700 text-gray-300'">
                         {{ month }}
+                        @if (hasDataForMonth($index)) {
+                           <span class="absolute bottom-1 w-1.5 h-1.5 bg-green-500 rounded-full"></span>
+                        }
                     </button>
                 }
             </div>
