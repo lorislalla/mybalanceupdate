@@ -5,11 +5,13 @@ import { DragDropModule, CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-
 import { StorageService } from '../../services/storage.service';
 import { MonthlyReport, Expense } from '../../models/financial-data.model';
 
+import { TextFieldModule } from '@angular/cdk/text-field';
+
 @Component({
   selector: 'app-monthly-report',
   templateUrl: './monthly-report.component.html',
   providers: [DatePipe],
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, DragDropModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, DragDropModule, TextFieldModule],
   styles: [`
     .cdk-drag-preview {
         box-sizing: border-box;
@@ -30,6 +32,15 @@ import { MonthlyReport, Expense } from '../../models/financial-data.model';
     }
     .cdk-drop-list-dragging .cdk-drag {
         transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+    }
+    /* Hide Spinners */
+    .no-spin::-webkit-inner-spin-button, 
+    .no-spin::-webkit-outer-spin-button { 
+      -webkit-appearance: none; 
+      margin: 0; 
+    }
+    .no-spin {
+      -moz-appearance: textfield;
     }
   `]
 })

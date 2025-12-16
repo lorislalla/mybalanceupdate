@@ -1,6 +1,6 @@
 <div class="space-y-8">
   <!-- Search Expenses -->
-  <div class="bg-gray-800 p-4 sm:p-6 rounded-lg shadow-lg">
+  <div class="bg-gray-800/80 backdrop-blur-sm p-4 sm:p-6 rounded-xl shadow-lg border border-gray-700/50">
     <h2 class="text-2xl font-bold text-indigo-400 mb-4">Cerca Spese</h2>
     <div class="mb-4">
       <input 
@@ -36,7 +36,7 @@
   </div>
   
   <!-- Overall Balance Chart -->
-  <div class="bg-gray-800 p-4 sm:p-6 rounded-lg shadow-lg">
+  <div class="bg-gray-800/80 backdrop-blur-sm p-4 sm:p-6 rounded-xl shadow-lg border border-gray-700/50">
     <h1 class="text-2xl font-bold text-indigo-400 mb-4">Andamento del Saldo Complessivo</h1>
 
     @if (chartData().length > 1) {
@@ -53,7 +53,7 @@
   </div>
 
   <!-- Last 12 Months Balance Chart -->
-  <div class="bg-gray-800 p-4 sm:p-6 rounded-lg shadow-lg">
+  <div class="bg-gray-800/80 backdrop-blur-sm p-4 sm:p-6 rounded-xl shadow-lg border border-gray-700/50">
     <h1 class="text-2xl font-bold text-indigo-400 mb-4">Andamento Ultimo Anno</h1>
 
     @if (last12MonthsChartData().length > 1) {
@@ -70,7 +70,7 @@
   </div>
 
   <!-- Salary Trend Chart -->
-  <div class="bg-gray-800 p-4 sm:p-6 rounded-lg shadow-lg">
+  <div class="bg-gray-800/80 backdrop-blur-sm p-4 sm:p-6 rounded-xl shadow-lg border border-gray-700/50">
     <h1 class="text-2xl font-bold text-indigo-400 mb-4">Andamento degli Stipendi</h1>
 
     @if (salaryChartData().length > 1) {
