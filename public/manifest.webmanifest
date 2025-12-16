@@ -1,6 +1,6 @@
 {
-  "name": "Bilancio Mensile AI",
-  "short_name": "Bilancio AI",
+  "name": "MyBalanceUpdate",
+  "short_name": "MyBalanceUpdate",
   "theme_color": "#111827",
   "background_color": "#111827",
   "display": "standalone",
