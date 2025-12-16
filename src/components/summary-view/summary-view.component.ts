@@ -66,24 +66,6 @@ export class SummaryViewComponent {
               balance: r.salary || 0,
               label: 'Stipendio'
           });
-          
-          // 14th
-          if (r.month === 6 && (r.salary14 || 0) > 0) {
-              points.push({
-                  date: new Date(r.year, 5, 15), // June 15
-                  balance: r.salary14!,
-                  label: '14ª Mensilità'
-              });
-          }
-          
-          // 13th
-          if (r.month === 12 && (r.salary13 || 0) > 0) {
-               points.push({
-                  date: new Date(r.year, 11, 15), // Dec 15
-                  balance: r.salary13!,
-                  label: '13ª Mensilità'
-              });
-          }
       }
       return points.sort((a, b) => a.date.getTime() - b.date.getTime());
   });
@@ -139,17 +121,17 @@ export class SummaryViewComponent {
 
   constructor() {
     effect(() => {
-      this.drawGenericChart(this.chartData(), this.chartContainer(), { isLast12Months: false });
+      this.drawGenericChart(this.chartData(), this.chartContainer(), { isLast12Months: false, startFromZero: true });
     });
     effect(() => {
-      this.drawGenericChart(this.last12MonthsChartData(), this.last12MonthsChartContainer(), { isLast12Months: true });
+      this.drawGenericChart(this.last12MonthsChartData(), this.last12MonthsChartContainer(), { isLast12Months: true, startFromZero: false });
     });
     effect(() => {
-      this.drawGenericChart(this.salaryChartData(), this.salaryChartContainer(), { isLast12Months: false });
+      this.drawGenericChart(this.salaryChartData(), this.salaryChartContainer(), { isLast12Months: false, startFromZero: false });
     });
   }
   
-  private drawGenericChart(data: ChartDataPoint[], chartContainer: ElementRef | undefined, options: { isLast12Months: boolean }) {
+  private drawGenericChart(data: ChartDataPoint[], chartContainer: ElementRef | undefined, options: { isLast12Months: boolean; startFromZero: boolean }) {
     if (!chartContainer || data.length < 2) {
        if (chartContainer) {
          d3.select(chartContainer.nativeElement).select('svg').remove();
@@ -177,7 +159,9 @@ export class SummaryViewComponent {
       .range([0, width]);
 
     const y = d3.scaleLinear()
-      .domain([0, d3.max(data, (d: ChartDataPoint) => d.balance * 1.1) || 1000])
+      .domain(options.startFromZero
+        ? [0, d3.max(data, (d: ChartDataPoint) => d.balance * 1.1) || 1000]
+        : [d3.min(data, (d: ChartDataPoint) => d.balance) * 0.9, d3.max(data, (d: ChartDataPoint) => d.balance) * 1.1])
       .range([height, 0]);
 
     // --- Clipping ---
