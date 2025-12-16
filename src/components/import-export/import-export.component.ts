@@ -75,6 +75,30 @@ export class ImportExportComponent {
     }
   }
 
+  async onBackupFileSelected(event: Event) {
+      const input = event.target as HTMLInputElement;
+      if (input.files && input.files[0]) {
+          const file = input.files[0];
+          try {
+              const text = await this.fileHandlerService.readFileAsText(file);
+              const data = JSON.parse(text) as AppData;
+              
+              if (confirm('Sei sicuro di voler ripristinare questo backup? I dati esistenti verranno sovrascritti o aggiornati.')) {
+                  this.isLoading.set(true);
+                  await this.storageService.restoreBackup(data);
+                  this.successMessage.set('Ripristino backup completato con successo!');
+                  this.isLoading.set(false);
+              }
+              // Reset input
+              input.value = '';
+          } catch (e) {
+              console.error('Error restoring backup:', e);
+              this.errorMessage.set('Errore: Il file non è un backup valido.');
+              this.isLoading.set(false);
+          }
+      }
+  }
+
   async handleImport() {
     if (!this.textToParse()) {
       this.errorMessage.set('Per favore, inserisci del testo o carica un file da analizzare.');

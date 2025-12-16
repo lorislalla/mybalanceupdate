@@ -81,4 +81,20 @@ export class StorageService {
           console.error('Error syncing calculator items:', e);
       }
   }
+  async restoreBackup(data: AppData) {
+      // 1. Restore reports
+      if (data.reports && Array.isArray(data.reports)) {
+          await this.importData(data.reports);
+      }
+      
+      // 2. Restore global notes
+      if (data.globalNotes) {
+          await this.updateGlobalNotes(data.globalNotes);
+      }
+
+      // 3. Restore calculator items
+      if (data.calculatorItems && Array.isArray(data.calculatorItems)) {
+          await this.updateCalculatorItems(data.calculatorItems);
+      }
+  }
 }

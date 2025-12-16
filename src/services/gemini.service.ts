@@ -45,6 +45,9 @@ export class GeminiService {
               month: { type: Type.NUMBER, description: "Il mese del resoconto (1 per Gennaio, 12 per Dicembre)" },
               payday: { type: Type.STRING, description: "La data dello stipendio in formato YYYY-MM-DD." },
               balance: { type: Type.NUMBER, description: "Il saldo del conto il giorno dello stipendio." },
+              salary: { type: Type.NUMBER, description: "Lo stipendio netto mensile se indicato separatamente." },
+              salary13: { type: Type.NUMBER, description: "Importo della tredicesima mensilità (solitamente Dicembre)." },
+              salary14: { type: Type.NUMBER, description: "Importo della quattordicesima mensilità (solitamente Giugno)." },
               expenses: {
                 type: Type.ARRAY,
                 items: {
