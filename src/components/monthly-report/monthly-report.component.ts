@@ -117,6 +117,17 @@ export class MonthlyReportComponent {
         notes: ''
       };
       this.report.set(newReport);
+      
+      // Handle auto-edit after month switch (e.g. from repeatExpense)
+      if (this.pendingEditId) {
+          const expenseToEdit = newReport.expenses.find(e => e.id === this.pendingEditId);
+          if (expenseToEdit) {
+              // Delay slightly to ensure UI has rendered the list (although signal update might be enough, safe to just set it)
+              // But editExpenseForm needs to be set.
+               this.startEditing(expenseToEdit);
+          }
+          this.pendingEditId = null; 
+      }
     }, { allowSignalWrites: true });
 
     effect(() => {
@@ -239,6 +250,9 @@ export class MonthlyReportComponent {
   }
 
   // --- Repeat Expense Method ---
+  private pendingEditId: string | null = null;
+
+  // --- Repeat Expense Method ---
   async repeatExpense(expense: Expense) {
     const [year, month] = this.currentMonthYear().split('-').map(Number);
     // Calculate next month
@@ -259,6 +273,7 @@ export class MonthlyReportComponent {
         month: nextMonth,
         payday: '',
         balance: 0,
+        salary: 0,
         expenses: [],
         notes: ''
       };
@@ -278,8 +293,10 @@ export class MonthlyReportComponent {
     // Save
     await this.storageService.updateReport(updatedNextReport);
     
-    // Optional: User feedback (could use a snackbar, but for now console/alert or just UI update if we were looking at that month)
-    alert(`Spesa "${expense.description}" copiata nel mese di ${this.monthPickerLongNames[nextMonth - 1]} ${nextYear}`);
+    // Set pending edit ID and switch to next month
+    this.pendingEditId = newExpense.id;
+    const newMonthYear = `${nextYear}-${nextMonth.toString().padStart(2, '0')}`;
+    this.currentMonthYear.set(newMonthYear);
   }
 
   // --- Delete Expense Methods ---
