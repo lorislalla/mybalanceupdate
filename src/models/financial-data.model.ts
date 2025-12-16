@@ -4,6 +4,12 @@ export interface Expense {
   amount: number;
 }
 
+export interface Income {
+  id: string;
+  description: string;
+  amount: number;
+}
+
 export interface MonthlyReport {
   year: number;
   month: number; // 1-12
@@ -12,6 +18,7 @@ export interface MonthlyReport {
   salary?: number; // Optional strictly speaking for old data, but we'll default to 0
   salary13?: number; // Tredicesima (December)
   salary14?: number; // Quattordicesima (June)
+  incomes: Income[];
   expenses: Expense[];
   notes: string;
 }

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { createClient, SupabaseClient, User, RealtimeChannel } from '@supabase/supabase-js';
 import { environment } from '../environments/environment';
-import { MonthlyReport, CalculatorItem } from '../models/financial-data.model';
+import { MonthlyReport, CalculatorItem, Income } from '../models/financial-data.model';
 import { BehaviorSubject, from, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
@@ -117,7 +117,7 @@ export class SupabaseService {
     const user = this.userSubject.value;
     if (!user) return;
 
-    // Ensure expenses is JSON-ready (should be already, but safety first)
+    // Ensure expenses and incomes are JSON-ready (should be already, but safety first)
     const { data, error } = await this.supabase
       .from('monthly_reports')
       .upsert({
@@ -129,6 +129,7 @@ export class SupabaseService {
         salary: report.salary || 0,
         salary_13: report.salary13 || 0,
         salary_14: report.salary14 || 0,
+        incomes: report.incomes,
         notes: report.notes,
         expenses: report.expenses
       }, { onConflict: 'user_id, year, month' })
@@ -236,7 +237,8 @@ export class SupabaseService {
     const mapReport = (r: any): MonthlyReport => ({
         ...r,
         salary13: r.salary_13,
-        salary14: r.salary_14
+        salary14: r.salary_14,
+        incomes: r.incomes || []
     });
 
     if (payload.eventType === 'INSERT') {

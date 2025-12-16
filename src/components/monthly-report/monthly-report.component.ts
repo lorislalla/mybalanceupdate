@@ -3,7 +3,7 @@ import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { DragDropModule, CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { StorageService } from '../../services/storage.service';
-import { MonthlyReport, Expense } from '../../models/financial-data.model';
+import { MonthlyReport, Expense, Income } from '../../models/financial-data.model';
 
 import { TextFieldModule } from '@angular/cdk/text-field';
 
@@ -70,6 +70,11 @@ export class MonthlyReportComponent {
     amount: [null as number | null, [Validators.required, Validators.min(50)]]
   });
 
+  newIncomeForm = this.fb.group({
+    description: ['', Validators.required],
+    amount: [null as number | null, [Validators.required, Validators.min(0)]]
+  });
+
   // Signals for editing
   editingExpenseId = signal<string | null>(null);
   editExpenseForm = this.fb.group({
@@ -77,9 +82,18 @@ export class MonthlyReportComponent {
     amount: [null as number | null, [Validators.required, Validators.min(50)]]
   });
 
+  editingIncomeId = signal<string | null>(null);
+  editIncomeForm = this.fb.group({
+    description: ['', Validators.required],
+    amount: [null as number | null, [Validators.required, Validators.min(0)]]
+  });
+
   // Signals for delete confirmation
   showDeleteConfirmation = signal(false);
   expenseToDelete = signal<Expense | null>(null);
+
+  showDeleteIncomeConfirmation = signal(false);
+  incomeToDelete = signal<Income | null>(null);
 
   // Signals for custom month picker
   isMonthPickerOpen = signal(false);
@@ -124,6 +138,7 @@ export class MonthlyReportComponent {
         payday: '',
         balance: 0,
         salary: 0,
+        incomes: [],
         expenses: [],
         notes: ''
       };
@@ -178,6 +193,15 @@ export class MonthlyReportComponent {
 
   totalExpenses = computed(() => {
     return this.report()?.expenses.reduce((acc, exp) => acc + exp.amount, 0) ?? 0;
+  });
+
+  totalIncomes = computed(() => {
+    return this.report()?.incomes?.reduce((acc, inc) => acc + inc.amount, 0) ?? 0;
+  });
+
+  totalSalary = computed(() => {
+    const report = this.report();
+    return (report?.salary || 0) + this.totalIncomes() + (report?.salary13 || 0) + (report?.salary14 || 0);
   });
 
   changeMonth(delta: number) {
@@ -279,16 +303,17 @@ export class MonthlyReportComponent {
     let nextReport = this.storageService.getReport(nextYear, nextMonth);
 
     if (!nextReport) {
-      nextReport = {
-        year: nextYear,
-        month: nextMonth,
-        payday: '',
-        balance: 0,
-        salary: 0,
-        expenses: [],
-        notes: ''
-      };
-    }
+       nextReport = {
+         year: nextYear,
+         month: nextMonth,
+         payday: '',
+         balance: 0,
+         salary: 0,
+         incomes: [],
+         expenses: [],
+         notes: ''
+       };
+     }
 
     // Add the expense
     const newExpense: Expense = {
@@ -333,8 +358,104 @@ export class MonthlyReportComponent {
       const updatedExpenses = currentReport.expenses.filter(exp => exp.id !== expenseIdToDelete);
       this.updateReportField('expenses', updatedExpenses);
     }
-    
+
     this.cancelDelete();
+  }
+
+  // --- Income Methods ---
+  addIncome() {
+    if (this.newIncomeForm.valid) {
+      const { description, amount } = this.newIncomeForm.value;
+      const currentReport = this.report();
+
+      if (currentReport && description && amount != null) {
+        const newIncome: Income = {
+          id: crypto.randomUUID(),
+          description,
+          amount
+        };
+        const updatedIncomes = [...currentReport.incomes, newIncome];
+        this.updateReportField('incomes', updatedIncomes);
+        this.newIncomeForm.reset();
+      }
+    }
+  }
+
+  startEditingIncome(income: Income) {
+    this.editingIncomeId.set(income.id);
+    this.editIncomeForm.setValue({
+      description: income.description,
+      amount: income.amount
+    });
+  }
+
+  cancelEditingIncome() {
+    this.editingIncomeId.set(null);
+  }
+
+  saveIncome() {
+    if (this.editIncomeForm.invalid || !this.editingIncomeId()) {
+      return;
+    }
+
+    const currentReport = this.report();
+    const { description, amount } = this.editIncomeForm.value;
+
+    if (currentReport && description && amount != null) {
+      const updatedIncomes = currentReport.incomes.map(inc =>
+        inc.id === this.editingIncomeId()
+          ? { ...inc, description, amount }
+          : inc
+      );
+      this.updateReportField('incomes', updatedIncomes);
+      this.cancelEditingIncome();
+    }
+  }
+
+  promptDeleteIncome(income: Income) {
+    this.incomeToDelete.set(income);
+    this.showDeleteIncomeConfirmation.set(true);
+  }
+
+  cancelDeleteIncome() {
+    this.incomeToDelete.set(null);
+    this.showDeleteIncomeConfirmation.set(false);
+  }
+
+  confirmDeleteIncome() {
+    const incomeIdToDelete = this.incomeToDelete()?.id;
+    if (!incomeIdToDelete) {
+      this.cancelDeleteIncome();
+      return;
+    }
+
+    const currentReport = this.report();
+    if (currentReport) {
+      const updatedIncomes = currentReport.incomes.filter(inc => inc.id !== incomeIdToDelete);
+      this.updateReportField('incomes', updatedIncomes);
+    }
+
+    this.cancelDeleteIncome();
+  }
+
+  addIncomePrompt() {
+    const description = prompt('Descrizione entrata:');
+    if (!description) return;
+    const amountStr = prompt('Importo entrata:');
+    if (!amountStr) return;
+    const amount = parseFloat(amountStr);
+    if (isNaN(amount) || amount <= 0) return;
+
+    const currentReport = this.report();
+    if (currentReport) {
+      const newIncome: Income = {
+        id: crypto.randomUUID(),
+        description,
+        amount
+      };
+      const updatedIncomes = [...(currentReport.incomes || []), newIncome];
+      this.updateReportField('incomes', updatedIncomes);
+    }
   }
 
   // --- Custom Month Picker Methods ---
