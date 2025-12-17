@@ -201,13 +201,6 @@
              </div>
           </div>
 
-          <!-- Quick Stats (Moved from Right Col) - DESKTOP ONLY -->
-          <div class="hidden lg:block bg-indigo-900/20 p-4 rounded-xl border border-indigo-500/20">
-             <h4 class="text-indigo-400 text-xs font-bold uppercase mb-2">Statistiche Veloci</h4>
-             <p class="text-gray-400 text-xs">Spese maggiori di 50€: <span class="text-white font-bold">{{ currentReport.expenses.length }}</span></p>
-             <p class="text-gray-400 text-xs mt-1">Media per spesa: <span class="text-white font-bold">{{ (currentReport.expenses.length ? (totalExpenses() / currentReport.expenses.length) : 0) | number:'1.0-0' }} €</span></p>
-          </div>
-
           <!-- Notes (Desktop only here, autosize) -->
           <div class="hidden lg:block bg-gray-800/80 backdrop-blur-sm p-4 rounded-xl border border-gray-700/50 shadow-lg h-auto">
              <label class="block text-[10px] uppercase font-bold text-gray-500 tracking-wider mb-1">Note del Mese</label>
@@ -216,6 +209,13 @@
                        [cdkAutosizeMinRows]="3"
                        class="w-[calc(100%-1.7rem)] box-content bg-gray-900/50 border border-gray-700 rounded-lg p-3 text-sm text-gray-300 resize-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 placeholder-gray-600"
                        placeholder="Scrivi qui..."></textarea>
+          </div>
+
+          <!-- Quick Stats (Moved from Right Col) - DESKTOP ONLY -->
+          <div class="hidden lg:block bg-indigo-900/20 p-4 rounded-xl border border-indigo-500/20">
+             <h4 class="text-indigo-400 text-xs font-bold uppercase mb-2">Statistiche Veloci</h4>
+             <p class="text-gray-400 text-xs">Spese maggiori di 50€: <span class="text-white font-bold">{{ currentReport.expenses.length }}</span></p>
+             <p class="text-gray-400 text-xs mt-1">Media per spesa: <span class="text-white font-bold">{{ (currentReport.expenses.length ? (totalExpenses() / currentReport.expenses.length) : 0) | number:'1.0-0' }} €</span></p>
           </div>
       </div>
 
@@ -293,13 +293,6 @@
             }
          </div>
 
-         <!-- Quick Stats (Duplicate for MOBILE - Bottom) -->
-         <div class="block lg:hidden bg-indigo-900/20 p-4 rounded-xl border border-indigo-500/20">
-             <h4 class="text-indigo-400 text-xs font-bold uppercase mb-2">Statistiche Veloci</h4>
-             <p class="text-gray-400 text-xs">Spese maggiori di 50€: <span class="text-white font-bold">{{ currentReport.expenses.length }}</span></p>
-             <p class="text-gray-400 text-xs mt-1">Media per spesa: <span class="text-white font-bold">{{ (currentReport.expenses.length ? (totalExpenses() / currentReport.expenses.length) : 0) | number:'1.0-0' }} €</span></p>
-         </div>
-
          <!-- Notes (Mobile Only - moved here to be at bottom of flow on mobile) -->
           <div class="block lg:hidden bg-gray-800/80 backdrop-blur-sm p-4 rounded-xl border border-gray-700/50 shadow-lg">
              <label class="block text-[10px] uppercase font-bold text-gray-500 tracking-wider mb-1">Note del Mese</label>
@@ -309,6 +302,13 @@
                        class="w-[calc(100%-1.7rem)] box-content bg-gray-900/50 border border-gray-700 rounded-lg p-3 text-sm text-gray-300 resize-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 placeholder-gray-600"
                        placeholder="Scrivi qui..."></textarea>
           </div>
+
+         <!-- Quick Stats (Duplicate for MOBILE - Bottom) -->
+         <div class="block lg:hidden bg-indigo-900/20 p-4 rounded-xl border border-indigo-500/20">
+             <h4 class="text-indigo-400 text-xs font-bold uppercase mb-2">Statistiche Veloci</h4>
+             <p class="text-gray-400 text-xs">Spese maggiori di 50€: <span class="text-white font-bold">{{ currentReport.expenses.length }}</span></p>
+             <p class="text-gray-400 text-xs mt-1">Media per spesa: <span class="text-white font-bold">{{ (currentReport.expenses.length ? (totalExpenses() / currentReport.expenses.length) : 0) | number:'1.0-0' }} €</span></p>
+         </div>
       </div>
     </div>
   }
