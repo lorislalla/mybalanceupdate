@@ -201,9 +201,9 @@
                      <span class="text-lg font-bold text-gray-200">{{ currentReport.balance | number:'1.0-0' }} €</span>
                  </div>
 
-                 <!-- Net Salary -->
-                 <div class="flex justify-between items-center group/salary">
-                     <span class="text-sm text-gray-400">Stipendio</span>
+                  <!-- Net Salary -->
+                  <div class="flex justify-between items-center group/salary">
+                     <span class="text-sm text-gray-400">{{ salaryLabel() }}</span>
                      <div class="flex items-center justify-end gap-0.5">
                         <input type="number" 
                                [ngModel]="currentReport.salary === 0 ? null : currentReport.salary" 
@@ -330,6 +330,8 @@
           <div class="bg-indigo-900/20 p-4 rounded-xl border border-indigo-500/20">
              <h4 class="text-indigo-400 text-xs font-bold uppercase mb-2">Statistiche Veloci</h4>
              <p class="text-gray-400 text-xs">Spese maggiori di 50€: <span class="text-white font-bold">{{ currentReport.expenses.length }}</span></p>
+             <p class="text-gray-400 text-xs mt-1">Spese condivise: <span class="text-white font-bold">{{ sharedExpensesCount() }}</span></p>
+             <p class="text-gray-400 text-xs mt-1">Importo spese condivise: <span class="text-white font-bold">{{ sharedExpensesTotal() | number:'1.0-0' }} €</span></p>
              <p class="text-gray-400 text-xs mt-1">Media per spesa: <span class="text-white font-bold">{{ (currentReport.expenses.length ? (totalExpenses() / currentReport.expenses.length) : 0) | number:'1.0-0' }} €</span></p>
           </div>
       </div>

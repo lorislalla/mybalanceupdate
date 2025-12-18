@@ -85,11 +85,18 @@ export class SummaryViewComponent {
   salaryChartData = computed<ChartDataPoint[]>(() => {
       const points: ChartDataPoint[] = [];
       for (const r of this.salaryReports()) {
-          // Main Salary
+          // Calculate previous month label
+          let prevMonth = r.month - 1;
+          let prevYear = r.year;
+          if (prevMonth === 0) {
+            prevMonth = 12;
+            prevYear -= 1;
+          }
+          
           points.push({
               date: new Date(r.year, r.month - 1, 1),
               balance: r.salary || 0,
-              label: 'Stipendio'
+              label: `Stipendio ${prevMonth}/${prevYear}`
           });
       }
       return points.sort((a, b) => a.date.getTime() - b.date.getTime());

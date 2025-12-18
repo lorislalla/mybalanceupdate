@@ -108,6 +108,17 @@ export class MonthlyReportComponent {
     return `${this.monthPickerLongNames[month - 1]} ${year}`;
   });
 
+  salaryLabel = computed(() => {
+    const [year, month] = this.currentMonthYear().split('-').map(Number);
+    let prevMonth = month - 1;
+    let prevYear = year;
+    if (prevMonth === 0) {
+      prevMonth = 12;
+      prevYear -= 1;
+    }
+    return `Stipendio ${prevMonth}/${prevYear}`;
+  });
+
   monthsWithData = computed(() => {
     const reports = this.storageService.appData().reports;
     const dataSet = new Set<string>();
@@ -182,6 +193,16 @@ export class MonthlyReportComponent {
   totalSalary = computed(() => {
     const report = this.report();
     return (report?.salary || 0) + this.totalIncomes() + (report?.salary13 || 0) + (report?.salary14 || 0);
+  });
+
+  sharedExpensesCount = computed(() => {
+    return this.report()?.expenses.filter(e => e.shared).length ?? 0;
+  });
+
+  sharedExpensesTotal = computed(() => {
+    return this.report()?.expenses
+      .filter(e => e.shared)
+      .reduce((acc, exp) => acc + (exp.totalAmount || exp.amount * 2), 0) ?? 0;
   });
 
   changeMonth(delta: number) {
