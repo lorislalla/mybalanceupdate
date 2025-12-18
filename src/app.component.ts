@@ -48,7 +48,7 @@ export class AppComponent {
       // Check for updates on load
       this.swUpdate.checkForUpdate();
 
-      // Check for updates every hour (60 * 60 * 1000 ms)
+      // Check for updates every minute (60 * 1000 ms)
       interval(60 * 1000).subscribe(() => {
         this.swUpdate.checkForUpdate();
       });
