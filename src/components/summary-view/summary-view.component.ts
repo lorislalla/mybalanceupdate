@@ -12,12 +12,7 @@ interface ChartDataPoint {
   label?: string;
 }
 
-interface SearchResult {
-  description: string;
-  amount: number;
-  year: number;
-  month: number;
-}
+
 
 
 @Component({
@@ -83,41 +78,7 @@ export class SummaryViewComponent {
       }));
   });
 
-  // --- Search Functionality ---
-  searchQuery = signal('');
-  
-  private monthNames = ['Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno', 'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'];
-  
-  searchResults = computed<SearchResult[]>(() => {
-    const query = this.searchQuery().trim().toLowerCase();
-    if (!query) {
-      return [];
-    }
 
-    const allExpenses: SearchResult[] = [];
-    const allReports = this.storageService.appData().reports;
-
-    for (const report of allReports) {
-      for (const expense of report.expenses) {
-        if (expense.description.toLowerCase().includes(query)) {
-          allExpenses.push({
-            description: expense.description,
-            amount: expense.amount,
-            year: report.year,
-            month: report.month
-          });
-        }
-      }
-    }
-    
-    // Sort results by date descending
-    return allExpenses.sort((a, b) => new Date(b.year, b.month - 1).getTime() - new Date(a.year, a.month - 1).getTime());
-  });
-  
-  getMonthName(month: number): string {
-    return this.monthNames[month - 1] || '';
-  }
-  // --- End Search Functionality ---
 
   constructor() {
     effect(() => {

@@ -8,6 +8,8 @@ import { SupabaseService } from './supabase.service';
 export class StorageService {
   // We keep the appData signal structure for compatibility with existing components
   appData: WritableSignal<AppData> = signal({ reports: [], globalNotes: '', calculatorItems: [] });
+  activeMonthYear = signal<string>(new Date().toISOString().substring(0, 7)); // Default to current month YYYY-MM
+  initialized = signal(false);
 
   constructor(private supabase: SupabaseService) {
     // Subscribe to Supabase data streams
@@ -22,6 +24,21 @@ export class StorageService {
     this.supabase.calculatorItems$.subscribe(calculatorItems => {
         this.appData.update(current => ({ ...current, calculatorItems }));
     });
+  }
+
+  getFirstIncompleteMonth(): string {
+    const reports = this.appData().reports;
+    if (reports.length === 0) return new Date().toISOString().substring(0, 7);
+
+    const sortedAsc = [...reports].sort((a,b) => 
+        new Date(a.year, a.month - 1).getTime() - new Date(b.year, b.month - 1).getTime()
+    );
+
+    const firstIncomplete = sortedAsc.find(r => !r.payday);
+    if (firstIncomplete) {
+        return `${firstIncomplete.year}-${firstIncomplete.month.toString().padStart(2, '0')}`;
+    }
+    return new Date().toISOString().substring(0, 7);
   }
 
   getReport(year: number, month: number): MonthlyReport | undefined {

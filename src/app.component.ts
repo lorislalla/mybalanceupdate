@@ -7,12 +7,13 @@ import { ImportExportComponent } from './components/import-export/import-export.
 import { GlobalNotesComponent } from './components/global-notes/global-notes.component';
 import { LoginComponent } from './components/login/login.component';
 import { CalculatorComponent } from './components/calculator/calculator.component';
+import { SearchExpensesComponent } from './components/search-expenses/search-expenses.component';
 import { SupabaseService } from './services/supabase.service';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { SwUpdate } from '@angular/service-worker';
 import { filter, interval } from 'rxjs';
 
-type View = 'monthly' | 'summary' | 'import-export' | 'calculator';
+type View = 'monthly' | 'summary' | 'import-export' | 'calculator' | 'search';
 
 @Component({
   selector: 'app-root',
@@ -26,7 +27,8 @@ type View = 'monthly' | 'summary' | 'import-export' | 'calculator';
     ImportExportComponent,
     GlobalNotesComponent,
     LoginComponent,
-    CalculatorComponent
+    CalculatorComponent,
+    SearchExpensesComponent
   ],
 })
 export class AppComponent {

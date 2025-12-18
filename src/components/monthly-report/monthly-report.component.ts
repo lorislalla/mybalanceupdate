@@ -61,7 +61,7 @@ export class MonthlyReportComponent {
   private datePipe: DatePipe = inject(DatePipe);
 
   today = new Date();
-  currentMonthYear = signal<string>(this.getDateString(this.today)); // Initial value, updated in effect
+  currentMonthYear = this.storageService.activeMonthYear; // Shared signal from storage service
   
   report = signal<MonthlyReport | undefined>(undefined);
   
@@ -123,7 +123,7 @@ export class MonthlyReportComponent {
     return this.monthsWithData().has(`${year}-${month}`);
   }
 
-  private initialized = false;
+
 
   constructor() {
     effect(() => {
@@ -158,31 +158,9 @@ export class MonthlyReportComponent {
 
     effect(() => {
         // 2. One-time initialization logic: find first incomplete month
-        const reports = this.storageService.appData().reports; // Track changes
-        if (!this.initialized && reports.length > 0) {
-            this.initialized = true;
-            
-            // Find the *earliest* report that has no payday (meaning it's incomplete/to-do)
-            // But we probably want the earliest *future* or *current* one?
-            // "il primo mese dove NON c'è impostato il giorno dello stipendio"
-            // Let's assume reports are sorted descending by date in storage.
-            // We want to find the oldest one that is empty? No, that would be very old.
-            // Logic: Sort Ascending. Find first without payday.
-            
-            const sortedAsc = [...reports].sort((a,b) => 
-                new Date(a.year, a.month - 1).getTime() - new Date(b.year, b.month - 1).getTime()
-            );
-
-            const firstIncomplete = sortedAsc.find(r => !r.payday);
-
-            if (firstIncomplete) {
-                const dateStr = `${firstIncomplete.year}-${firstIncomplete.month.toString().padStart(2, '0')}`;
-                this.currentMonthYear.set(dateStr);
-            } else {
-                // All completed? Default to today or next month after latest?
-                // Let's stay on today as fallback.
-                this.currentMonthYear.set(this.getDateString(this.today));
-            }
+        if (!this.storageService.initialized() && this.storageService.appData().reports.length > 0) {
+            this.storageService.initialized.set(true);
+            this.storageService.activeMonthYear.set(this.storageService.getFirstIncompleteMonth());
         }
     });
   }
@@ -482,7 +460,7 @@ export class MonthlyReportComponent {
   }
   
   goToThisMonth() {
-    this.currentMonthYear.set(this.datePipe.transform(this.today, 'yyyy-MM')!);
+    this.currentMonthYear.set(this.storageService.getFirstIncompleteMonth());
     this.closeMonthPicker();
   }
 }

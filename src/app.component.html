@@ -21,6 +21,9 @@
         @case ('calculator') {
           <app-calculator></app-calculator>
         }
+        @case ('search') {
+          <app-search-expenses (navigateToMonthlyView)="currentView.set('monthly')"></app-search-expenses>
+        }
       }
     </div>
   </main>

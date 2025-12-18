@@ -18,10 +18,15 @@
                class="px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200">
                Resoconto
             </button>
+            <button (click)="setView('search')" 
+               [class]="currentView() === 'search' ? 'text-white bg-gray-800' : 'text-gray-400 hover:text-white hover:bg-gray-800/50'"
+               class="px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200">
+               Cerca
+            </button>
             <button (click)="setView('summary')" 
                [class]="currentView() === 'summary' ? 'text-white bg-gray-800' : 'text-gray-400 hover:text-white hover:bg-gray-800/50'"
                class="px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200">
-               Riepilogo
+               Grafici
             </button>
             <button (click)="setView('calculator')" 
                [class]="currentView() === 'calculator' ? 'text-white bg-gray-800' : 'text-gray-400 hover:text-white hover:bg-gray-800/50'"
@@ -66,7 +71,8 @@
   <div class="md:hidden border-t border-gray-800 bg-gray-900/95 backdrop-blur-xl animate-fade-in absolute w-full shadow-2xl">
     <div class="px-4 py-3 space-y-2">
       <button (click)="setView('monthly')" [class]="currentView() === 'monthly' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30' : 'text-gray-300 hover:bg-gray-800 hover:text-white'" class="block w-full text-left px-4 py-3 rounded-xl text-base font-bold transition-all">Resoconto Mensile</button>
-      <button (click)="setView('summary')" [class]="currentView() === 'summary' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30' : 'text-gray-300 hover:bg-gray-800 hover:text-white'" class="block w-full text-left px-4 py-3 rounded-xl text-base font-bold transition-all">Riepilogo</button>
+      <button (click)="setView('search')" [class]="currentView() === 'search' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30' : 'text-gray-300 hover:bg-gray-800 hover:text-white'" class="block w-full text-left px-4 py-3 rounded-xl text-base font-bold transition-all">Cerca Spese</button>
+      <button (click)="setView('summary')" [class]="currentView() === 'summary' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30' : 'text-gray-300 hover:bg-gray-800 hover:text-white'" class="block w-full text-left px-4 py-3 rounded-xl text-base font-bold transition-all">Grafici</button>
       <button (click)="setView('calculator')" [class]="currentView() === 'calculator' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30' : 'text-gray-300 hover:bg-gray-800 hover:text-white'" class="block w-full text-left px-4 py-3 rounded-xl text-base font-bold transition-all">Calcolatore</button>
       <button (click)="setView('import-export')" [class]="currentView() === 'import-export' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30' : 'text-gray-300 hover:bg-gray-800 hover:text-white'" class="block w-full text-left px-4 py-3 rounded-xl text-base font-bold transition-all">Dati</button>
     </div>

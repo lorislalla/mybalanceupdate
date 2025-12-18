@@ -1,7 +1,7 @@
 import { Component, ChangeDetectionStrategy, output, input, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
-type View = 'monthly' | 'summary' | 'import-export' | 'calculator';
+type View = 'monthly' | 'summary' | 'import-export' | 'calculator' | 'search';
 
 @Component({
   selector: 'app-header',
