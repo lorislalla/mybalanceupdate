@@ -1,10 +1,37 @@
-import { Component, ChangeDetectionStrategy, inject, signal, computed, ElementRef, viewChild, effect } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, signal, computed, output } from '@angular/core';
 import { CommonModule, DatePipe, formatCurrency, getLocaleCurrencySymbol } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { StorageService } from '../../services/storage.service';
-import { MonthlyReport, Expense } from '../../models/financial-data.model';
+import { MonthlyReport } from '../../models/financial-data.model';
+import { 
+  NgApexchartsModule, 
+  ApexAxisChartSeries, 
+  ApexChart, 
+  ApexXAxis, 
+  ApexDataLabels, 
+  ApexTooltip, 
+  ApexStroke, 
+  ApexGrid,
+  ApexYAxis,
+  ApexMarkers,
+  ApexTheme,
+  ApexFill
+} from "ng-apexcharts";
 
-declare var d3: any;
+export type ChartOptions = {
+  series: ApexAxisChartSeries;
+  chart: ApexChart;
+  xaxis: ApexXAxis;
+  yaxis: ApexYAxis;
+  stroke: ApexStroke;
+  tooltip: ApexTooltip;
+  dataLabels: ApexDataLabels;
+  grid: ApexGrid;
+  markers: ApexMarkers;
+  theme: ApexTheme;
+  fill: ApexFill;
+  colors: string[];
+};
 
 interface ChartDataPoint {
   date: Date;
@@ -19,16 +46,19 @@ interface ChartDataPoint {
   selector: 'app-summary-view',
   templateUrl: './summary-view.component.html',
   providers: [DatePipe],
-  imports: [CommonModule, FormsModule]
+  standalone: true,
+  imports: [CommonModule, FormsModule, NgApexchartsModule],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SummaryViewComponent {
   private storageService = inject(StorageService);
-  // FIX: Explicitly type `datePipe` to `DatePipe` to resolve type inference issue.
   private datePipe: DatePipe = inject(DatePipe);
   
-  chartContainer = viewChild<ElementRef>('chartContainer');
-  last12MonthsChartContainer = viewChild<ElementRef>('last12MonthsChartContainer');
-  salaryChartContainer = viewChild<ElementRef>('salaryChartContainer');
+  navigateToMonthlyView = output<void>();
+  
+  showConfirm = signal(false);
+  selectedMonth = signal<{year: number, month: number} | null>(null);
+  selectedMonthLabel = signal('');
   
   reports = computed(() => {
     return this.storageService.appData().reports
@@ -80,186 +110,151 @@ export class SummaryViewComponent {
 
 
 
-  constructor() {
-    effect(() => {
-      this.drawGenericChart(this.chartData(), this.chartContainer(), { isLast12Months: false, startFromZero: true });
-    });
-    effect(() => {
-      this.drawGenericChart(this.last12MonthsChartData(), this.last12MonthsChartContainer(), { isLast12Months: true, startFromZero: false });
-    });
-    effect(() => {
-      this.drawGenericChart(this.salaryChartData(), this.salaryChartContainer(), { isLast12Months: false, startFromZero: false });
-    });
-  }
-  
-  private drawGenericChart(data: ChartDataPoint[], chartContainer: ElementRef | undefined, options: { isLast12Months: boolean; startFromZero: boolean }) {
-    if (!chartContainer || data.length < 2) {
-       if (chartContainer) {
-         d3.select(chartContainer.nativeElement).select('svg').remove();
-       }
-       return;
-    };
-
-    const el = chartContainer.nativeElement;
-    d3.select(el).select('svg').remove(); // Clear previous chart
-
-    const margin = { top: 20, right: 30, bottom: 50, left: 60 };
-    const width = el.clientWidth - margin.left - margin.right;
-    const height = 400 - margin.top - margin.bottom;
-
-    const svg = d3.select(el)
-      .append('svg')
-        .attr('width', width + margin.left + margin.right)
-        .attr('height', height + margin.top + margin.bottom)
-      .append('g')
-        .attr('transform', `translate(${margin.left},${margin.top})`);
-        
-    // --- Scale ---
-    const x = d3.scaleTime()
-      .domain(d3.extent(data, (d: ChartDataPoint) => d.date) as [Date, Date])
-      .range([0, width]);
-
-    const y = d3.scaleLinear()
-      .domain(options.startFromZero
-        ? [0, d3.max(data, (d: ChartDataPoint) => d.balance * 1.1) || 1000]
-        : [d3.min(data, (d: ChartDataPoint) => d.balance) * 0.9, d3.max(data, (d: ChartDataPoint) => d.balance) * 1.1])
-      .range([height, 0]);
-
-    // --- Clipping ---
-    // Unique ID for clip path
-    const clipId = 'clip-' + (options.isLast12Months ? 'last12' : 'full') + '-' + Math.random().toString(36).substr(2, 9);
-    
-    svg.append("defs").append("clipPath")
-        .attr("id", clipId)
-        .append("rect")
-        .attr("width", width)
-        .attr("height", height);
-
-    // --- Axes ---
-    let xAxis = d3.axisBottom(x);
-    if (options.isLast12Months) {
-       xAxis.ticks(d3.timeMonth.every(1)).tickFormat(d3.timeFormat("%b"));
-    } else {
-      const timeDomain = d3.extent(data, (d: ChartDataPoint) => d.date);
-      const months = timeDomain ? d3.timeMonth.count(timeDomain[0], timeDomain[1]) : 0;
-    
-      if (months <= 24) {
-        xAxis.ticks(d3.timeMonth.every(2)).tickFormat(d3.timeFormat("%b %y"));
-      } else if (months <= 60) {
-        xAxis.ticks(d3.timeMonth.every(6)).tickFormat(d3.timeFormat("%b %y"));
-      } else {
-        xAxis.ticks(d3.timeYear.every(1)).tickFormat(d3.timeFormat("%Y"));
+  private commonChartOptions: Partial<ChartOptions> = {
+    chart: {
+      height: 350,
+      type: "area",
+      fontFamily: 'Inter, sans-serif',
+      toolbar: { 
+        show: true,
+        tools: {
+          download: false,
+          selection: true,
+          zoom: true,
+          zoomin: true,
+          zoomout: true,
+          pan: true,
+          reset: true
+        },
+        autoSelected: 'zoom'
+      },
+      zoom: { 
+        enabled: true,
+        type: 'x',
+        autoScaleYaxis: true
+      }
+    },
+    dataLabels: { enabled: false },
+    stroke: { curve: "smooth", width: 3 },
+    grid: {
+      borderColor: "#374151",
+      strokeDashArray: 4,
+      padding: { left: 20, right: 20 }
+    },
+    markers: {
+      size: 5,
+      strokeWidth: 3,
+      strokeColors: "#111827",
+      hover: { size: 7 }
+    },
+    theme: { mode: "dark" },
+    fill: {
+      type: "gradient",
+      gradient: {
+        shadeIntensity: 1,
+        opacityFrom: 0.45,
+        opacityTo: 0.01,
+        stops: [0, 100]
       }
     }
+  };
 
-    const xAxisGroup = svg.append('g')
-      .attr('class', 'x-axis')
-      .attr('transform', `translate(0, ${height})`)
-      .call(xAxis);
-      
-    xAxisGroup.selectAll("text")
-        .style("fill", "#9ca3af")
-        .style("font-size", "11px");
+  overallChartOptions = computed(() => this.buildOptions(
+    "Saldo Totale", 
+    this.chartData(), 
+    "#6366f1",
+    true
+  ));
 
-    const yAxis = d3.axisLeft(y).tickFormat((d: number) => `${d/1000}k`);
-    
-    svg.append('g')
-      .attr('class', 'y-axis')
-      .call(yAxis)
-      .selectAll("text")
-        .style("fill", "#9ca3af")
-        .style("font-size", "11px");
+  last12ChartOptions = computed(() => this.buildOptions(
+    "Ultimi 12 Mesi", 
+    this.last12MonthsChartData(), 
+    "#10b981",
+    false
+  ));
 
-    // --- Line & Circles Group (Clipped) ---
-    const chartBody = svg.append('g')
-        .attr("clip-path", `url(#${clipId})`);
+  salaryChartOptions = computed(() => this.buildOptions(
+    "Entrate Mensili", 
+    this.salaryChartData(), 
+    "#f59e0b",
+    false
+  ));
 
-    const line = d3.line()
-      .x((d: ChartDataPoint) => x(d.date))
-      .y((d: ChartDataPoint) => y(d.balance))
-      .curve(d3.curveMonotoneX);
+  private buildOptions(name: string, data: ChartDataPoint[], color: string, startFromZero: boolean): Partial<ChartOptions> {
+    const seriesData = data.map(d => ({
+      x: d.date.getTime(),
+      y: d.balance
+    }));
 
-    const path = chartBody.append('path')
-      .datum(data)
-      .attr('class', 'line')
-      .attr('fill', 'none')
-      .attr('stroke', '#818cf8')
-      .attr('stroke-width', 2.5)
-      .attr('d', line);
+    return {
+      ...this.commonChartOptions,
+      series: [{ name, data: seriesData }],
+      colors: [color],
+      xaxis: {
+        type: 'datetime',
+        axisBorder: { show: false },
+        axisTicks: { show: false },
+        labels: { 
+          style: { colors: "#9ca3af", fontSize: '10px' },
+          datetimeFormatter: {
+            year: 'yyyy',
+            month: 'MMM \'yy',
+            day: 'dd MMM',
+            hour: 'HH:mm'
+          }
+        },
+        tooltip: { enabled: false }
+      },
+      yaxis: {
+        labels: {
+          style: { colors: "#9ca3af", fontSize: '10px' },
+          formatter: (val) => `${(val / 1000).toFixed(1)}k`
+        },
+        min: startFromZero ? 0 : undefined
+      },
+      tooltip: {
+        theme: "dark",
+        x: {
+          format: 'MMMM yyyy'
+        },
+        y: {
+          formatter: (val) => formatCurrency(val, 'it-IT', getLocaleCurrencySymbol('it-IT')!)
+        }
+      },
+      chart: {
+        ...this.commonChartOptions.chart,
+        events: {
+          markerClick: (event: any, chartContext: any, { dataPointIndex }: any) => {
+            const point = data[dataPointIndex];
+            if (point) {
+               this.handlePointClick(point);
+            }
+          }
+        }
+      } as any
+    };
+  }
 
-    const circles = chartBody.selectAll('circle')
-        .data(data)
-        .enter().append('circle')
-        .attr('cx', (d: ChartDataPoint) => x(d.date))
-        .attr('cy', (d: ChartDataPoint) => y(d.balance))
-        .attr('r', 5)
-        .style('fill', '#6366f1')
-        .attr('stroke', '#1f2937')
-        .attr('stroke-width', 2)
-        .style('cursor', 'pointer');
+  private handlePointClick(point: ChartDataPoint) {
+    const year = point.date.getFullYear();
+    const month = point.date.getMonth() + 1;
+    this.selectedMonth.set({ year, month });
+    this.selectedMonthLabel.set(this.datePipe.transform(point.date, 'MMMM yyyy') || '');
+    this.showConfirm.set(true);
+  }
 
-    // --- Tooltip ---
-    const tooltip = d3.select(el)
-      .append("div")
-      .attr("class", "chart-tooltip")
-      .style("opacity", 0);
+  cancelNavigation() {
+    this.showConfirm.set(false);
+    this.selectedMonth.set(null);
+  }
 
-    circles
-        .on('mouseover', (event: MouseEvent, d: ChartDataPoint) => {
-            tooltip.transition().duration(200).style('opacity', 1);
-            
-            const formattedDate = this.datePipe.transform(d.date, 'MMMM yyyy');
-            const formattedBalance = formatCurrency(d.balance, 'it-IT', getLocaleCurrencySymbol('it-IT')!);
-            
-            tooltip.html(`<strong>${formattedDate}</strong><br/>${d.label || 'Saldo'}: ${formattedBalance}`)
-              .style('left', `${event.pageX - el.getBoundingClientRect().left + 15}px`)
-              .style('top', `${event.pageY - el.getBoundingClientRect().top - 10}px`);
-
-            d3.select(event.currentTarget as SVGCircleElement)
-              .transition().duration(150).attr('r', 7).style('fill', d.label?.includes('Mensilità') ? '#facc15' : '#a78bfa');
-        })
-        .on('mouseout', (event: MouseEvent, d: ChartDataPoint) => {
-            tooltip.transition().duration(400).style('opacity', 0);
-             d3.select(event.currentTarget as SVGCircleElement)
-              .transition().duration(150).attr('r', 5).style('fill', d.label?.includes('Mensilità') ? '#fbbf24' : '#6366f1');
-        });
-
-    // --- Zoom ---
-    const zoom = d3.zoom()
-        .scaleExtent([1, 10]) // Max zoom 10x
-        .extent([[0, 0], [width, height]])
-        .translateExtent([[0, 0], [width, height]]) // Create invisible rect for zoom to work everywhere
-        .on("zoom", (event: any) => updateChart(event));
-
-    // Invisible rect to capture zoom events
-    svg.append("rect")
-        .attr("width", width)
-        .attr("height", height)
-        .style("fill", "none")
-        .style("pointer-events", "all")
-        .lower() // Keep behind everything
-        .call(zoom);
-
-    function updateChart(event: any) {
-        // recover the new scale
-        const newX = event.transform.rescaleX(x);
-
-        // update axes with these new boundaries
-        xAxis.scale(newX);
-        xAxisGroup.call(xAxis as any);
-        
-        xAxisGroup.selectAll("text")
-            .style("fill", "#9ca3af")
-            .style("font-size", "11px");
-
-        // update line position
-        // @ts-ignore
-        line.x((d: ChartDataPoint) => newX(d.date));
-        path.attr('d', line);
-        
-        // update circles
-        circles
-           .attr('cx', (d: ChartDataPoint) => newX(d.date));
+  confirmNavigation() {
+    const target = this.selectedMonth();
+    if (target) {
+      const monthYear = `${target.year}-${target.month.toString().padStart(2, '0')}`;
+      this.storageService.activeMonthYear.set(monthYear);
+      this.navigateToMonthlyView.emit();
     }
+    this.cancelNavigation();
   }
 }

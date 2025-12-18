@@ -13,7 +13,7 @@
           <app-monthly-report></app-monthly-report>
         }
         @case ('summary') {
-          <app-summary-view></app-summary-view>
+          <app-summary-view (navigateToMonthlyView)="currentView.set('monthly')"></app-summary-view>
         }
         @case ('import-export') {
           <app-import-export></app-import-export>
