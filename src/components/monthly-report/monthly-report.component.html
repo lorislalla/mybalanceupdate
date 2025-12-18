@@ -107,11 +107,11 @@
                   <!-- Content -->
                   <div class="flex-1 min-w-0">
                       @if (editingExpenseId() === expense.id) {
-                         <div class="flex gap-2 items-center" [formGroup]="editExpenseForm">
-                            <input type="text" formControlName="description" class="flex-1 bg-gray-900 border border-gray-600 rounded px-2 py-0.5 text-sm text-white focus:ring-1 focus:ring-indigo-500">
-                            <input type="number" formControlName="amount" class="w-20 bg-gray-900 border border-gray-600 rounded px-2 py-0.5 text-sm text-white text-right focus:ring-1 focus:ring-indigo-500">
-                            <button (click)="saveExpense()" class="text-green-400 hover:text-green-300 p-1"><svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg></button>
-                            <button (click)="cancelEditing()" class="text-gray-400 hover:text-gray-300 p-1"><svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
+                         <div class="flex gap-1 items-center flex-1 min-w-0" [formGroup]="editExpenseForm">
+                            <input type="text" formControlName="description" class="flex-1 min-w-0 bg-gray-900 border border-gray-600 rounded px-2 py-0.5 text-sm text-white focus:ring-1 focus:ring-indigo-500">
+                            <input type="number" formControlName="amount" class="w-16 bg-gray-900 border border-gray-600 rounded px-2 py-0.5 text-sm text-white text-right focus:ring-1 focus:ring-indigo-500">
+                            <button (click)="saveExpense()" class="text-green-400 hover:text-green-300 p-1 flex-shrink-0"><svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg></button>
+                            <button (click)="cancelEditing()" class="text-gray-400 hover:text-gray-300 p-1 flex-shrink-0"><svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
                          </div>
                       } @else {
                          <div class="flex items-center justify-between gap-2">
@@ -209,11 +209,11 @@
                     @for (income of currentReport.incomes; track income.id) {
                        <div class="flex items-center justify-between gap-3">
                           @if (editingIncomeId() === income.id) {
-                             <div class="flex gap-2 items-center" [formGroup]="editIncomeForm">
-                                <input type="text" formControlName="description" class="flex-1 bg-gray-900 border border-gray-600 rounded px-2 py-1 text-sm text-white focus:ring-1 focus:ring-indigo-500">
-                                <input type="number" formControlName="amount" class="w-20 bg-gray-900 border border-gray-600 rounded px-2 py-1 text-sm text-white text-right focus:ring-1 focus:ring-indigo-500">
-                                <button (click)="saveIncome()" class="text-green-400 hover:text-green-300 p-1"><svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg></button>
-                                <button (click)="cancelEditingIncome()" class="text-gray-400 hover:text-gray-300 p-1"><svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
+                              <div class="flex gap-1 items-center flex-1 min-w-0" [formGroup]="editIncomeForm">
+                                <input type="text" formControlName="description" class="flex-1 min-w-0 bg-gray-900 border border-gray-600 rounded px-2 py-1 text-sm text-white focus:ring-1 focus:ring-indigo-500">
+                                <input type="number" formControlName="amount" class="w-16 bg-gray-900 border border-gray-600 rounded px-2 py-1 text-sm text-white text-right focus:ring-1 focus:ring-indigo-500">
+                                <button (click)="saveIncome()" class="text-green-400 hover:text-green-300 p-1 flex-shrink-0"><svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg></button>
+                                <button (click)="cancelEditingIncome()" class="text-gray-400 hover:text-gray-300 p-1 flex-shrink-0"><svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
                              </div>
                           } @else {
                              <div class="flex items-center justify-between gap-2 flex-1">
