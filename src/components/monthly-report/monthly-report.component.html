@@ -1,4 +1,4 @@
-<div class="space-y-4 pb-20 md:pb-0">
+<div class="space-y-4 pb-20 md:pb-0 overflow-x-hidden">
   
   <!-- 1. Sticky Month Selector (Mobile & Desktop) -->
     <div class="sticky top-0 z-20 bg-gray-900/95 backdrop-blur-md border-b border-gray-800 py-1 -mx-4 px-4 sm:mx-0 sm:px-0 sm:rounded-b-lg">
@@ -282,7 +282,7 @@
              <textarea [ngModel]="currentReport.notes" (ngModelChange)="updateReportField('notes', $event)"
                        cdkTextareaAutosize
                        [cdkAutosizeMinRows]="3"
-                       class="w-[calc(100%-1.7rem)] box-content bg-gray-900/50 border border-gray-700 rounded-lg p-3 text-sm text-gray-300 resize-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 placeholder-gray-600"
+                       class="w-full bg-gray-900/50 border border-gray-700 rounded-lg p-3 text-sm text-gray-300 resize-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 placeholder-gray-600 box-border"
                        placeholder="Scrivi qui..."></textarea>
           </div>
 
