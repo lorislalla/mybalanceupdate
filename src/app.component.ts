@@ -9,6 +9,8 @@ import { LoginComponent } from './components/login/login.component';
 import { CalculatorComponent } from './components/calculator/calculator.component';
 import { SupabaseService } from './services/supabase.service';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { SwUpdate } from '@angular/service-worker';
+import { filter, interval } from 'rxjs';
 
 type View = 'monthly' | 'summary' | 'import-export' | 'calculator';
 
@@ -33,8 +35,31 @@ export class AppComponent {
   
   // Create a signal from the user observable
   user = toSignal(this.supabase.user$);
+  updateAvailable = signal(false);
 
-  constructor(private supabase: SupabaseService) {}
+  constructor(private supabase: SupabaseService, private swUpdate: SwUpdate) {
+    if (this.swUpdate.isEnabled) {
+      this.swUpdate.versionUpdates
+        .pipe(filter(evt => evt.type === 'VERSION_READY'))
+        .subscribe(() => {
+          this.updateAvailable.set(true);
+        });
+
+      // Check for updates on load
+      this.swUpdate.checkForUpdate();
+
+      // Check for updates every hour (60 * 60 * 1000 ms)
+      interval(60 * 1000).subscribe(() => {
+        this.swUpdate.checkForUpdate();
+      });
+    }
+  }
+
+  applyUpdate() {
+    this.swUpdate.activateUpdate().then(() => {
+      window.location.reload();
+    });
+  }
 
   handleViewChange(view: View) {
     this.currentView.set(view);
