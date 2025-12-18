@@ -67,7 +67,8 @@ export class MonthlyReportComponent {
   
   newExpenseForm = this.fb.group({
     description: ['', Validators.required],
-    amount: [null as number | null, [Validators.required, Validators.min(50)]]
+    amount: [null as number | null, [Validators.required, Validators.min(0)]],
+    shared: [false]
   });
 
   newIncomeForm = this.fb.group({
@@ -79,7 +80,8 @@ export class MonthlyReportComponent {
   editingExpenseId = signal<string | null>(null);
   editExpenseForm = this.fb.group({
     description: ['', Validators.required],
-    amount: [null as number | null, [Validators.required, Validators.min(50)]]
+    amount: [null as number | null, [Validators.required, Validators.min(0)]],
+    shared: [false]
   });
 
   editingIncomeId = signal<string | null>(null);
@@ -214,18 +216,20 @@ export class MonthlyReportComponent {
 
   addExpense() {
     if (this.newExpenseForm.valid) {
-      const { description, amount } = this.newExpenseForm.value;
+      const { description, amount, shared } = this.newExpenseForm.value;
       const currentReport = this.report();
 
-      if (currentReport && description && amount) {
+      if (currentReport && description && amount != null) {
         const newExpense: Expense = {
           id: crypto.randomUUID(),
           description,
-          amount
+          amount,
+          shared: !!shared,
+          totalAmount: shared ? amount * 2 : amount
         };
         const updatedExpenses = [...currentReport.expenses, newExpense];
         this.updateReportField('expenses', updatedExpenses);
-        this.newExpenseForm.reset();
+        this.newExpenseForm.reset({ shared: false });
       }
     }
   }
@@ -235,7 +239,8 @@ export class MonthlyReportComponent {
     this.editingExpenseId.set(expense.id);
     this.editExpenseForm.setValue({
       description: expense.description,
-      amount: expense.amount
+      amount: expense.amount,
+      shared: !!expense.shared
     });
   }
 
@@ -249,12 +254,18 @@ export class MonthlyReportComponent {
     }
 
     const currentReport = this.report();
-    const { description, amount } = this.editExpenseForm.value;
+    const { description, amount, shared } = this.editExpenseForm.value;
     
     if (currentReport && description && amount != null) {
       const updatedExpenses = currentReport.expenses.map(exp => 
         exp.id === this.editingExpenseId() 
-          ? { ...exp, description, amount } 
+          ? { 
+              ...exp, 
+              description, 
+              amount, 
+              shared: !!shared, 
+              totalAmount: shared ? amount * 2 : amount 
+            } 
           : exp
       );
       this.updateReportField('expenses', updatedExpenses);

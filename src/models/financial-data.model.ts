@@ -2,6 +2,8 @@ export interface Expense {
   id: string;
   description: string;
   amount: number;
+  shared?: boolean;
+  totalAmount?: number;
 }
 
 export interface Income {

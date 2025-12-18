@@ -82,9 +82,24 @@
              <div class="w-px h-6 bg-gray-700"></div>
              
              <input type="number" formControlName="amount" 
-                    class="w-20 bg-transparent border-none text-white text-right placeholder-gray-500 focus:ring-0 text-sm py-2 font-mono" 
+                    class="w-16 bg-transparent border-none text-white text-right placeholder-gray-500 focus:ring-0 text-sm py-2 font-mono no-spin" 
                     placeholder="€">
              
+             <div class="w-px h-6 bg-gray-700 mx-1"></div>
+
+             <!-- Shared Toggle -->
+             <label class="cursor-pointer p-1.5 rounded-lg transition-all hover:bg-white/5 active:scale-90" 
+                    [class.bg-indigo-500/20]="newExpenseForm.get('shared')?.value"
+                    title="Contrassegna come spesa condivisa">
+                 <input type="checkbox" formControlName="shared" class="hidden">
+                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 transition-colors" 
+                      [class.text-indigo-400]="newExpenseForm.get('shared')?.value" 
+                      [class.text-gray-500]="!newExpenseForm.get('shared')?.value" 
+                      fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                 </svg>
+             </label>
+
              <button type="submit" [disabled]="newExpenseForm.invalid"
                      class="bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg p-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
@@ -113,9 +128,23 @@
                       @if (editingExpenseId() === expense.id) {
                          <div class="flex gap-1 items-center flex-1 min-w-0" [formGroup]="editExpenseForm">
                             <input type="text" formControlName="description" class="flex-1 min-w-0 bg-gray-900 border border-gray-600 rounded px-2 py-0.5 text-sm text-white focus:ring-1 focus:ring-indigo-500">
-                            <input type="number" formControlName="amount" class="w-16 bg-gray-900 border border-gray-600 rounded px-2 py-0.5 text-sm text-white text-right focus:ring-1 focus:ring-indigo-500">
-                            <button (click)="saveExpense()" class="text-green-400 hover:text-green-300 p-1 flex-shrink-0"><svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg></button>
-                            <button (click)="cancelEditing()" class="text-gray-400 hover:text-gray-300 p-1 flex-shrink-0"><svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
+                            <input type="number" formControlName="amount" class="w-16 bg-gray-900 border border-gray-600 rounded px-2 py-0.5 text-sm text-white text-right focus:ring-1 focus:ring-indigo-500 no-spin">
+                            
+                            <!-- Shared Toggle in Edit -->
+                            <label class="cursor-pointer p-1 rounded-md transition-colors hover:bg-gray-700 flex-shrink-0" 
+                                   [class.bg-indigo-500/20]="editExpenseForm.get('shared')?.value">
+                                <input type="checkbox" formControlName="shared" class="hidden">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-colors" 
+                                     [class.text-indigo-400]="editExpenseForm.get('shared')?.value" 
+                                     [class.text-gray-500]="!editExpenseForm.get('shared')?.value" 
+                                     fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                                </svg>
+                            </label>
+
+                            <button (click)="saveExpense()" class="text-green-400 hover:text-green-300 p-1 flex-shrink-0" title="Salva"><svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg></button>
+                            <button (click)="promptDeleteExpense(expense)" class="text-red-400 hover:text-red-300 p-1 flex-shrink-0" title="Elimina"><svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg></button>
+                            <button (click)="cancelEditing()" class="text-gray-400 hover:text-gray-300 p-1 flex-shrink-0" title="Annulla"><svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
                          </div>
                       } @else {
                          <div class="flex items-center justify-between gap-2">
@@ -123,20 +152,27 @@
                              <span class="flex-1 text-gray-200 text-sm font-medium truncate cursor-pointer hover:text-indigo-400 transition-colors" 
                                    (click)="startEditing(expense)" title="Clicca per modificare">
                                 {{ expense.description }}
+                                @if (expense.shared) {
+                                  <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-indigo-400 inline mb-0.5 ml-1 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor" title="Spesa condivisa">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                                  </svg>
+                                }
                              </span>
                              
-                             <!-- Actions (Repeat & Delete) - Visible on hover/mobile -->
+                             <!-- Action (Repeat) - Visible on hover/mobile -->
                              <div class="flex items-center gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                                 <button (click)="repeatExpense(expense)" class="p-1 text-gray-500 hover:text-blue-400 rounded-md hover:bg-gray-700/50 transition-colors" title="Ripeti prossimo mese">
                                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
                                 </button>
-                                <button (click)="promptDeleteExpense(expense)" class="p-1 text-gray-500 hover:text-red-400 rounded-md hover:bg-gray-700/50 transition-colors" title="Elimina">
-                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                                </button>
                              </div>
 
                              <!-- Amount -->
-                             <span class="text-red-400 font-bold font-mono text-sm whitespace-nowrap min-w-[70px] text-right">-{{ expense.amount | number:'1.2-2' }} €</span>
+                             <div class="flex flex-col items-end min-w-[70px]">
+                                <span class="text-red-400 font-bold font-mono text-sm whitespace-nowrap">-{{ expense.amount | number:'1.2-2' }} €</span>
+                                @if (expense.shared && expense.totalAmount) {
+                                    <span class="text-[10px] text-gray-500 font-mono font-medium leading-none mt-0.5" title="Importo totale (50% a testa)">Tot: {{ expense.totalAmount | number:'1.2-2' }}€</span>
+                                }
+                             </div>
                          </div>
                       }
                   </div>
