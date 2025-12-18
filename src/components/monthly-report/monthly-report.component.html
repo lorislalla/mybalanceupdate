@@ -20,10 +20,14 @@
 
   <!-- Month Picker Overlay -->
   @if (isMonthPickerOpen()) {
-    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in" (click)="closeMonthPicker()">
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in" 
+         (click)="closeMonthPicker()"
+         role="dialog" 
+         aria-modal="true" 
+         aria-labelledby="month-picker-title">
         <div class="bg-gray-800 rounded-xl shadow-2xl w-full max-w-sm overflow-hidden" (click)="$event.stopPropagation()">
             <div class="p-4 border-b border-gray-700 flex justify-between items-center bg-gray-900/50">
-                <h3 class="font-bold text-lg text-white">Seleziona Mese</h3>
+                <h3 id="month-picker-title" class="font-bold text-lg text-white">Seleziona Mese</h3>
                 <button (click)="closeMonthPicker()" class="text-gray-400 hover:text-white">
                     <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
                 </button>
@@ -298,9 +302,12 @@
 
   <!-- Delete Modal -->
   @if (showDeleteConfirmation()) {
-    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in"
+         role="dialog" 
+         aria-modal="true" 
+         aria-labelledby="delete-expense-title">
         <div class="bg-gray-800 rounded-lg shadow-2xl w-full max-w-sm p-6 border border-gray-700 transform transition-all scale-100">
-            <h3 class="text-lg font-bold text-gray-200 mb-2">Elimina Spesa</h3>
+            <h3 id="delete-expense-title" class="text-lg font-bold text-gray-200 mb-2">Elimina Spesa</h3>
             <p class="text-gray-400 mb-6">Sei sicuro di voler eliminare <span class="text-white font-semibold">"{{ expenseToDelete()?.description }}"</span>? Questa azione è irreversibile.</p>
             <div class="flex justify-end gap-3">
                 <button (click)="cancelDelete()" class="px-4 py-2 text-gray-300 hover:text-white hover:bg-gray-700 rounded-md transition-colors text-sm">Annulla</button>
@@ -312,9 +319,12 @@
 
   <!-- Delete Income Modal -->
   @if (showDeleteIncomeConfirmation()) {
-    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in"
+         role="dialog" 
+         aria-modal="true" 
+         aria-labelledby="delete-income-title">
         <div class="bg-gray-800 rounded-lg shadow-2xl w-full max-w-sm p-6 border border-gray-700 transform transition-all scale-100">
-            <h3 class="text-lg font-bold text-gray-200 mb-2">Elimina Entrata</h3>
+            <h3 id="delete-income-title" class="text-lg font-bold text-gray-200 mb-2">Elimina Entrata</h3>
             <p class="text-gray-400 mb-6">Sei sicuro di voler eliminare <span class="text-white font-semibold">"{{ incomeToDelete()?.description }}"</span>? Questa azione è irreversibile.</p>
             <div class="flex justify-end gap-3">
                 <button (click)="cancelDeleteIncome()" class="px-4 py-2 text-gray-300 hover:text-white hover:bg-gray-700 rounded-md transition-colors text-sm">Annulla</button>

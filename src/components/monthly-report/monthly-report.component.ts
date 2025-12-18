@@ -154,7 +154,7 @@ export class MonthlyReportComponent {
           }
           this.pendingEditId = null; 
       }
-    }, { allowSignalWrites: true });
+    });
 
     effect(() => {
         // 2. One-time initialization logic: find first incomplete month
@@ -184,7 +184,7 @@ export class MonthlyReportComponent {
                 this.currentMonthYear.set(this.getDateString(this.today));
             }
         }
-    }, { allowSignalWrites: true });
+    });
   }
 
   private getDateString(date: Date): string {
