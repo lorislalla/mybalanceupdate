@@ -103,6 +103,19 @@ export class MonthlyReportComponent {
   monthPickerShortNames = ['gen', 'feb', 'mar', 'apr', 'mag', 'giu', 'lug', 'ago', 'set', 'ott', 'nov', 'dic'];
   private monthPickerLongNames = ['Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno', 'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'];
   
+  incomeSuggestions = computed(() => {
+    const reports = this.storageService.appData().reports;
+    const suggestions = new Set<string>();
+    reports.forEach(r => {
+      r.incomes?.forEach(i => {
+        if (i.description) suggestions.add(i.description);
+      });
+    });
+    return Array.from(suggestions).sort();
+  });
+
+  isAddingIncome = signal(false);
+
   selectedMonthDisplay = computed(() => {
     const [year, month] = this.currentMonthYear().split('-').map(Number);
     return `${this.monthPickerLongNames[month - 1]} ${year}`;
@@ -384,11 +397,24 @@ export class MonthlyReportComponent {
           description,
           amount
         };
-        const updatedIncomes = [...currentReport.incomes, newIncome];
+        const updatedIncomes = [...(currentReport.incomes || []), newIncome];
         this.updateReportField('incomes', updatedIncomes);
         this.newIncomeForm.reset();
+        this.isAddingIncome.set(false);
       }
     }
+  }
+
+  toggleAddIncome() {
+    this.isAddingIncome.set(!this.isAddingIncome());
+    if (this.isAddingIncome()) {
+      this.newIncomeForm.reset();
+    }
+  }
+
+  cancelAddingIncome() {
+    this.isAddingIncome.set(false);
+    this.newIncomeForm.reset();
   }
 
   startEditingIncome(income: Income) {
@@ -448,25 +474,6 @@ export class MonthlyReportComponent {
     this.cancelDeleteIncome();
   }
 
-  addIncomePrompt() {
-    const description = prompt('Descrizione entrata:');
-    if (!description) return;
-    const amountStr = prompt('Importo entrata:');
-    if (!amountStr) return;
-    const amount = parseFloat(amountStr);
-    if (isNaN(amount) || amount <= 0) return;
-
-    const currentReport = this.report();
-    if (currentReport) {
-      const newIncome: Income = {
-        id: crypto.randomUUID(),
-        description,
-        amount
-      };
-      const updatedIncomes = [...(currentReport.incomes || []), newIncome];
-      this.updateReportField('incomes', updatedIncomes);
-    }
-  }
 
   // --- Custom Month Picker Methods ---
   openMonthPicker() {

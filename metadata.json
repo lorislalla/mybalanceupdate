@@ -1,5 +1,5 @@
 {
-  "name": "Bilancio Mensile AI",
-  "description": "Un'app moderna per il resoconto mensile delle tue finanze, con l'aiuto dell'IA per importare dati e un riepilogo visuale dei tuoi progressi.",
+  "name": "MyBalanceUpdate",
+  "description": "Un'app per il resoconto mensile delle tue finanze, con l'aiuto dell'IA per importare dati e un riepilogo visuale dei tuoi progressi.",
   "requestFramePermissions": []
 }

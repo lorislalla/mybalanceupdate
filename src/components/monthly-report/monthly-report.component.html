@@ -250,8 +250,9 @@
                        <div class="flex items-center justify-between gap-3">
                           @if (editingIncomeId() === income.id) {
                               <div class="flex gap-1 items-center flex-1 min-w-0" [formGroup]="editIncomeForm">
-                                <input type="text" formControlName="description" class="flex-1 min-w-0 bg-gray-900 border border-gray-600 rounded px-2 py-1 text-sm text-white focus:ring-1 focus:ring-indigo-500">
-                                <input type="number" formControlName="amount" class="w-16 bg-gray-900 border border-gray-600 rounded px-2 py-1 text-sm text-white text-right focus:ring-1 focus:ring-indigo-500">
+                                <input type="text" formControlName="description" list="income-suggestions"
+                                       class="flex-1 min-w-0 bg-gray-900 border border-gray-600 rounded px-2 py-1 text-sm text-white focus:ring-1 focus:ring-indigo-500">
+                                <input type="number" formControlName="amount" class="w-16 bg-gray-900 border border-gray-600 rounded px-2 py-1 text-sm text-white text-right focus:ring-1 focus:ring-indigo-500 no-spin">
                                 <button (click)="saveIncome()" class="text-green-400 hover:text-green-300 p-1 flex-shrink-0"><svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg></button>
                                 <button (click)="cancelEditingIncome()" class="text-gray-400 hover:text-gray-300 p-1 flex-shrink-0"><svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
                              </div>
@@ -272,7 +273,31 @@
                        </div>
                     }
                  }
-                 <button (click)="addIncomePrompt()" class="text-indigo-400 hover:text-indigo-300 text-sm font-medium">+ Aggiungi entrata</button>
+
+                 @if (isAddingIncome()) {
+                   <form [formGroup]="newIncomeForm" (ngSubmit)="addIncome()" class="flex gap-1 items-center animate-fade-in mt-2 pr-1">
+                     <input type="text" formControlName="description" list="income-suggestions"
+                            class="flex-1 min-w-0 bg-gray-900 border border-gray-600 rounded px-2 py-1 text-sm text-white focus:ring-1 focus:ring-indigo-500"
+                            placeholder="Descrizione...">
+                     <input type="number" formControlName="amount" 
+                            class="w-16 bg-gray-900 border border-gray-600 rounded px-2 py-1 text-sm text-white text-right focus:ring-1 focus:ring-indigo-500 no-spin"
+                            placeholder="€">
+                     <button type="submit" [disabled]="newIncomeForm.invalid" class="text-green-400 hover:text-green-300 p-1 flex-shrink-0">
+                       <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+                     </button>
+                     <button type="button" (click)="cancelAddingIncome()" class="text-gray-400 hover:text-gray-300 p-1 flex-shrink-0">
+                       <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                     </button>
+                   </form>
+                 } @else {
+                   <button (click)="toggleAddIncome()" class="text-indigo-400 hover:text-indigo-300 text-sm font-medium mt-2">+ Aggiungi entrata</button>
+                 }
+
+                 <datalist id="income-suggestions">
+                    @for (suggestion of incomeSuggestions(); track suggestion) {
+                        <option [value]="suggestion"></option>
+                    }
+                 </datalist>
 
                  <!-- Entrate totali -->
                  <div class="pt-2 mt-2 border-t border-gray-700/50 flex justify-between items-end">
