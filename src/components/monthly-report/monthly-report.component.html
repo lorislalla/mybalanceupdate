@@ -74,25 +74,25 @@
       <div class="lg:col-span-8 space-y-4 order-1 lg:order-2">
          <!-- Add Expense Bar -->
          <form [formGroup]="newExpenseForm" (ngSubmit)="addExpense()" 
-               class="bg-gray-800 p-3 rounded-xl shadow-lg border border-gray-700 flex gap-2 items-center sticky top-14 z-10 transition-shadow focus-within:ring-2 focus-within:ring-indigo-500/50">
-             <input type="text" formControlName="description" 
-                    class="flex-1 bg-transparent border-none text-white placeholder-gray-500 focus:ring-0 text-sm py-2" 
+               class="bg-gray-800 p-2 sm:p-3 rounded-xl shadow-lg border border-gray-700 flex gap-1 sm:gap-2 items-center sticky top-14 z-10 transition-shadow focus-within:ring-2 focus-within:ring-indigo-500/50">
+             <input type="text" formControlName="description" list="expense-suggestions"
+                    class="flex-1 min-w-0 focus:outline-none bg-transparent border-none text-white placeholder-gray-500 focus:ring-0 text-xs sm:text-sm py-2" 
                     placeholder="Nuova spesa (es. Spesa Lidl)...">
              
              <div class="w-px h-6 bg-gray-700"></div>
              
              <input type="number" formControlName="amount" 
-                    class="w-16 bg-transparent border-none text-white text-right placeholder-gray-500 focus:ring-0 text-sm py-2 font-mono no-spin" 
+                    class="w-12 sm:w-16 focus:outline-none bg-transparent border-none text-white text-right placeholder-gray-500 focus:ring-0 text-xs sm:text-sm py-2 font-mono no-spin" 
                     placeholder="€">
              
-             <div class="w-px h-6 bg-gray-700 mx-1"></div>
+             <div class="w-px h-6 bg-gray-700 mx-0.5 sm:mx-1"></div>
 
              <!-- Shared Toggle -->
              <label class="cursor-pointer p-1.5 rounded-lg transition-all hover:bg-white/5 active:scale-90" 
                     [class.bg-indigo-500/20]="newExpenseForm.get('shared')?.value"
                     title="Contrassegna come spesa condivisa">
                  <input type="checkbox" formControlName="shared" class="hidden">
-                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 transition-colors" 
+                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 transition-colors" 
                       [class.text-indigo-400]="newExpenseForm.get('shared')?.value" 
                       [class.text-gray-500]="!newExpenseForm.get('shared')?.value" 
                       fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -101,8 +101,8 @@
              </label>
 
              <button type="submit" [disabled]="newExpenseForm.invalid"
-                     class="bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg p-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                     class="bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg p-1.5 sm:p-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5" viewBox="0 0 20 20" fill="currentColor">
                   <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
                 </svg>
              </button>
@@ -127,7 +127,7 @@
                   <div class="flex-1 min-w-0">
                       @if (editingExpenseId() === expense.id) {
                          <div class="flex gap-1 items-center flex-1 min-w-0" [formGroup]="editExpenseForm">
-                            <input type="text" formControlName="description" class="flex-1 min-w-0 bg-gray-900 border border-gray-600 rounded px-2 py-0.5 text-sm text-white focus:ring-1 focus:ring-indigo-500">
+                            <input type="text" formControlName="description" list="expense-suggestions" class="flex-1 min-w-0 bg-gray-900 border border-gray-600 rounded px-2 py-0.5 text-sm text-white focus:ring-1 focus:ring-indigo-500">
                             <input type="number" formControlName="amount" class="w-16 bg-gray-900 border border-gray-600 rounded px-2 py-0.5 text-sm text-white text-right focus:ring-1 focus:ring-indigo-500 no-spin">
                             
                             <!-- Shared Toggle in Edit -->
@@ -161,7 +161,7 @@
                              
                              <!-- Action (Repeat) - Visible on hover/mobile -->
                              <div class="flex items-center gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
-                                <button (click)="repeatExpense(expense)" class="p-1 text-gray-500 hover:text-blue-400 rounded-md hover:bg-gray-700/50 transition-colors" title="Ripeti prossimo mese">
+                                <button (click)="repeatExpense(expense)" class="p-1 text-gray-500 hover:text-blue-400 rounded-md hover:bg-gray-700/50 transition-colors" title="Ripeti spesa in un altro mese">
                                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
                                 </button>
                              </div>
@@ -299,6 +299,12 @@
                     }
                  </datalist>
 
+                 <datalist id="expense-suggestions">
+                    @for (suggestion of expenseSuggestions(); track suggestion) {
+                        <option [value]="suggestion"></option>
+                    }
+                 </datalist>
+
                  <!-- Entrate totali -->
                  <div class="pt-2 mt-2 border-t border-gray-700/50 flex justify-between items-end">
                      <span class="text-sm font-medium text-gray-300">Entrate totali</span>
@@ -347,7 +353,7 @@
              <textarea [ngModel]="currentReport.notes" (ngModelChange)="updateReportField('notes', $event)"
                        cdkTextareaAutosize
                        [cdkAutosizeMinRows]="3"
-                       class="w-full bg-gray-900/50 border border-gray-700 rounded-lg p-3 text-sm text-gray-300 resize-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 placeholder-gray-600 box-border"
+                       class="w-full bg-gray-900/50 border border-gray-700 rounded-lg p-3 focus:outline-none text-sm text-gray-300 resize-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 placeholder-gray-600 box-border"
                        placeholder="Scrivi qui..."></textarea>
           </div>
 
@@ -392,6 +398,59 @@
             <div class="flex justify-end gap-3">
                 <button (click)="cancelDeleteIncome()" class="px-4 py-2 text-gray-300 hover:text-white hover:bg-gray-700 rounded-md transition-colors text-sm">Annulla</button>
                 <button (click)="confirmDeleteIncome()" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md shadow-lg shadow-red-600/20 transition-all text-sm font-medium">Elimina</button>
+            </div>
+        </div>
+    </div>
+  }
+
+  <!-- Repeat Expense Modal -->
+  @if (showRepeatModal()) {
+    <div class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in"
+         (click)="cancelRepeat()"
+         role="dialog" 
+         aria-modal="true" 
+         aria-labelledby="repeat-expense-title">
+        <div class="bg-gray-800 rounded-xl shadow-2xl w-full max-w-sm overflow-hidden border border-gray-700" (click)="$event.stopPropagation()">
+            <div class="p-4 border-b border-gray-700 flex justify-between items-center bg-gray-900/50">
+                <h3 id="repeat-expense-title" class="font-bold text-lg text-white">Ripeti Spesa</h3>
+                <button (click)="cancelRepeat()" class="text-gray-400 hover:text-white">
+                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+            </div>
+            
+            <div class="p-4">
+                <p class="text-sm text-gray-400 mb-4">Seleziona il mese in cui vuoi copiare la spesa: <br><span class="text-indigo-400 font-medium">"{{ expenseToRepeat()?.description }}"</span></p>
+                
+                <div class="flex items-center justify-between mb-4 bg-gray-900 rounded-lg p-2">
+                    <button (click)="changeRepeatPickerYear(-1)" class="p-2 text-indigo-400 hover:bg-gray-800 rounded-md"><svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg></button>
+                    <span class="text-xl font-bold text-white">{{ repeatPickerYear() }}</span>
+                    <button (click)="changeRepeatPickerYear(1)" class="p-2 text-indigo-400 hover:bg-gray-800 rounded-md"><svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg></button>
+                </div>
+
+                <div class="grid grid-cols-3 gap-2">
+                    @for(month of monthPickerShortNames; track $index) {
+                        <button 
+                            (click)="selectRepeatMonth($index)"
+                            class="p-2 rounded-lg text-sm font-medium transition-all relative flex flex-col items-center justify-center h-12 border border-transparent"
+                            [class]="repeatMonthYear() === (repeatPickerYear() + '-' + ($index + 1).toString().padStart(2, '0'))
+                                ? 'bg-indigo-600 text-white border-indigo-500 shadow-lg shadow-indigo-500/20' 
+                                : 'bg-gray-700/50 text-gray-300 hover:bg-gray-700 hover:border-gray-600'">
+                            {{ month }}
+                            @if (hasDataForMonth($index)) {
+                               <span class="absolute bottom-1.5 w-1 h-1 bg-green-400 rounded-full"></span>
+                            }
+                        </button>
+                    }
+                </div>
+            </div>
+            
+            <div class="p-4 pt-0 flex gap-3">
+                <button (click)="cancelRepeat()" class="flex-1 py-3 bg-gray-700 hover:bg-gray-600 text-gray-200 rounded-lg text-sm font-medium transition-colors">
+                    Annulla
+                </button>
+                <button (click)="confirmRepeat()" class="flex-1 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-sm font-bold transition-colors shadow-lg shadow-indigo-600/20">
+                    Copia Spesa
+                </button>
             </div>
         </div>
     </div>
