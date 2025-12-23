@@ -2,6 +2,9 @@ import { Component, ChangeDetectionStrategy, inject, signal, computed, effect } 
 import { CommonModule, DatePipe } from '@angular/common'
 import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms'
 import { DragDropModule, CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop'
+import { BreakpointObserver, Breakpoints, LayoutModule } from '@angular/cdk/layout'
+import { toSignal } from '@angular/core/rxjs-interop'
+import { map } from 'rxjs/operators'
 import { StorageService } from '../../services/storage.service'
 import { MonthlyReport, Expense, Income } from '../../models/financial-data.model'
 
@@ -11,7 +14,7 @@ import { TextFieldModule } from '@angular/cdk/text-field'
   selector: 'app-monthly-report',
   templateUrl: './monthly-report.component.html',
   providers: [DatePipe],
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, DragDropModule, TextFieldModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, DragDropModule, TextFieldModule, LayoutModule],
   styles: [
     `
       .cdk-drag-preview {
@@ -61,6 +64,12 @@ export class MonthlyReportComponent {
   private fb = inject(FormBuilder)
   // FIX: Explicitly type `datePipe` to `DatePipe` to resolve type inference issue.
   private datePipe: DatePipe = inject(DatePipe)
+  private breakpointObserver = inject(BreakpointObserver)
+
+  isMobile = toSignal(
+    this.breakpointObserver.observe(Breakpoints.Handset).pipe(map(result => result.matches)),
+    { initialValue: false }
+  )
 
   today = new Date()
   currentMonthYear = this.storageService.activeMonthYear // Shared signal from storage service
@@ -313,12 +322,12 @@ export class MonthlyReportComponent {
       const updatedExpenses = currentReport.expenses.map(exp =>
         exp.id === this.editingExpenseId()
           ? {
-              ...exp,
-              description,
-              amount,
-              shared: !!shared,
-              totalAmount: shared ? amount * 2 : amount
-            }
+            ...exp,
+            description,
+            amount,
+            shared: !!shared,
+            totalAmount: shared ? amount * 2 : amount
+          }
           : exp
       )
       this.updateReportField('expenses', updatedExpenses)
