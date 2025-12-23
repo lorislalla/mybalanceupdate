@@ -46,6 +46,15 @@ import { TextFieldModule } from '@angular/cdk/text-field'
       .no-spin {
         -moz-appearance: textfield;
       }
+      .expense-item {
+        user-select: none;
+        -webkit-user-select: none;
+        -webkit-touch-callout: none;
+        touch-action: pan-y;
+      }
+      .cdk-drag-dragging {
+        touch-action: none;
+      }
     `
   ]
 })

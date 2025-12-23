@@ -137,8 +137,8 @@
                 </div>
                 }
                 @for (expense of currentReport.expenses; track expense.id) {
-                <div cdkDrag [cdkDragStartDelay]="isMobile() ? 300 : 0"
-                    class="group bg-gray-800 hover:bg-gray-750 p-2 rounded-lg border border-gray-700/50 shadow-sm flex items-center justify-between gap-2 transition-all">
+                <div cdkDrag [cdkDragStartDelay]="isMobile() ? 300 : 0" [class.expense-item]="isMobile()"
+                    class="group bg-gray-800 hover:bg-gray-750 p-2 rounded-lg border border-gray-700/50 shadow-sm flex items-center justify-between gap-2 transition-all cursor-pointer">
 
                     <!-- Drag Handle -->
                     <div cdkDragHandle [cdkDragHandleDisabled]="isMobile()"
