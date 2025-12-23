@@ -2,9 +2,6 @@ import { Component, ChangeDetectionStrategy, inject, signal, computed, effect } 
 import { CommonModule, DatePipe } from '@angular/common'
 import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms'
 import { DragDropModule, CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop'
-import { BreakpointObserver, Breakpoints, LayoutModule } from '@angular/cdk/layout'
-import { toSignal } from '@angular/core/rxjs-interop'
-import { map } from 'rxjs/operators'
 import { StorageService } from '../../services/storage.service'
 import { MonthlyReport, Expense, Income } from '../../models/financial-data.model'
 
@@ -14,7 +11,7 @@ import { TextFieldModule } from '@angular/cdk/text-field'
   selector: 'app-monthly-report',
   templateUrl: './monthly-report.component.html',
   providers: [DatePipe],
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, DragDropModule, TextFieldModule, LayoutModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, DragDropModule, TextFieldModule],
   styles: [
     `
       .cdk-drag-preview {
@@ -46,15 +43,6 @@ import { TextFieldModule } from '@angular/cdk/text-field'
       .no-spin {
         -moz-appearance: textfield;
       }
-      .expense-item {
-        user-select: none;
-        -webkit-user-select: none;
-        -webkit-touch-callout: none;
-        touch-action: pan-y;
-      }
-      .cdk-drag-dragging {
-        touch-action: none;
-      }
     `
   ]
 })
@@ -73,12 +61,6 @@ export class MonthlyReportComponent {
   private fb = inject(FormBuilder)
   // FIX: Explicitly type `datePipe` to `DatePipe` to resolve type inference issue.
   private datePipe: DatePipe = inject(DatePipe)
-  private breakpointObserver = inject(BreakpointObserver)
-
-  isMobile = toSignal(
-    this.breakpointObserver.observe(Breakpoints.Handset).pipe(map(result => result.matches)),
-    { initialValue: false }
-  )
 
   today = new Date()
   currentMonthYear = this.storageService.activeMonthYear // Shared signal from storage service
