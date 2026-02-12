@@ -4,7 +4,7 @@
 
 **App web per la gestione del bilancio personale mensile**
 
-Registra stipendi, spese e entrate mese per mese. Visualizza l'andamento nel tempo con grafici interattivi. Importa dati finanziari da testo libero grazie all'intelligenza artificiale.
+Registra stipendi, spese e entrate mese per mese. Visualizza l'andamento nel tempo con grafici interattivi. Importa dati finanziari da testo libero grazie all'AI.
 
 [![Angular](https://img.shields.io/badge/Angular-20-DD0031?logo=angular)](https://angular.dev)
 [![TypeScript](https://img.shields.io/badge/TypeScript-Strict-3178C6?logo=typescript)](https://www.typescriptlang.org)
@@ -107,7 +107,7 @@ L'app segue un'architettura **component-based** con gestione dello stato tramite
 3. I **componenti** leggono lo stato tramite `computed()` signals e agiscono tramite i metodi dello StorageService
 4. Le **sottoscrizioni Realtime** aggiornano automaticamente lo stato locale quando i dati cambiano su altri dispositivi
 
-## Cosa Ho Imparato
+## Cose imparate
 
 - Gestione dello stato con **Angular Signals** (signals, computed, effect) al posto di RxJS per lo stato locale
 - Implementazione di **sottoscrizioni Realtime** con Supabase per sincronizzazione multi-dispositivo
