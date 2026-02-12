@@ -40,6 +40,7 @@ export class SupabaseService {
   private supabase: SupabaseClient
   private userSubject = new BehaviorSubject<User | null>(null)
   user$ = this.userSubject.asObservable()
+  private isGuestSession = false
 
   private realtimeChannel: RealtimeChannel | null = null
   private reportsSubject = new BehaviorSubject<MonthlyReport[]>([])
@@ -56,9 +57,14 @@ export class SupabaseService {
     this.initializeAuth()
   }
 
+  get isGuest(): boolean {
+    return this.isGuestSession
+  }
+
   private async initializeAuth() {
     const { data: { session } } = await this.supabase.auth.getSession()
     if (session?.user) {
+      this.isGuestSession = false
       this.userSubject.next(session.user)
       this.loadInitialData()
       this.setupRealtimeSubscription()
@@ -66,17 +72,21 @@ export class SupabaseService {
 
     this.supabase.auth.onAuthStateChange((_event, session) => {
       const user = session?.user ?? null
+      if (user) {
+        this.isGuestSession = false
+      }
       this.userSubject.next(user)
       if (user) {
         this.loadInitialData()
         this.setupRealtimeSubscription()
-      } else {
+      } else if (!this.isGuestSession) {
         this.cleanup()
       }
     })
   }
 
   async signInWithGoogle() {
+    this.isGuestSession = false
     const { error } = await this.supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
@@ -86,14 +96,32 @@ export class SupabaseService {
     if (error) throw error
   }
 
+  async signInAsGuest() {
+    this.isGuestSession = true
+    // Creo un utente fittizio per attivare l'app
+    const guestUser: Partial<User> = {
+      id: 'guest-user',
+      email: 'guest@example.com',
+      user_metadata: { full_name: 'Ospite' },
+      aud: 'authenticated',
+      role: 'authenticated'
+    }
+    this.userSubject.next(guestUser as User)
+    // Svuoto i dati per la sessione ospite
+    this.reportsSubject.next([])
+    this.globalNotesSubject.next('')
+    this.calculatorItemsSubject.next([])
+  }
+
   async signOut() {
+    this.isGuestSession = false
     const { error } = await this.supabase.auth.signOut()
     if (error) throw error
   }
 
   // Carico i dati iniziali da Supabase (reports, note globali, calcolatore)
   private async loadInitialData() {
-    if (!this.userSubject.value) return
+    if (!this.userSubject.value || this.isGuestSession) return
 
     // Carico i reports mensili
     const { data: reportsData, error: reportsError } = await this.supabase
@@ -138,7 +166,7 @@ export class SupabaseService {
 
   async upsertReport(report: MonthlyReport) {
     const user = this.userSubject.value
-    if (!user) return
+    if (!user || this.isGuestSession) return
 
     const { error } = await this.supabase
       .from('monthly_reports')
@@ -163,7 +191,7 @@ export class SupabaseService {
 
   async updateGlobalNotes(notes: string) {
     const user = this.userSubject.value
-    if (!user) return
+    if (!user || this.isGuestSession) return
 
     // Verifico se esiste già un record
     const { data: existing } = await this.supabase
@@ -190,7 +218,7 @@ export class SupabaseService {
 
   async updateCalculatorItems(items: CalculatorItem[]) {
     const user = this.userSubject.value
-    if (!user) return
+    if (!user || this.isGuestSession) return
 
     const { data: existing } = await this.supabase
       .from('calculator_data')
@@ -219,7 +247,7 @@ export class SupabaseService {
     if (this.realtimeChannel) return
 
     const user = this.userSubject.value
-    if (!user) return
+    if (!user || this.isGuestSession) return
 
     this.realtimeChannel = this.supabase
       .channel('public:data')

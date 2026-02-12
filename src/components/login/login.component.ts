@@ -24,4 +24,15 @@ export class LoginComponent {
       this.loading.set(false)
     }
   }
+
+  async signInAsGuest() {
+    try {
+      this.loading.set(true)
+      await this.supabase.signInAsGuest()
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Errore sconosciuto durante l\'accesso come ospite'
+      this.error.set(message)
+      this.loading.set(false)
+    }
+  }
 }
