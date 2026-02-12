@@ -1,0 +1,201 @@
+<div class="space-y-4 animate-fade-in pb-10">
+  <!-- Overall Balance Chart -->
+  <div class="bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-700/50 hover:border-indigo-500/30 transition-all duration-300 overflow-hidden mt-4">
+    <button (click)="toggleChart('overall')" class="w-full flex items-center justify-between p-4 sm:p-6 hover:bg-white/5 transition-colors text-left group">
+      <div class="flex items-center gap-3">
+        <div class="bg-indigo-500/20 p-2 rounded-lg group-hover:bg-indigo-500/30 transition-colors">
+          <svg class="w-5 h-5 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+          </svg>
+        </div>
+        <h2 class="text-xl font-bold text-gray-100">Andamento Saldo Complessivo</h2>
+      </div>
+      <svg class="w-6 h-6 text-gray-500 transition-transform duration-300" [class.rotate-180]="expandedCharts()['overall']" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+      </svg>
+    </button>
+
+    @if (expandedCharts()['overall']) {
+    <div class="p-4 sm:p-6 pt-0 animate-slide-down">
+      @if (chartData().length > 1) {
+      <div class="min-h-[350px]">
+        <apx-chart
+          [series]="overallChartOptions().series!"
+          [chart]="overallChartOptions().chart!"
+          [xaxis]="overallChartOptions().xaxis!"
+          [yaxis]="overallChartOptions().yaxis!"
+          [stroke]="overallChartOptions().stroke!"
+          [tooltip]="overallChartOptions().tooltip!"
+          [dataLabels]="overallChartOptions().dataLabels!"
+          [grid]="overallChartOptions().grid!"
+          [markers]="overallChartOptions().markers!"
+          [colors]="overallChartOptions().colors!"
+          [fill]="overallChartOptions().fill!"
+        ></apx-chart>
+      </div>
+      } @else {
+      <div class="flex flex-col items-center justify-center h-[200px] text-center text-gray-500 bg-gray-900/50 rounded-xl border border-dashed border-gray-700">
+        <p class="text-lg font-medium">Dati insufficienti</p>
+        <p class="text-sm">Registra il saldo per almeno due mesi.</p>
+      </div>
+      }
+    </div>
+    }
+  </div>
+
+  <!-- Last 12 Months Chart -->
+  <div class="bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-700/50 hover:border-emerald-500/30 transition-all duration-300 overflow-hidden">
+    <button (click)="toggleChart('last12')" class="w-full flex items-center justify-between p-4 sm:p-6 hover:bg-white/5 transition-colors text-left group">
+      <div class="flex items-center gap-3">
+        <div class="bg-emerald-500/20 p-2 rounded-lg group-hover:bg-emerald-500/30 transition-colors">
+          <svg class="w-5 h-5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2v2m4 6h4a2 2 0 002-2v-3a2 2 0 00-2-2h-3a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2v2m-9 19h9" />
+          </svg>
+        </div>
+        <h2 class="text-xl font-bold text-gray-100">Saldo Ultimi 12 Mesi</h2>
+      </div>
+      <svg class="w-6 h-6 text-gray-500 transition-transform duration-300" [class.rotate-180]="expandedCharts()['last12']" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+      </svg>
+    </button>
+
+    @if (expandedCharts()['last12']) {
+    <div class="p-4 sm:p-6 pt-0 animate-slide-down">
+      @if (last12MonthsChartData().length > 1) {
+      <div class="min-h-[350px]">
+        <apx-chart
+          [series]="last12ChartOptions().series!"
+          [chart]="last12ChartOptions().chart!"
+          [xaxis]="last12ChartOptions().xaxis!"
+          [yaxis]="last12ChartOptions().yaxis!"
+          [stroke]="last12ChartOptions().stroke!"
+          [tooltip]="last12ChartOptions().tooltip!"
+          [dataLabels]="last12ChartOptions().dataLabels!"
+          [grid]="last12ChartOptions().grid!"
+          [markers]="last12ChartOptions().markers!"
+          [colors]="last12ChartOptions().colors!"
+          [fill]="last12ChartOptions().fill!"
+        ></apx-chart>
+      </div>
+      } @else {
+      <div class="flex flex-col items-center justify-center h-[200px] text-center text-gray-500 bg-gray-900/50 rounded-xl border border-dashed border-gray-700">
+        <p class="text-lg font-medium">Dati insufficienti</p>
+        <p class="text-sm">Registra il saldo per almeno due mesi nell'ultimo anno.</p>
+      </div>
+      }
+    </div>
+    }
+  </div>
+
+  <!-- Salary Trend Chart -->
+  <div class="bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-700/50 hover:border-amber-500/30 transition-all duration-300 overflow-hidden">
+    <button (click)="toggleChart('salary')" class="w-full flex items-center justify-between p-4 sm:p-6 hover:bg-white/5 transition-colors text-left group">
+      <div class="flex items-center gap-3">
+        <div class="bg-amber-500/20 p-2 rounded-lg group-hover:bg-amber-500/30 transition-colors">
+          <svg class="w-5 h-5 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <h2 class="text-xl font-bold text-gray-100">Trend Entrate Mensili</h2>
+      </div>
+      <svg class="w-6 h-6 text-gray-500 transition-transform duration-300" [class.rotate-180]="expandedCharts()['salary']" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+      </svg>
+    </button>
+
+    @if (expandedCharts()['salary']) {
+    <div class="p-4 sm:p-6 pt-0 animate-slide-down">
+      @if (salaryChartData().length > 1) {
+      <div class="min-h-[350px]">
+        <apx-chart
+          [series]="salaryChartOptions().series!"
+          [chart]="salaryChartOptions().chart!"
+          [xaxis]="salaryChartOptions().xaxis!"
+          [yaxis]="salaryChartOptions().yaxis!"
+          [stroke]="salaryChartOptions().stroke!"
+          [tooltip]="salaryChartOptions().tooltip!"
+          [dataLabels]="salaryChartOptions().dataLabels!"
+          [grid]="salaryChartOptions().grid!"
+          [markers]="salaryChartOptions().markers!"
+          [colors]="salaryChartOptions().colors!"
+          [fill]="salaryChartOptions().fill!"
+        ></apx-chart>
+      </div>
+      } @else {
+      <div class="flex flex-col items-center justify-center h-[200px] text-center text-gray-500 bg-gray-900/50 rounded-xl border border-dashed border-gray-700">
+        <p class="text-lg font-medium">Dati insufficienti</p>
+        <p class="text-sm">Inserisci le entrate per almeno due mesi.</p>
+      </div>
+      }
+    </div>
+    }
+  </div>
+
+  <!-- Outgoings Trend Chart -->
+  <div class="bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-700/50 hover:border-red-500/30 transition-all duration-300 overflow-hidden">
+    <button (click)="toggleChart('outgoings')" class="w-full flex items-center justify-between p-4 sm:p-6 hover:bg-white/5 transition-colors text-left group">
+      <div class="flex items-center gap-3">
+        <div class="bg-red-500/20 p-2 rounded-lg group-hover:bg-red-500/30 transition-colors">
+          <svg class="w-5 h-5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6" />
+          </svg>
+        </div>
+        <h2 class="text-xl font-bold text-gray-100">Spese Totali Mensili</h2>
+      </div>
+      <svg class="w-6 h-6 text-gray-500 transition-transform duration-300" [class.rotate-180]="expandedCharts()['outgoings']" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+      </svg>
+    </button>
+
+    @if (expandedCharts()['outgoings']) {
+    <div class="p-4 sm:p-6 pt-0 animate-slide-down">
+      @if (outgoingsChartData().length > 1) {
+      <div class="min-h-[350px]">
+        <apx-chart
+          [series]="outgoingsChartOptions().series!"
+          [chart]="outgoingsChartOptions().chart!"
+          [xaxis]="outgoingsChartOptions().xaxis!"
+          [yaxis]="outgoingsChartOptions().yaxis!"
+          [stroke]="outgoingsChartOptions().stroke!"
+          [tooltip]="outgoingsChartOptions().tooltip!"
+          [dataLabels]="outgoingsChartOptions().dataLabels!"
+          [grid]="outgoingsChartOptions().grid!"
+          [markers]="outgoingsChartOptions().markers!"
+          [colors]="outgoingsChartOptions().colors!"
+          [fill]="outgoingsChartOptions().fill!"
+        ></apx-chart>
+      </div>
+      } @else {
+      <div class="flex flex-col items-center justify-center h-[200px] text-center text-gray-500 bg-gray-900/50 rounded-xl border border-dashed border-gray-700">
+        <p class="text-lg font-medium">Dati insufficienti</p>
+        <p class="text-sm">Registra le spese per almeno due mesi.</p>
+      </div>
+      }
+    </div>
+    }
+  </div>
+
+  <!-- Navigation Confirmation Modal -->
+  @if (showConfirm()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in" role="dialog" aria-modal="true" aria-labelledby="chart-nav-title">
+    <div class="bg-gray-900 rounded-3xl shadow-2xl w-full max-w-sm p-8 border border-white/10 transform transition-all scale-100">
+      <div class="bg-indigo-500/20 w-16 h-16 rounded-2xl flex items-center justify-center mb-6 border border-indigo-500/30">
+        <svg class="w-8 h-8 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        </svg>
+      </div>
+
+      <h3 id="chart-nav-title" class="text-2xl font-bold text-white mb-2">Vai al Dettaglio?</h3>
+      <p class="text-gray-400 mb-8 text-base">
+        Vuoi spostarti nel resoconto di <span class="text-indigo-400 font-bold">{{ selectedMonthLabel() }}</span
+        >?
+      </p>
+
+      <div class="flex flex-col gap-3">
+        <button (click)="confirmNavigation()" class="w-full px-6 py-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl transition-all text-base font-bold shadow-lg shadow-indigo-600/20 active:scale-95">Sì, portami lì</button>
+        <button (click)="cancelNavigation()" class="w-full px-6 py-4 text-gray-400 hover:text-white hover:bg-white/5 rounded-2xl transition-all text-base font-bold">Annulla</button>
+      </div>
+    </div>
+  </div>
+  }
+</div>

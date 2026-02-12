@@ -1,0 +1,28 @@
+<div class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 transition-opacity" (click)="close.emit()">
+  <div class="bg-gray-800 rounded-lg shadow-2xl p-6 w-full max-w-lg mx-4 text-gray-200 animate-fade-in-up" (click)="$event.stopPropagation()">
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="text-2xl font-bold text-indigo-400">Note Fisse</h2>
+      <button (click)="close.emit()" class="text-gray-400 hover:text-white transition-colors">
+        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+    
+    <textarea 
+      class="w-full h-64 p-3 bg-gray-900 border border-gray-700 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition" 
+      placeholder="Scrivi qui le tue note che valgono per tutti i mesi..."
+      [ngModel]="notes()"
+      (ngModelChange)="notes.set($event)">
+    </textarea>
+
+    <div class="mt-6 flex justify-end space-x-4">
+       <button (click)="close.emit()" class="px-4 py-2 rounded-md bg-gray-600 hover:bg-gray-700 text-white font-semibold transition-colors">
+        Annulla
+      </button>
+      <button (click)="saveNotes()" class="px-4 py-2 rounded-md bg-indigo-600 hover:bg-indigo-700 text-white font-semibold transition-colors">
+        Salva Note
+      </button>
+    </div>
+  </div>
+</div>

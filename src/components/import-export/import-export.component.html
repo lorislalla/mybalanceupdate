@@ -1,0 +1,143 @@
+<div class="bg-gray-800 p-4 mt-4 sm:p-6 rounded-lg shadow-lg">
+  <!-- Tabs -->
+  <div class="border-b border-gray-700">
+    <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+      <button
+        (click)="setActiveTab('import')"
+        [class]="activeTab() === 'import' ? 'border-indigo-500 text-indigo-400' : 'border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500'"
+        class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors"
+      >
+        Importa con AI
+      </button>
+      <button
+        (click)="setActiveTab('export')"
+        [class]="activeTab() === 'export' ? 'border-indigo-500 text-indigo-400' : 'border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500'"
+        class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors"
+      >
+        Esporta Dati
+      </button>
+    </nav>
+  </div>
+
+  <!-- Content -->
+  <div class="pt-6">
+    @if (activeTab() === 'import') {
+    <div class="space-y-6">
+      <!-- Restore Backup DO NOT USE AI -->
+      <div class="bg-gray-700/50 p-4 rounded-md border border-gray-600 mb-6">
+        <h3 class="text-sm font-medium text-gray-200 mb-2 flex items-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+          </svg>
+          Ripristina da Backup JSON
+        </h3>
+        <p class="text-xs text-gray-400 mb-3">Carica un file JSON esportato in precedenza per ripristinare tutti i tuoi dati.</p>
+        <div class="flex items-center gap-4">
+          <label for="backup-upload" class="cursor-pointer bg-gray-600 hover:bg-gray-500 text-white text-sm font-medium py-2 px-4 rounded-md transition-colors"> Carica Backup JSON </label>
+          <input id="backup-upload" type="file" class="sr-only" (change)="onBackupFileSelected($event)" accept=".json" />
+          @if(isLoading() && !textToParse()) {
+          <span class="text-sm text-gray-400 italic">Ripristino in corso...</span>
+          }
+        </div>
+      </div>
+
+      <!-- API Key Configuration -->
+      <div class="bg-gray-700/50 p-4 rounded-md border border-gray-600">
+        <div class="flex justify-between items-center mb-4 cursor-pointer" (click)="toggleApiKeyInput()">
+          <h3 class="text-sm font-medium text-gray-200 flex items-center">
+            <svg class="w-5 h-5 mr-2 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path>
+            </svg>
+            Configurazione API Key Gemini
+          </h3>
+          <svg [class.rotate-180]="showApiKeyInput()" class="w-5 h-5 text-gray-400 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+          </svg>
+        </div>
+
+        @if (showApiKeyInput()) {
+        <div class="space-y-3 animate-fade-in">
+          <div>
+            <label for="api-key" class="block text-xs font-medium text-gray-400 mb-1">Google Gemini API Key</label>
+            <div class="flex gap-2">
+              <input
+                type="password"
+                id="api-key"
+                [ngModel]="apiKey()"
+                (ngModelChange)="apiKey.set($event)"
+                class="flex-1 bg-gray-900 border border-gray-600 rounded-md py-2 px-3 text-sm text-white focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+                placeholder="Inserisci la tua API Key qui..."
+              />
+              <button (click)="saveApiKey()" class="px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-md transition-colors">Salva</button>
+            </div>
+            <p class="mt-1 text-xs text-gray-500">La chiave è necessaria per l'analisi e viene salvata solo nel tuo browser.</p>
+            <p class="mt-1 text-xs text-gray-500"><a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-indigo-400 underline">Ottieni una chiave qui</a></p>
+          </div>
+        </div>
+        }
+      </div>
+
+      <div>
+        <label for="text-to-parse" class="block text-sm font-medium text-gray-300">Testo da Analizzare</label>
+        <p class="text-xs text-gray-500 mb-2">Incolla qui i dati del tuo resoconto o carica un file di testo (.txt, .csv, .md).</p>
+        <textarea
+          id="text-to-parse"
+          rows="10"
+          [ngModel]="textToParse()"
+          (ngModelChange)="textToParse.set($event)"
+          class="w-full bg-gray-900 border border-gray-700 rounded-md p-3 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
+          placeholder="Es: Gennaio 2024, saldo 3500€ il 27. Spese: Supermercato 120€, Benzina 60€."
+        ></textarea>
+        <div class="mt-2 text-right">
+          <label for="file-upload" class="cursor-pointer text-sm font-medium text-indigo-400 hover:text-indigo-300"> O carica un file... </label>
+          <input id="file-upload" name="file-upload" type="file" class="sr-only" (change)="onFileSelected($event)" accept=".txt,.csv,.md" />
+        </div>
+      </div>
+
+      <div>
+        <label for="ai-instructions" class="block text-sm font-medium text-gray-300">Istruzioni per l'AI (Opzionale)</label>
+        <p class="text-xs text-gray-500 mb-2">Aiuta l'IA a capire i tuoi dati. Es: "La colonna 'Uscite' contiene le spese." o "'Sal.' sta per saldo."</p>
+        <textarea
+          id="ai-instructions"
+          rows="3"
+          [ngModel]="userInstructions()"
+          (ngModelChange)="userInstructions.set($event)"
+          class="w-full bg-gray-900 border border-gray-700 rounded-md p-3 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
+          placeholder="Scrivi qui le istruzioni..."
+        ></textarea>
+      </div>
+
+      <div class="flex items-center justify-between">
+        <div class="h-10">
+          @if (errorMessage()) {
+          <p class="text-red-400 text-sm">{{ errorMessage() }}</p>
+          } @if (successMessage()) {
+          <p class="text-green-400 text-sm">{{ successMessage() }}</p>
+          }
+        </div>
+        <button
+          (click)="handleImport()"
+          [disabled]="isLoading() || !textToParse()"
+          class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-gray-600 disabled:cursor-not-allowed transition-all"
+        >
+          @if (isLoading()) {
+          <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          Analisi in corso... } @else { Avvia Importazione }
+        </button>
+      </div>
+    </div>
+    } @if (activeTab() === 'export') {
+    <div class="text-center">
+      <h2 class="text-lg font-medium text-gray-300">Esporta tutti i tuoi dati</h2>
+      <p class="mt-1 text-sm text-gray-500">Salva una copia di backup dei tuoi resoconti in formato JSON o CSV.</p>
+      <div class="mt-6 flex justify-center gap-4">
+        <button (click)="exportData('json')" class="px-5 py-2.5 font-medium bg-gray-700 hover:bg-gray-600 text-gray-200 rounded-lg text-sm transition-colors">Esporta in JSON</button>
+        <button (click)="exportData('csv')" class="px-5 py-2.5 font-medium bg-gray-700 hover:bg-gray-600 text-gray-200 rounded-lg text-sm transition-colors">Esporta in CSV</button>
+      </div>
+    </div>
+    }
+  </div>
+</div>

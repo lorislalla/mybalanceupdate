@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="it" class="h-full bg-gray-900">
+
+<head>
+  <meta charset="utf-8">
+  <title>MyBalanceUpdate</title>
+  <base href="/">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/png" href="/public/icons/favicon.png">
+  <meta name="theme-color" content="#111827">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    /* Custom scrollbar for a modern look */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #1f2937;
+      /* gray-800 */
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #4b5563;
+      /* gray-600 */
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #6b7280;
+      /* gray-500 */
+    }
+
+    /* Custom animation for picker */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .animate-fade-in-up {
+      animation: fadeInUp 0.2s ease-out forwards;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
+    }
+
+    .animate-fade-in {
+      animation: fadeIn 0.2s ease-out forwards;
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .animate-slide-down {
+      animation: slideDown 0.3s ease-out forwards;
+    }
+
+    /* Chart tooltip style */
+    .chart-tooltip {
+      position: absolute;
+      text-align: left;
+      padding: 8px 12px;
+      font-size: 13px;
+      background: #111827;
+      /* gray-900 */
+      border: 1px solid #4f46e5;
+      /* indigo-600 */
+      border-radius: 8px;
+      pointer-events: none;
+      transition: opacity 0.2s ease-in-out;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+      color: #d1d5db;
+      /* gray-300 */
+      line-height: 1.4;
+    }
+  </style>
+  <script type="importmap">
+{
+  "imports": {
+    "rxjs": "https://aistudiocdn.com/rxjs@^7.8.2?conditions=es2015",
+    "rxjs/operators": "https://aistudiocdn.com/rxjs@^7.8.2/operators?conditions=es2015",
+    "rxjs/ajax": "https://aistudiocdn.com/rxjs@^7.8.2/ajax?conditions=es2015",
+    "rxjs/webSocket": "https://aistudiocdn.com/rxjs@^7.8.2/webSocket?conditions=es2015",
+    "rxjs/testing": "https://aistudiocdn.com/rxjs@^7.8.2/testing?conditions=es2015",
+    "rxjs/fetch": "https://aistudiocdn.com/rxjs@^7.8.2/fetch?conditions=es2015",
+    "@angular/core": "https://next.esm.sh/@angular/core@^20.3.3?external=rxjs",
+    "@google/genai": "https://next.esm.sh/@google/genai@^1.23.0?external=rxjs",
+    "@angular/compiler": "https://next.esm.sh/@angular/compiler@^20.3.4?external=rxjs",
+    "@angular/platform-browser": "https://next.esm.sh/@angular/platform-browser@^20.3.4?external=rxjs",
+    "@angular/common": "https://next.esm.sh/@angular/common@^20.3.4?external=rxjs",
+    "@angular/common/http": "https://next.esm.sh/@angular/common@^20.3.4/http?conditions=es2015",
+    "@angular/common/locales/it": "https://next.esm.sh/@angular/common@^20.3.4/locales/it.js",
+    "@angular/forms": "https://next.esm.sh/@angular/forms@^20.3.4?external=rxjs"
+  }
+}
+</script>
+  <link rel="stylesheet" href="/index.css">
+  <link rel="manifest" href="manifest.webmanifest">
+</head>
+
+<body class="h-full text-gray-200">
+  <app-root></app-root>
+  <noscript>Please enable JavaScript to continue using this application.</noscript>
+</body>
+
+</html>
