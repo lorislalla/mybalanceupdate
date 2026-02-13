@@ -279,13 +279,8 @@ export class MonthlyReportComponent {
   }
 
   onPaydayChange(newPayday: string) {
+    // Aggiorno il campo nel report
     this.updateReportField('payday', newPayday)
-    if (newPayday) {
-      // Dopo aver inserito la data stipendio, passo al mese successivo con un breve delay UX
-      setTimeout(() => {
-        this.changeMonth(1)
-      }, 500)
-    }
   }
 
   // =============================================
