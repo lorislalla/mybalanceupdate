@@ -26,11 +26,23 @@ export class StorageService {
     })
   }
 
-  // Trovo il primo mese senza data stipendio (primo mese "incompleto")
+  // Trovo il mese ideale per l'apertura: se il corrente ha già il payday, propongo il prossimo
   getFirstIncompleteMonth(): string {
     const reports = this.appData().reports
-    if (reports.length === 0) return new Date().toISOString().substring(0, 7)
+    const today = new Date()
+    const currentMonthStr = today.toISOString().substring(0, 7) // formato "YYYY-MM"
 
+    // Cerco se esiste già il report per il mese corrente e se è stato impostato il payday
+    const [year, month] = currentMonthStr.split('-').map(Number)
+    const currentReport = reports.find(r => r.year === year && r.month === month)
+
+    if (currentReport && currentReport.payday) {
+      // Se il mese corrente è già "chiuso" col payday, suggerisco di aprire il mese prossimo
+      const nextMonthDate = new Date(year, month, 1) // month è 1-based, JS Date lo legge come mese successivo se passato così (0-11)
+      return nextMonthDate.toISOString().substring(0, 7)
+    }
+
+    // Altrimenti cerco se c'è un mese "buco" nel passato che non ha il payday
     const sortedAsc = [...reports].sort((a, b) =>
       new Date(a.year, a.month - 1).getTime() - new Date(b.year, b.month - 1).getTime()
     )
@@ -39,7 +51,9 @@ export class StorageService {
     if (firstIncomplete) {
       return `${firstIncomplete.year}-${firstIncomplete.month.toString().padStart(2, '0')}`
     }
-    return new Date().toISOString().substring(0, 7)
+
+    // Se non trovo nulla, apro sul mese corrente
+    return currentMonthStr
   }
 
   getReport(year: number, month: number): MonthlyReport | undefined {
