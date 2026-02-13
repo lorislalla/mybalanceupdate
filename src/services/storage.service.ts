@@ -30,30 +30,30 @@ export class StorageService {
   getFirstIncompleteMonth(): string {
     const reports = this.appData().reports
     const today = new Date()
-    const currentMonthStr = today.toISOString().substring(0, 7) // formato "YYYY-MM"
+    const currentYear = today.getFullYear()
+    const currentMonth = today.getMonth() + 1 // 1-12
 
     // Cerco se esiste già il report per il mese corrente e se è stato impostato il payday
-    const [year, month] = currentMonthStr.split('-').map(Number)
-    const currentReport = reports.find(r => r.year === year && r.month === month)
+    const currentReport = reports.find(r => r.year === currentYear && r.month === currentMonth)
 
     if (currentReport && currentReport.payday) {
       // Se il mese corrente è già "chiuso" col payday, suggerisco di aprire il mese prossimo
-      const nextMonthDate = new Date(year, month, 1) // month è 1-based, JS Date lo legge come mese successivo se passato così (0-11)
-      return nextMonthDate.toISOString().substring(0, 7)
+      const nextMonthDate = new Date(currentYear, currentMonth, 1) // currentMonth è 1-based, JS Date con (year, 1-based-month, 1) punta al mese dopo
+      return `${nextMonthDate.getFullYear()}-${(nextMonthDate.getMonth() + 1).toString().padStart(2, '0')}`
     }
 
-    // Altrimenti cerco se c'è un mese "buco" nel passato che non ha il payday
-    const sortedAsc = [...reports].sort((a, b) =>
-      new Date(a.year, a.month - 1).getTime() - new Date(b.year, b.month - 1).getTime()
+    // Altrimenti cerco se c'è un mese nel passato o futuro che non ha il payday, partendo dal più recente
+    const sortedDesc = [...reports].sort((a, b) =>
+      new Date(b.year, b.month - 1).getTime() - new Date(a.year, a.month - 1).getTime()
     )
 
-    const firstIncomplete = sortedAsc.find(r => !r.payday)
+    const firstIncomplete = sortedDesc.find(r => !r.payday)
     if (firstIncomplete) {
       return `${firstIncomplete.year}-${firstIncomplete.month.toString().padStart(2, '0')}`
     }
 
     // Se non trovo nulla, apro sul mese corrente
-    return currentMonthStr
+    return `${currentYear}-${currentMonth.toString().padStart(2, '0')}`
   }
 
   getReport(year: number, month: number): MonthlyReport | undefined {
