@@ -24,7 +24,7 @@ export class CalculatorComponent {
   total = computed(() => this.items().reduce((sum, item) => sum + (item.amount || 0), 0))
 
   addItem() {
-    if (!this.newDescription() || !this.newAmount()) return
+    if (!this.newDescription() || this.newAmount() === null) return
 
     const newItem: CalculatorItem = {
       id: crypto.randomUUID(),

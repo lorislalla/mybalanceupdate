@@ -25,6 +25,8 @@
         <label class="block text-[10px] font-medium text-gray-400 mb-1">Importo (€)</label>
         <input
           type="number"
+          min="-9007199254740991"
+          step="any"
           [ngModel]="newAmount()"
           (ngModelChange)="newAmount.set($event)"
           placeholder="0.00"
@@ -63,6 +65,8 @@
         <div class="flex items-center gap-2 flex-shrink-0">
           <input
             type="number"
+            min="-9007199254740991"
+            step="any"
             [ngModel]="item.amount"
             (ngModelChange)="updateItem(item.id, 'amount', +$event)"
             class="w-24 bg-transparent border-b border-transparent hover:border-gray-700 focus:border-indigo-500 focus:outline-none py-0.5 px-1 text-sm text-right font-mono transition"
