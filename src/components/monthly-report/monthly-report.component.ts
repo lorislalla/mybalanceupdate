@@ -73,7 +73,7 @@ class OverflowMarqueeDirective implements AfterViewInit, OnDestroy {
         overflow: hidden;
         text-overflow: ellipsis;
       }
-      @media (max-width: 767px) and (prefers-reduced-motion: no-preference) {
+      @media (max-width: 767px) {
         .expense-description-marquee-content {
           display: inline-flex;
           align-items: center;
