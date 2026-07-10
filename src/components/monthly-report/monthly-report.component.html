@@ -156,9 +156,18 @@
             </div>
           }
           @for (expense of currentReport.expenses; track expense.id) {
-            <div cdkDrag class="group bg-gray-800 hover:bg-gray-750 p-2 rounded-lg border border-gray-700/50 shadow-sm flex items-center justify-between gap-2 transition-all">
+            <div
+              cdkDrag
+              [cdkDragStartDelay]="{ touch: 300, mouse: 0 }"
+              class="group bg-gray-800 hover:bg-gray-750 p-2 rounded-lg border border-gray-700/50 shadow-sm flex items-center justify-between gap-2 transition-all"
+            >
               <!-- Drag Handle -->
-              <div cdkDragHandle class="hidden md:flex mr-2 cursor-move text-gray-600 group-hover:text-gray-400 transition-colors" title="Trascina per riordinare">
+              <div
+                cdkDragHandle
+                class="flex mr-1 sm:mr-2 cursor-grab active:cursor-grabbing text-gray-500 md:text-gray-600 group-hover:text-gray-400 transition-colors touch-none"
+                title="Tieni premuto e trascina per riordinare"
+                aria-label="Tieni premuto e trascina per riordinare"
+              >
                 <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16" />
                 </svg>
@@ -226,28 +235,31 @@
                   <div class="flex items-center justify-between gap-2">
                     <!-- Description (Click to Edit) -->
                     <span
-                      class="flex-1 text-gray-200 text-sm font-medium truncate cursor-pointer hover:text-indigo-400 transition-colors"
+                      appOverflowMarquee
+                      class="expense-description-marquee flex-1 text-gray-200 text-sm font-medium cursor-pointer hover:text-indigo-400 transition-colors"
                       (click)="startEditing(expense)"
                       title="Clicca per modificare"
                     >
-                      {{ expense.description }}
-                      @if (expense.shared) {
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          class="h-3.5 w-3.5 text-indigo-400 inline mb-0.5 ml-1 opacity-70"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                          title="Spesa condivisa"
-                        >
-                          <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
-                          />
-                        </svg>
-                      }
+                      <span class="expense-description-marquee-content">
+                        {{ expense.description }}
+                        @if (expense.shared) {
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            class="h-3.5 w-3.5 flex-none text-indigo-400 mb-0.5 ml-1 opacity-70"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            title="Spesa condivisa"
+                          >
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              stroke-width="2"
+                              d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
+                            />
+                          </svg>
+                        }
+                      </span>
                     </span>
 
                     <!-- Action (Repeat) - Visible on hover/mobile -->
@@ -384,9 +396,9 @@
                       </button>
                     </div>
                   } @else {
-                    <div class="flex items-center justify-between gap-2 flex-1">
-                      <span class="text-sm text-gray-400 truncate">{{ income.description }}</span>
-                      <div class="flex items-center gap-1">
+                    <div class="flex items-center gap-2 flex-1 min-w-0">
+                      <span class="flex-1 min-w-0 text-sm text-gray-400 truncate">{{ income.description }}</span>
+                      <div class="flex flex-shrink-0 items-center gap-1">
                         <button
                           (click)="startEditingIncome(income)"
                           class="p-1.5 text-gray-500 hover:text-blue-400 rounded-md hover:bg-gray-700/50 transition-colors"
@@ -416,7 +428,7 @@
                           </svg>
                         </button>
                       </div>
-                      <span class="text-green-400 font-bold font-mono text-sm whitespace-nowrap min-w-[80px] text-right">{{ income.amount | number: '1.0-0' }} €</span>
+                      <span class="flex-shrink-0 text-green-400 font-bold font-mono text-sm whitespace-nowrap min-w-[80px] text-right">{{ income.amount | number: '1.0-0' }} €</span>
                     </div>
                   }
                 </div>

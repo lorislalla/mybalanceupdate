@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, inject, signal, computed, effect } from '@angular/core'
+import { AfterViewInit, Component, ChangeDetectionStrategy, Directive, ElementRef, inject, OnDestroy, signal, computed, effect } from '@angular/core'
 import { CommonModule, DatePipe } from '@angular/common'
 import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms'
 import { DragDropModule, CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop'
@@ -6,11 +6,40 @@ import { StorageService } from '../../services/storage.service'
 import { MonthlyReport, Expense, Income } from '../../models/financial-data.model'
 import { TextFieldModule } from '@angular/cdk/text-field'
 
+@Directive({
+  selector: '[appOverflowMarquee]'
+})
+class OverflowMarqueeDirective implements AfterViewInit, OnDestroy {
+  private element = inject<ElementRef<HTMLElement>>(ElementRef)
+  private resizeObserver?: ResizeObserver
+
+  ngAfterViewInit() {
+    const host = this.element.nativeElement
+    const content = host.firstElementChild as HTMLElement | null
+    if (!content) return
+
+    const updateOverflow = () => {
+      const distance = host.clientWidth - content.scrollWidth
+      host.classList.toggle('is-overflowing', distance < 0)
+      host.style.setProperty('--marquee-distance', `${Math.min(0, distance)}px`)
+    }
+
+    this.resizeObserver = new ResizeObserver(updateOverflow)
+    this.resizeObserver.observe(host)
+    this.resizeObserver.observe(content)
+    updateOverflow()
+  }
+
+  ngOnDestroy() {
+    this.resizeObserver?.disconnect()
+  }
+}
+
 @Component({
   selector: 'app-monthly-report',
   templateUrl: './monthly-report.component.html',
   providers: [DatePipe],
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, DragDropModule, TextFieldModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, DragDropModule, TextFieldModule, OverflowMarqueeDirective],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [
     `
@@ -33,6 +62,36 @@ import { TextFieldModule } from '@angular/cdk/text-field'
       }
       .cdk-drop-list-dragging .cdk-drag {
         transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+      }
+      .expense-description-marquee {
+        min-width: 0;
+        overflow: hidden;
+        white-space: nowrap;
+      }
+      .expense-description-marquee-content {
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      @media (max-width: 767px) and (prefers-reduced-motion: no-preference) {
+        .expense-description-marquee-content {
+          display: inline-flex;
+          align-items: center;
+          width: max-content;
+          overflow: visible;
+          text-overflow: clip;
+        }
+        .expense-description-marquee.is-overflowing .expense-description-marquee-content {
+          animation: expense-description-marquee 7s ease-in-out 1s infinite alternate;
+        }
+      }
+      @keyframes expense-description-marquee {
+        0%, 20% {
+          transform: translateX(0);
+        }
+        80%, 100% {
+          transform: translateX(var(--marquee-distance));
+        }
       }
       /* Nascondo gli spinner nativi degli input numerici */
       .no-spin::-webkit-inner-spin-button,
