@@ -1,26 +1,9 @@
-<div class="space-y-4 pb-20 md:pb-0 overflow-x-hidden">
-  <!-- 1. Sticky Month Selector (Mobile & Desktop) -->
-  <div class="sticky top-0 z-20 bg-gray-900/95 backdrop-blur-md border-b border-gray-800 py-1 -mx-4 px-4 sm:mx-0 sm:px-0 sm:rounded-b-lg">
-    <div class="flex items-center justify-between max-w-4xl mx-auto">
-      <button (click)="changeMonth(-1)" class="px-8 py-2 text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition-all">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-        </svg>
-      </button>
-
-      <div class="flex flex-col items-center cursor-pointer" (click)="openMonthPicker()">
-        <span class="text-lg font-bold text-white tracking-tight">{{ selectedMonthDisplay() }}</span>
-        <span class="text-xs text-indigo-400 font-medium tracking-wider uppercase">Mensilità</span>
-      </div>
-
-      <button (click)="changeMonth(1)" class="px-8 py-2 text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition-all">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-        </svg>
-      </button>
-    </div>
-  </div>
-
+<div class="report-page">
+  <nav class="month-nav" aria-label="Navigazione mesi">
+    <button type="button" class="icon-button" aria-label="Mese precedente" (click)="changeMonth(-1)">←</button>
+    <button type="button" class="month-title" aria-label="Seleziona mese" (click)="openMonthPicker()"><small>RESOCONTO MENSILE</small><span>{{ selectedMonthDisplay() }}</span></button>
+    <button type="button" class="icon-button" aria-label="Mese successivo" (click)="changeMonth(1)">→</button>
+  </nav>
   <!-- Month Picker Overlay -->
   @if (isMonthPickerOpen()) {
     <div
@@ -82,560 +65,158 @@
     </div>
   }
 
-  <!-- MAIN GRID LAYOUT -->
   @if (report(); as currentReport) {
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6 animate-fade-in-up">
-      <!-- MAIN CONTENT: Add Expense & Expenses List (Mobile: 1-2, Desktop: Col 5-12) -->
-      <div class="lg:col-span-8 space-y-4 order-1 lg:order-2">
-        <!-- Add Expense Bar -->
-        <form
-          [formGroup]="newExpenseForm"
-          (ngSubmit)="addExpense()"
-          class="bg-gray-800 p-2 sm:p-3 rounded-xl shadow-lg border border-gray-700 flex gap-1 sm:gap-2 items-center sticky top-14 z-10 transition-shadow focus-within:ring-2 focus-within:ring-indigo-500/50"
-        >
-          <input
-            type="text"
-            formControlName="description"
-            list="expense-suggestions"
-            class="flex-1 min-w-0 focus:outline-none bg-transparent border-none text-white placeholder-gray-500 focus:ring-0 text-xs sm:text-sm py-2"
-            placeholder="Nuova spesa (es. Spesa Lidl)..."
-          />
-
-          <div class="w-px h-6 bg-gray-700"></div>
-
-          <input
-            type="number"
-            formControlName="amount"
-            class="w-12 sm:w-16 focus:outline-none bg-transparent border-none text-white text-right placeholder-gray-500 focus:ring-0 text-xs sm:text-sm py-2 font-mono no-spin"
-            placeholder="€"
-          />
-
-          <div class="w-px h-6 bg-gray-700 mx-0.5 sm:mx-1"></div>
-
-          <!-- Shared Toggle -->
-          <label
-            class="cursor-pointer p-1.5 rounded-lg transition-all hover:bg-white/5 active:scale-90"
-            [class.bg-indigo-500/20]="newExpenseForm.get('shared')?.value"
-            title="Contrassegna come spesa condivisa"
-          >
-            <input type="checkbox" formControlName="shared" class="hidden" />
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              class="h-4 w-4 sm:h-5 sm:w-5 transition-colors"
-              [class.text-indigo-400]="newExpenseForm.get('shared')?.value"
-              [class.text-gray-500]="!newExpenseForm.get('shared')?.value"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
-              />
-            </svg>
-          </label>
-
-          <button
-            type="submit"
-            [disabled]="newExpenseForm.invalid"
-            class="bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg p-1.5 sm:p-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5" viewBox="0 0 20 20" fill="currentColor">
-              <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
-            </svg>
-          </button>
+    <div class="report-workspace">
+      <section class="expense-section" aria-label="Spese del mese">
+        <form #expenseComposer class="expense-composer" [formGroup]="editingExpenseId() ? editExpenseForm : newExpenseForm"
+          (ngSubmit)="editingExpenseId() ? saveExpense() : addExpense(); expenseDescription.focus()"
+          (keydown.escape)="cancelEditing(); $event.preventDefault(); expenseDescription.focus()">
+          <h2>{{ editingExpenseId() ? 'Modifica spesa' : 'Segna una spesa' }}</h2>
+          <div class="composer-fields">
+            <label for="expense-description">Spesa
+              <input #expenseDescription id="expense-description" type="text" formControlName="description" list="expense-suggestions" placeholder="Es. spesa al supermercato" />
+            </label>
+            <label for="expense-amount">Importo · tua quota
+              <input id="expense-amount" type="text" appMoneyInput inputmode="decimal" formControlName="amount" autocomplete="off" placeholder="0,00 €" />
+            </label>
+            <label class="shared-toggle"><span>Condivisa a metà</span>
+              <span class="toggle-control">
+                <input type="checkbox" role="switch" formControlName="shared" aria-label="Condivisa a metà" />
+                <span class="toggle-track" aria-hidden="true"></span>
+              </span>
+            </label>
+            <button type="submit" class="primary-button composer-submit" [attr.aria-label]="editingExpenseId() ? 'Salva spesa' : 'Aggiungi spesa'"
+              [title]="editingExpenseId() ? 'Salva spesa' : 'Aggiungi spesa'" [disabled]="(editingExpenseId() ? editExpenseForm : newExpenseForm).invalid">
+              @if (editingExpenseId()) {
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m5 12 4 4L19 6" /></svg>
+              } @else {
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
+              }
+            </button>
+          </div>
+          @if (editingExpense(); as expense) {
+            <div class="expense-extra-actions">
+              <button type="button" class="secondary-button" (click)="cancelEditing(); expenseDescription.focus()">Annulla</button>
+              <button type="button" class="secondary-button" aria-label="Ripeti in un altro mese" title="Ripeti in un altro mese" (click)="repeatExpense(expense)">Ripeti</button>
+              <button type="button" class="danger-button" aria-label="Elimina spesa" (click)="promptDeleteExpense(expense)">Elimina</button>
+            </div>
+          }
+          @let expenseForm = editingExpenseId() ? editExpenseForm : newExpenseForm;
+          @if (expenseForm.controls.amount.dirty && expenseForm.controls.amount.invalid) {
+            <p class="field-error" role="alert">Inserisci un importo valido, positivo e con al massimo due decimali.</p>
+          }
         </form>
 
-        <!-- Expenses List -->
-        <div cdkDropList (cdkDropListDropped)="drop($event)" class="space-y-1">
-          @if (currentReport.expenses.length === 0) {
-            <div class="text-center py-10 bg-gray-800/30 rounded-xl border border-dashed border-gray-700">
-              <p class="text-gray-500 text-sm">Nessuna spesa registrata.</p>
-            </div>
-          }
+        <div class="section-heading"><h2>Spese registrate</h2><strong class="amount">{{ totalExpenses() | number: '1.2-2' }} €</strong></div>
+        <div class="expense-list" cdkDropList [cdkDropListData]="currentReport.expenses" (cdkDropListDropped)="drop($event)">
           @for (expense of currentReport.expenses; track expense.id) {
-            <div
-              cdkDrag
-              [cdkDragStartDelay]="{ touch: 300, mouse: 0 }"
-              class="group bg-gray-800 hover:bg-gray-750 p-2 rounded-lg border border-gray-700/50 shadow-sm flex items-center justify-between gap-2 transition-all"
-            >
-              <!-- Drag Handle -->
-              <div
-                cdkDragHandle
-                class="flex mr-1 sm:mr-2 cursor-grab active:cursor-grabbing text-gray-500 md:text-gray-600 group-hover:text-gray-400 transition-colors touch-none"
-                title="Tieni premuto e trascina per riordinare"
-                aria-label="Tieni premuto e trascina per riordinare"
-              >
-                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16" />
-                </svg>
+            <div class="expense-row" cdkDrag [cdkDragStartDelay]="{ touch: 180, mouse: 0 }" [class.is-editing]="editingExpenseId() === expense.id">
+              <button type="button" class="drag-handle" cdkDragHandle [attr.aria-label]="'Riordina ' + expense.description" title="Tieni premuto e trascina per riordinare">
+                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="9" cy="5" r="1.5"/><circle cx="15" cy="5" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="19" r="1.5"/><circle cx="15" cy="19" r="1.5"/></svg>
+              </button>
+              <div class="expense-description">
+                <span>{{ expense.description }}</span>
+                @if (expense.shared) { <small>Condivisa · totale {{ (expense.totalAmount ?? expense.amount * 2) | number: '1.2-2' }} €</small> }
               </div>
-
-              <!-- Content -->
-              <div class="flex-1 min-w-0">
-                @if (editingExpenseId() === expense.id) {
-                  <div class="flex gap-1 items-center flex-1 min-w-0" [formGroup]="editExpenseForm">
-                    <input
-                      type="text"
-                      formControlName="description"
-                      list="expense-suggestions"
-                      class="flex-1 min-w-0 bg-gray-900 border border-gray-600 rounded px-2 py-0.5 text-sm text-white focus:ring-1 focus:ring-indigo-500"
-                    />
-                    <input
-                      type="number"
-                      formControlName="amount"
-                      class="w-16 bg-gray-900 border border-gray-600 rounded px-2 py-0.5 text-sm text-white text-right focus:ring-1 focus:ring-indigo-500 no-spin"
-                    />
-
-                    <!-- Shared Toggle in Edit -->
-                    <label class="cursor-pointer p-1 rounded-md transition-colors hover:bg-gray-700 flex-shrink-0" [class.bg-indigo-500/20]="editExpenseForm.get('shared')?.value">
-                      <input type="checkbox" formControlName="shared" class="hidden" />
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        class="h-4 w-4 transition-colors"
-                        [class.text-indigo-400]="editExpenseForm.get('shared')?.value"
-                        [class.text-gray-500]="!editExpenseForm.get('shared')?.value"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          stroke-width="2"
-                          d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
-                        />
-                      </svg>
-                    </label>
-
-                    <button (click)="saveExpense()" class="text-green-400 hover:text-green-300 p-1 flex-shrink-0" title="Salva">
-                      <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                      </svg>
-                    </button>
-                    <button (click)="promptDeleteExpense(expense)" class="text-red-400 hover:text-red-300 p-1 flex-shrink-0" title="Elimina">
-                      <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          stroke-width="2"
-                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                        />
-                      </svg>
-                    </button>
-                    <button (click)="cancelEditing()" class="text-gray-400 hover:text-gray-300 p-1 flex-shrink-0" title="Annulla">
-                      <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </button>
-                  </div>
-                } @else {
-                  <div class="flex items-center justify-between gap-2">
-                    <!-- Description (Click to Edit) -->
-                    <span
-                      appOverflowMarquee
-                      class="expense-description-marquee flex-1 text-gray-200 text-sm font-medium cursor-pointer hover:text-indigo-400 transition-colors"
-                      (click)="startEditing(expense)"
-                      title="Clicca per modificare"
-                    >
-                      <span class="expense-description-marquee-content">
-                        {{ expense.description }}
-                        @if (expense.shared) {
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            class="inline-block h-3.5 w-3.5 flex-none text-indigo-400 mb-0.5 ml-1 opacity-70"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                            title="Spesa condivisa"
-                          >
-                            <path
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
-                              stroke-width="2"
-                              d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
-                            />
-                          </svg>
-                        }
-                      </span>
-                    </span>
-
-                    <!-- Action (Repeat) - Visible on hover/mobile -->
-                    <div class="flex items-center gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
-                      <button
-                        (click)="repeatExpense(expense)"
-                        class="p-1 text-gray-500 hover:text-blue-400 rounded-md hover:bg-gray-700/50 transition-colors"
-                        title="Ripeti spesa in un altro mese"
-                      >
-                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                          />
-                        </svg>
-                      </button>
-                    </div>
-
-                    <!-- Amount -->
-                    <div class="flex flex-col items-end min-w-[70px]">
-                      <span class="text-red-400 font-bold font-mono text-sm whitespace-nowrap">-{{ expense.amount | number: '1.2-2' }} €</span>
-                      @if (expense.shared && expense.totalAmount) {
-                        <span class="text-[10px] text-gray-500 font-mono font-medium leading-none mt-0.5" title="Importo totale (50% a testa)"
-                          >Tot: {{ expense.totalAmount | number: '1.2-2' }}€</span
-                        >
-                      }
-                    </div>
-                  </div>
-                }
-              </div>
+              <strong class="amount">{{ expense.amount | number: '1.2-2' }} €</strong>
+              <button type="button" class="icon-button edit-expense" [attr.aria-label]="'Modifica ' + expense.description" title="Modifica spesa"
+                (click)="startEditing(expense); expenseDescription.focus(); expenseComposer.scrollIntoView({block: 'nearest', behavior: 'smooth'})">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M9.2 3.8 10 2h4l.8 1.8 1.8 1 2-.2 2 3.4-1.2 1.6v2.1l1.2 1.6-2 3.5-2-.2-1.8 1L14 20h-4l-.8-2.4-1.8-1-2 .2-2-3.5 1.2-1.6V9.6L3.4 8l2-3.4 2 .2z"/><circle cx="12" cy="10.5" r="3"/></svg>
+              </button>
             </div>
-          }
+          } @empty { <p class="empty-state">Nessuna spesa registrata per questo mese.</p> }
         </div>
-      </div>
+      </section>
 
-      <!-- SIDEBAR: Summary, Payday, Notes, Stats (Mobile: 3-6, Desktop: Col 1-4) -->
-      <div class="lg:col-span-4 space-y-4 order-2 lg:order-1">
-        <!-- Compact Summary Card -->
-        <div class="bg-gray-800/80 backdrop-blur-sm p-4 rounded-xl border border-gray-700/50 shadow-lg relative overflow-hidden group">
-          <!-- Decorative bg gradient -->
-          <div class="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-indigo-500/10 rounded-full blur-2xl group-hover:bg-indigo-500/20 transition-all duration-500"></div>
-
-          <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 flex items-center gap-2">
-            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 4h6m-6 4h6M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
-            Riepilogo
-          </h3>
-
-          <div class="space-y-3">
-            <!-- Saldo reale di riferimento -->
-            <div class="flex justify-between items-end gap-3 pb-2 border-b border-gray-700/50">
-              <span class="text-sm text-gray-400">{{ isCalendarMonth() ? 'Saldo al 1° del mese' : 'Saldo dopo stipendio' }}</span>
-              @if (isCalendarMonth()) {
-                <div class="flex items-center justify-end gap-0.5 shrink-0">
-                  <input
-                    type="number"
-                    aria-label="Saldo al 1° del mese"
-                    [ngModel]="currentReport.balance === 0 ? null : currentReport.balance"
-                    (ngModelChange)="updateReportField('balance', +$event)"
-                    class="no-spin w-28 text-right bg-transparent border-b border-transparent hover:border-gray-600 focus:border-indigo-500 text-gray-200 font-bold focus:outline-none transition-colors p-0 text-lg placeholder-gray-600/50"
-                    placeholder="Inserisci"
-                  />
-                  <span class="text-lg font-bold text-gray-200">€</span>
-                </div>
-              } @else {
-                <span class="text-lg font-bold text-gray-200">{{ currentReport.balance | number: '1.0-0' }} €</span>
-              }
-            </div>
-
-            <!-- Net Salary -->
-            <div class="flex justify-between items-center group/salary">
-              <span class="text-sm text-gray-400">{{ salaryLabel() }}</span>
-              <div class="flex items-center justify-end gap-0.5">
-                <input
-                  type="number"
-                  [ngModel]="currentReport.salary === 0 ? null : currentReport.salary"
-                  (ngModelChange)="updateReportField('salary', +$event)"
-                  class="no-spin w-24 text-right bg-transparent border-b border-transparent hover:border-gray-600 focus:border-green-500 text-green-400 font-bold focus:outline-none transition-colors p-0 text-base placeholder-gray-600/50"
-                  placeholder="Inserisci"
-                />
-                <span class="text-green-400 font-bold">€</span>
-              </div>
-            </div>
-
-            <!-- 14th Salary (June) -->
-            @if (currentReport.month === 6) {
-              <div class="flex justify-between items-center animate-fade-in group/salary14">
-                <span class="text-sm text-yellow-500/80">14ª Mensilità</span>
-                <div class="flex items-center justify-end gap-0.5">
-                  <input
-                    type="number"
-                    [ngModel]="currentReport.salary14 === 0 ? null : currentReport.salary14"
-                    (ngModelChange)="updateReportField('salary14', +$event)"
-                    class="no-spin w-24 text-right bg-transparent border-b border-transparent hover:border-gray-600 focus:border-yellow-500 text-yellow-500 font-bold focus:outline-none transition-colors p-0 text-base placeholder-gray-600/50"
-                    placeholder="Inserisci"
-                  />
-                  <span class="text-yellow-500 font-bold">€</span>
-                </div>
-              </div>
-            }
-
-            <!-- 13th Salary (Dec) -->
-            @if (currentReport.month === 12) {
-              <div class="flex justify-between items-center animate-fade-in group/salary13">
-                <span class="text-sm text-yellow-500/80">13ª Mensilità</span>
-                <div class="flex items-center justify-end gap-0.5">
-                  <input
-                    type="number"
-                    [ngModel]="currentReport.salary13 === 0 ? null : currentReport.salary13"
-                    (ngModelChange)="updateReportField('salary13', +$event)"
-                    class="no-spin w-24 text-right bg-transparent border-b border-transparent hover:border-gray-600 focus:border-yellow-500 text-yellow-500 font-bold focus:outline-none transition-colors p-0 text-base placeholder-gray-600/50"
-                    placeholder="Inserisci"
-                  />
-                  <span class="text-yellow-500 font-bold">€</span>
-                </div>
-              </div>
-            }
-
-            <!-- Entrate aggiuntive -->
-            @if (currentReport.incomes?.length > 0) {
-              @for (income of currentReport.incomes; track income.id) {
-                <div class="flex items-center justify-between gap-3">
-                  @if (editingIncomeId() === income.id) {
-                    <div class="flex gap-1 items-center flex-1 min-w-0" [formGroup]="editIncomeForm">
-                      <input
-                        type="text"
-                        formControlName="description"
-                        list="income-suggestions"
-                        class="flex-1 min-w-0 bg-gray-900 border border-gray-600 rounded px-2 py-1 text-sm text-white focus:ring-1 focus:ring-indigo-500"
-                      />
-                      <input
-                        type="number"
-                        formControlName="amount"
-                        class="w-16 bg-gray-900 border border-gray-600 rounded px-2 py-1 text-sm text-white text-right focus:ring-1 focus:ring-indigo-500 no-spin"
-                      />
-                      <button (click)="saveIncome()" class="text-green-400 hover:text-green-300 p-1 flex-shrink-0">
-                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                        </svg>
-                      </button>
-                      <button (click)="cancelEditingIncome()" class="text-gray-400 hover:text-gray-300 p-1 flex-shrink-0">
-                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                      </button>
-                    </div>
-                  } @else {
-                    <div class="flex items-center gap-2 flex-1 min-w-0">
-                      <span class="flex-1 min-w-0 text-sm text-gray-400 truncate">{{ income.description }}</span>
-                      <div class="flex flex-shrink-0 items-center gap-1">
-                        <button
-                          (click)="startEditingIncome(income)"
-                          class="p-1.5 text-gray-500 hover:text-blue-400 rounded-md hover:bg-gray-700/50 transition-colors"
-                          title="Modifica"
-                        >
-                          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
-                              stroke-width="2"
-                              d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                            />
-                          </svg>
-                        </button>
-                        <button
-                          (click)="promptDeleteIncome(income)"
-                          class="p-1.5 text-gray-500 hover:text-red-400 rounded-md hover:bg-gray-700/50 transition-colors"
-                          title="Elimina"
-                        >
-                          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
-                              stroke-width="2"
-                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                            />
-                          </svg>
-                        </button>
-                      </div>
-                      <span class="flex-shrink-0 text-green-400 font-bold font-mono text-sm whitespace-nowrap min-w-[80px] text-right">{{ income.amount | number: '1.0-0' }} €</span>
-                    </div>
-                  }
-                </div>
-              }
-            }
-
-            @if (isAddingIncome()) {
-              <form [formGroup]="newIncomeForm" (ngSubmit)="addIncome()" class="flex gap-1 items-center animate-fade-in mt-2 pr-1">
-                <input
-                  type="text"
-                  formControlName="description"
-                  list="income-suggestions"
-                  class="flex-1 min-w-0 bg-gray-900 border border-gray-600 rounded px-2 py-1 text-sm text-white focus:ring-1 focus:ring-indigo-500"
-                  placeholder="Descrizione..."
-                />
-                <input
-                  type="number"
-                  formControlName="amount"
-                  class="w-16 bg-gray-900 border border-gray-600 rounded px-2 py-1 text-sm text-white text-right focus:ring-1 focus:ring-indigo-500 no-spin"
-                  placeholder="€"
-                />
-                <button type="submit" [disabled]="newIncomeForm.invalid" class="text-green-400 hover:text-green-300 p-1 flex-shrink-0">
-                  <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                  </svg>
-                </button>
-                <button type="button" (click)="cancelAddingIncome()" class="text-gray-400 hover:text-gray-300 p-1 flex-shrink-0">
-                  <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </form>
+      <div class="report-sidebar">
+        <aside class="balance-panel" aria-labelledby="balance-heading">
+          <h2 id="balance-heading" class="balance-title">Bilancio del mese</h2>
+          <section class="balance-section">
+            <h3>{{ isCalendarMonth() ? 'Saldi reali' : 'Saldo di riferimento' }}</h3>
+            <app-money-field [label]="isCalendarMonth() ? 'Saldo al 1° del mese' : 'Saldo dopo stipendio'" [value]="currentReport.balance" [month]="currentMonthYear()" (valueSaved)="updateReportField('balance', $event)" />
+            @if (!isCalendarMonth()) {
+              <label class="payday-label" for="payday">Giorno dello stipendio
+                <input id="payday" type="date" #paydayInput [ngModel]="currentReport.payday" (change)="onPaydayChange(paydayInput.value)" />
+              </label>
             } @else {
-              <button (click)="toggleAddIncome()" class="text-indigo-400 hover:text-indigo-300 text-sm font-medium mt-2">+ Aggiungi entrata</button>
-            }
-
-            <datalist id="income-suggestions">
-              @for (suggestion of incomeSuggestions(); track suggestion) {
-                <option [value]="suggestion"></option>
-              }
-            </datalist>
-
-            <datalist id="expense-suggestions">
-              @for (suggestion of expenseSuggestions(); track suggestion) {
-                <option [value]="suggestion"></option>
-              }
-            </datalist>
-
-            <!-- Entrate totali -->
-            <div class="pt-2 mt-2 border-t border-gray-700/50 flex justify-between items-end">
-              <span class="text-sm font-medium text-gray-300">Entrate totali</span>
-              <span class="text-lg font-extrabold text-green-400 leading-none">+{{ totalSalary() | number: '1.0-0' }} €</span>
-            </div>
-
-            <!-- Expenses Total -->
-            <div class="pt-2 mt-2 border-t border-gray-700/50 flex justify-between items-end">
-              <span class="text-sm font-medium text-gray-300">Uscite totali</span>
-              <span class="text-xl font-extrabold text-red-400 leading-none">-{{ totalExpenses() | number: '1.0-0' }} €</span>
-            </div>
-
-            @if (isCalendarMonth()) {
-              @let summary = monthlyBalanceSummary();
-              <div class="pt-3 mt-3 border-t border-gray-700/50 space-y-3">
-                <div class="flex justify-between items-center gap-3">
-                  <div class="relative flex-1 min-w-0 flex items-center gap-1.5">
-                    <span class="text-sm text-gray-400">Saldo a fine mese</span>
-                    <details #closingInfo class="shrink-0">
-                      <summary
-                        class="list-none [&::-webkit-details-marker]:hidden cursor-pointer inline-flex items-center justify-center w-5 h-5 rounded-full border border-gray-600 text-xs text-gray-400 hover:text-white focus-visible:outline focus-visible:outline-indigo-400"
-                        aria-label="Informazioni sul saldo a fine mese"
-                        title="Corrisponde al saldo al 1° del mese successivo."
-                        (blur)="closingInfo.open = false"
-                        (keydown.escape)="closingInfo.open = false"
-                      >i</summary>
-                      <p class="absolute bottom-full left-0 mb-2 z-20 w-64 max-w-[calc(100vw-4rem)] rounded-lg border border-gray-600 bg-gray-900 p-3 text-xs text-gray-300 shadow-xl">Corrisponde al saldo al 1° del mese successivo.</p>
-                    </details>
-                  </div>
-                  @if (summary.closingBalance !== null) {
-                    <span class="text-lg font-bold text-gray-200 whitespace-nowrap">{{ summary.closingBalance | number: '1.0-0' }} €</span>
-                  } @else {
-                    <span class="text-xs text-gray-500 text-right">Non ancora disponibile</span>
-                  }
+              <div class="balance-line">
+                <div class="info-label"><span>Saldo a fine mese</span>
+                  <details #closingInfo><summary aria-label="Informazioni sul saldo a fine mese" (blur)="closingInfo.open = false" (keydown.escape)="closingInfo.open = false">i</summary><p>Corrisponde al saldo al 1° del mese successivo.</p></details>
                 </div>
-                <div class="flex justify-between items-center gap-3">
-                  <div class="relative flex-1 min-w-0 flex items-center gap-1.5">
-                    <span class="text-sm text-gray-400">Variazione reale del saldo</span>
-                    <details #changeInfo class="shrink-0">
-                      <summary
-                        class="list-none [&::-webkit-details-marker]:hidden cursor-pointer inline-flex items-center justify-center w-5 h-5 rounded-full border border-gray-600 text-xs text-gray-400 hover:text-white focus-visible:outline focus-visible:outline-indigo-400"
-                        aria-label="Informazioni sulla variazione reale del saldo"
-                        title="Saldo finale meno saldo iniziale."
-                        (blur)="changeInfo.open = false"
-                        (keydown.escape)="changeInfo.open = false"
-                      >i</summary>
-                      <p class="absolute bottom-full left-0 mb-2 z-20 w-64 max-w-[calc(100vw-4rem)] rounded-lg border border-gray-600 bg-gray-900 p-3 text-xs text-gray-300 shadow-xl">Saldo finale meno saldo iniziale.</p>
-                    </details>
-                  </div>
-                  @if (summary.balanceChange !== null) {
-                    <span class="font-bold whitespace-nowrap" [class.text-green-400]="summary.balanceChange >= 0" [class.text-red-400]="summary.balanceChange < 0">{{ summary.balanceChange > 0 ? '+' : '' }}{{ summary.balanceChange | number: '1.0-0' }} €</span>
-                  } @else {
-                    <span class="text-xs text-gray-500">Non disponibile</span>
-                  }
-                </div>
-                <div class="flex justify-between items-center gap-3">
-                  <div class="relative flex-1 min-w-0 flex items-center gap-1.5">
-                    <span class="text-sm text-gray-400">Scostamento dai movimenti registrati</span>
-                    <details #discrepancyInfo class="shrink-0">
-                      <summary
-                        class="list-none [&::-webkit-details-marker]:hidden cursor-pointer inline-flex items-center justify-center w-5 h-5 rounded-full border border-gray-600 text-xs text-gray-400 hover:text-white focus-visible:outline focus-visible:outline-indigo-400"
-                        aria-label="Informazioni sullo scostamento dai movimenti registrati"
-                        title="Variazione reale − (entrate − spese registrate). Negativo: saldo inferiore a quanto spiegano i movimenti segnati; positivo: superiore. Può includere spese o altri movimenti non registrati."
-                        (blur)="discrepancyInfo.open = false"
-                        (keydown.escape)="discrepancyInfo.open = false"
-                      >i</summary>
-                      <p class="absolute bottom-full left-0 mb-2 z-20 w-64 max-w-[calc(100vw-4rem)] rounded-lg border border-gray-600 bg-gray-900 p-3 text-xs text-gray-300 shadow-xl">Variazione reale − (entrate − spese registrate). Negativo: saldo inferiore a quanto spiegano i movimenti segnati; positivo: superiore. Può includere spese o altri movimenti non registrati.</p>
-                    </details>
-                  </div>
-                  @if (summary.unrecordedChange !== null) {
-                    <span class="font-bold whitespace-nowrap" [class.text-green-400]="summary.unrecordedChange >= 0" [class.text-red-400]="summary.unrecordedChange < 0">{{ summary.unrecordedChange > 0 ? '+' : '' }}{{ summary.unrecordedChange | number: '1.0-0' }} €</span>
-                  } @else {
-                    <span class="text-xs text-gray-500">Non disponibile</span>
-                  }
-                </div>
+                @if (monthlyBalanceSummary().closingBalance !== null) { <strong class="amount">{{ monthlyBalanceSummary().closingBalance | number: '1.2-2' }} €</strong> }
+                @else { <span class="unavailable">Non ancora disponibile</span> }
               </div>
             }
-          </div>
-        </div>
+          </section>
 
-        <!-- Compact Payday & Balance Input -->
-        @if (!isCalendarMonth()) {
-        <div class="bg-gray-800/80 backdrop-blur-sm p-4 rounded-xl border border-gray-700/50 shadow-lg">
-          <div class="grid grid-cols-2 gap-4">
-              <div class="col-span-1">
-                <label class="block text-[10px] uppercase font-bold text-gray-500 tracking-wider mb-1">Giorno Stip.</label>
-                <input
-                  type="date"
-                  #paydayInput
-                  [ngModel]="currentReport.payday"
-                  (change)="onPaydayChange(paydayInput.value)"
-                  style="color-scheme: dark"
-                  class="w-full bg-gray-900 border border-gray-700 rounded text-sm text-white px-2 py-1.5 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
-                />
+          <section class="balance-section">
+            <h3>Entrate e uscite</h3>
+            <app-money-field kind="income" [label]="salaryLabel()" [value]="currentReport.salary" [month]="currentMonthYear()" (valueSaved)="updateReportField('salary', $event)" />
+            @if (currentReport.month === 6 || currentReport.salary14) {
+              <app-money-field kind="income" label="14ª mensilità" [value]="currentReport.salary14 || 0" [month]="currentMonthYear()" (valueSaved)="updateReportField('salary14', $event)" />
+            }
+            @if (currentReport.month === 12 || currentReport.salary13) {
+              <app-money-field kind="income" label="13ª mensilità" [value]="currentReport.salary13 || 0" [month]="currentMonthYear()" (valueSaved)="updateReportField('salary13', $event)" />
+            }
+            <div class="section-heading income-heading"><span>Altre entrate</span><button type="button" class="secondary-button" (click)="toggleAddIncome()">+ Aggiungi</button></div>
+            @if (isAddingIncome()) {
+              <form class="income-form" [formGroup]="newIncomeForm" (ngSubmit)="addIncome()" (keydown.escape)="cancelAddingIncome(); $event.preventDefault()">
+                <label>Descrizione entrata<input type="text" formControlName="description" list="income-suggestions" placeholder="Es. rimborso" /></label>
+                <label>Importo entrata<input type="text" appMoneyInput inputmode="decimal" formControlName="amount" placeholder="0,00 €" /></label>
+                <div class="actions"><button type="button" class="secondary-button" (click)="cancelAddingIncome()">Annulla</button><button type="submit" class="primary-button" [disabled]="newIncomeForm.invalid">Aggiungi entrata</button></div>
+              </form>
+            }
+            @for (income of currentReport.incomes; track income.id) {
+              @if (editingIncomeId() === income.id) {
+                <form class="income-form" [formGroup]="editIncomeForm" (ngSubmit)="saveIncome()" (keydown.escape)="cancelEditingIncome(); $event.preventDefault()">
+                  <label>Descrizione entrata<input type="text" formControlName="description" list="income-suggestions" /></label>
+                  <label>Importo entrata<input type="text" appMoneyInput inputmode="decimal" formControlName="amount" /></label>
+                  <div class="actions"><button type="button" class="secondary-button" (click)="cancelEditingIncome()">Annulla</button><button type="submit" class="primary-button" [disabled]="editIncomeForm.invalid">Salva entrata</button></div>
+                </form>
+              } @else {
+                <div class="income-row"><span>{{ income.description }}</span><strong class="amount">{{ income.amount | number: '1.2-2' }} €</strong>
+                  <div class="income-actions"><button type="button" class="icon-button" [attr.aria-label]="'Modifica entrata ' + income.description" (click)="startEditingIncome(income)">✎</button><button type="button" class="icon-button danger-button" [attr.aria-label]="'Elimina entrata ' + income.description" (click)="promptDeleteIncome(income)">×</button></div>
+                </div>
+              }
+            }
+            <div class="balance-line"><span>Entrate registrate</span><strong class="amount positive">{{ totalSalary() | number: '1.2-2' }} €</strong></div>
+            <div class="balance-line"><span>Spese registrate</span><strong class="amount negative">{{ totalExpenses() | number: '1.2-2' }} €</strong></div>
+          </section>
+
+          @if (isCalendarMonth()) {
+            @let summary = monthlyBalanceSummary();
+            <section class="balance-section">
+              <h3>Confronto del mese</h3>
+              <div class="balance-line"><div class="info-label"><span>Variazione reale</span>
+                <details #changeInfo><summary aria-label="Informazioni sulla variazione reale del saldo" (blur)="changeInfo.open = false" (keydown.escape)="changeInfo.open = false">i</summary><p>Saldo finale meno saldo iniziale.</p></details>
               </div>
-            <div class="col-span-1">
-              <label class="block text-[10px] uppercase font-bold text-gray-500 tracking-wider mb-1">Saldo Agg.</label>
-              <div class="relative">
-                <input
-                  type="number"
-                  [ngModel]="currentReport.balance"
-                  (ngModelChange)="updateReportField('balance', +$event)"
-                  class="w-full bg-gray-900 border border-gray-700 rounded text-sm text-white px-2 py-1.5 pl-6 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
-                  placeholder="0"
-                />
-
-                <span class="absolute left-2 top-1/2 -translate-y-1/2 text-gray-500 text-sm"> € </span>
+                @if (summary.balanceChange !== null) { <strong class="amount" [class.positive]="summary.balanceChange > 0" [class.negative]="summary.balanceChange < 0">{{ summary.balanceChange > 0 ? '+' : '' }}{{ summary.balanceChange | number: '1.2-2' }} €</strong> }
+                @else { <span class="unavailable">Non disponibile</span> }
               </div>
-            </div>
+              <div class="balance-line"><div class="info-label"><span>Scostamento</span>
+                <details #discrepancyInfo><summary aria-label="Informazioni sullo scostamento" (blur)="discrepancyInfo.open = false" (keydown.escape)="discrepancyInfo.open = false">i</summary><p>Variazione reale − (entrate − spese registrate). Negativo: saldo inferiore a quanto spiegano i movimenti segnati; positivo: superiore. Può includere spese o altri movimenti non registrati.</p></details>
+              </div>
+                @if (summary.unrecordedChange !== null) { <strong class="amount" [class.positive]="summary.unrecordedChange > 0" [class.negative]="summary.unrecordedChange < 0">{{ summary.unrecordedChange > 0 ? '+' : '' }}{{ summary.unrecordedChange | number: '1.2-2' }} €</strong> }
+                @else { <span class="unavailable">Non disponibile</span> }
+              </div>
+            </section>
+          }
+        </aside>
+
+        <section class="month-notes" aria-labelledby="notes-heading">
+          <div class="section-heading"><h2 id="notes-heading">Note del mese</h2>
+            @if (!isEditingNotes()) { <button type="button" class="secondary-button" (click)="startEditingNotes()">{{ currentReport.notes ? 'Modifica note' : 'Aggiungi note' }}</button> }
           </div>
-        </div>
-        }
-
-        <!-- Notes Card -->
-        <div class="bg-gray-800/80 backdrop-blur-sm p-4 rounded-xl border border-gray-700/50 shadow-lg h-auto">
-          <label class="block text-[10px] uppercase font-bold text-gray-500 tracking-wider mb-1">Note del Mese</label>
-          <textarea
-            [ngModel]="currentReport.notes"
-            (ngModelChange)="updateReportField('notes', $event)"
-            cdkTextareaAutosize
-            [cdkAutosizeMinRows]="3"
-            class="w-full bg-gray-900/50 border border-gray-700 rounded-lg p-3 focus:outline-none text-sm text-gray-300 resize-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 placeholder-gray-600 box-border"
-            placeholder="Scrivi qui..."
-          ></textarea>
-        </div>
-
-        <!-- Quick Stats Card -->
-        <div class="bg-indigo-900/20 p-4 rounded-xl border border-indigo-500/20">
-          <h4 class="text-indigo-400 text-xs font-bold uppercase mb-2">Statistiche Veloci</h4>
-          <p class="text-gray-400 text-xs">
-            Spese maggiori di 50€: <span class="text-white font-bold">{{ currentReport.expenses.length }}</span>
-          </p>
-          <p class="text-gray-400 text-xs mt-1">
-            Spese condivise: <span class="text-white font-bold">{{ sharedExpensesCount() }}</span>
-          </p>
-          <p class="text-gray-400 text-xs mt-1">
-            Importo spese condivise: <span class="text-white font-bold">{{ sharedExpensesTotal() | number: '1.0-0' }} €</span>
-          </p>
-          <p class="text-gray-400 text-xs mt-1">
-            Media per spesa:
-            <span class="text-white font-bold">{{ (currentReport.expenses.length ? totalExpenses() / currentReport.expenses.length : 0) | number: '1.0-0' }} €</span>
-          </p>
-        </div>
+          @if (isEditingNotes()) {
+            <label for="month-notes-editor" class="sr-only">Note del mese</label>
+            <textarea id="month-notes-editor" [ngModel]="notesDraft()" (ngModelChange)="notesDraft.set($event)" cdkTextareaAutosize [cdkAutosizeMinRows]="5" (keydown.escape)="cancelEditingNotes(); $event.preventDefault()" placeholder="Scrivi le tue note..."></textarea>
+            <div class="actions"><button type="button" class="secondary-button" (click)="cancelEditingNotes()">Annulla</button><button type="button" class="primary-button" (click)="saveNotes()">Salva note</button></div>
+          } @else { <p class="notes-text" [class.empty-state]="!currentReport.notes">{{ currentReport.notes || 'Nessuna nota per questo mese.' }}</p> }
+        </section>
       </div>
     </div>
+    <datalist id="expense-suggestions">@for (suggestion of expenseSuggestions(); track suggestion) { <option [value]="suggestion"></option> }</datalist>
+    <datalist id="income-suggestions">@for (suggestion of incomeSuggestions(); track suggestion) { <option [value]="suggestion"></option> }</datalist>
   }
 
   <!-- Delete Modal -->
