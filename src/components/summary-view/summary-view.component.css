@@ -1,0 +1,26 @@
+:host { display: block; color: #e8edf5; }
+* { box-sizing: border-box; }
+.charts-section { padding: 30px 10px 40px; }
+.section-header { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; margin-bottom: 26px; }
+.eyebrow { font-size: 10px; font-weight: 700; letter-spacing: 1.8px; color: #a5b4fc; margin: 0 0 8px; }
+h1 { font-size: clamp(27px, 3.4vw, 38px); line-height: 1.2; letter-spacing: -1.3px; font-weight: 700; color: #f5f7fc; margin: 0; }
+h1 span { color: #a5b4fc; }
+.section-description { font-size: 13px; color: #aebbd0; line-height: 1.7; margin: 10px 0 0; max-width: 480px; }
+.save-status { display: flex; align-items: center; gap: 8px; max-width: 310px; flex-shrink: 0; color: #b8c4d7; background: #1b2739; border: 1px solid #304057; padding: 10px 12px; border-radius: 12px; }
+.save-status p { font-size: 11px; line-height: 1.6; margin: 0; }
+.status-dot { width: 6px; height: 6px; flex-shrink: 0; border-radius: 100%; background: #6ee7b7; }
+.save-warning { color: #fde68a; border-color: #635336; }
+.save-warning .status-dot { background: #fde68a; }
+.save-status button { font: inherit; font-size: 11px; background: transparent; border: 0; color: #e0e7ff; text-decoration: underline; min-height: 44px; cursor: pointer; padding: 4px; }
+.charts-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; align-items: start; }
+.month-dialog { margin: auto; width: min(430px, calc(100% - 32px)); background: #182437; color: #edf2fa; border: 1px solid #475978; padding: 26px; border-radius: 20px; box-shadow: 0 24px 80px #0006; }
+.month-dialog::backdrop { background: #020617b3; backdrop-filter: blur(3px); }
+.dialog-icon { font-size: 24px; color: #c7d2fe; }
+.month-dialog h2 { font-size: 20px; font-weight: 650; margin: 12px 0; }
+.month-dialog p { line-height: 1.7; font-size: 14px; color: #bcc9dc; margin: 0 0 22px; }
+.month-dialog > div { display: flex; gap: 10px; flex-wrap: wrap; }
+.month-dialog button { min-height: 44px; border-radius: 10px; background: #26364d; border: 1px solid #52627b; color: #eef3fb; padding: 10px 14px; font: inherit; font-size: 12px; font-weight: 600; cursor: pointer; }
+.month-dialog .primary { background: #c7d2fe; color: #172554; border-color: #c7d2fe; }
+button:focus-visible { outline: 3px solid #a5b4fc; outline-offset: 3px; }
+@media (max-width: 899px) { .charts-grid { grid-template-columns: minmax(0, 1fr); } .section-header { flex-direction: column; align-items: flex-start; gap: 16px; } .save-status { max-width: 100%; } }
+@media (max-width: 599px) { .charts-section { padding: 22px 2px 30px; } .charts-grid { gap: 16px; } .section-header { padding: 0 6px; margin-bottom: 20px; } .section-description { font-size: 12px; } .month-dialog { padding: 22px; } }

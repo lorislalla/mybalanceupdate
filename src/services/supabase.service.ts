@@ -242,6 +242,22 @@ export class SupabaseService {
     if (error) throw error
   }
 
+  // Preferenze non sensibili della sola sezione grafici; mai usate per autorizzazione.
+  async getChartPreferences(): Promise<unknown> {
+    if (this.isGuestSession || !this.userSubject.value) return null
+    const { data, error } = await this.supabase.auth.getUser()
+    if (error) throw error
+    return data.user?.user_metadata?.['mybalance_chart_preferences'] ?? null
+  }
+
+  async updateChartPreferences(preferences: unknown): Promise<void> {
+    if (this.isGuestSession || !this.userSubject.value) throw new Error('Account richiesto')
+    const { error } = await this.supabase.auth.updateUser({
+      data: { mybalance_chart_preferences: preferences }
+    })
+    if (error) throw error
+  }
+
   // Configuro la sottoscrizione realtime per aggiornamenti live
   private setupRealtimeSubscription() {
     if (this.realtimeChannel) return

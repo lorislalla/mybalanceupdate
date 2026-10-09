@@ -1,0 +1,65 @@
+<article class="chart-card" [style.--accent]="definition().color" [attr.aria-labelledby]="id() + '-title'">
+  <header class="card-header">
+    <div class="heading-group"><span class="chart-icon" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">@if (id() === 'last12') { <circle cx="12" cy="12" r="9"/><path d="M12 7v5h5"/> } @else if (id() === 'outgoings') { <path d="M5 7h14v13H5zM8 4h8M9 11l6 6m-6 0h6v-6"/> } @else if (id() === 'salary') { <path d="M5 7h14v13H5zM8 4h8M15 11l-6 6m0-6v6h6"/> } @else { <path d="M4 19V5m0 14h16M8 14l4-4 3 2 5-7"/> }</svg></span><div><h2 [id]="id() + '-title'">{{ definition().title }}</h2><p>{{ definition().subtitle }}</p></div></div>
+    <button type="button" #configureButton class="configure" [attr.aria-expanded]="editing()" [attr.aria-controls]="id() + '-settings'" (click)="editing() ? cancelEditing() : startEditing()" [attr.aria-label]="'Configura ' + definition().title">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M4 7h16M4 17h16"/><circle cx="9" cy="7" r="3" fill="currentColor"/><circle cx="15" cy="17" r="3" fill="currentColor"/></svg><span>Configura</span>
+    </button>
+  </header>
+
+  @if (editing()) {
+    <form #settingsForm="ngForm" class="settings-panel" [attr.aria-label]="'Impostazioni ' + definition().title" [id]="id() + '-settings'" (ngSubmit)="saveSettings(settingsForm.valid)">
+      <div class="settings-heading"><h3>Personalizza il grafico</h3><span>Le modifiche si applicano al salvataggio</span></div>
+      <div class="settings-grid">
+        @if (id() !== 'last12') {
+          <label>Periodo<select aria-label="Periodo" name="period" [ngModel]="draft().period" (ngModelChange)="patchDraft({ period: $event })"><option value="all">Tutto lo storico</option><option value="6">Ultimi 6 mesi</option><option value="12">Ultimi 12 mesi</option><option value="24">Ultimi 24 mesi</option><option value="custom">Personalizzato</option></select></label>
+        }
+        <label>Visualizzazione<select aria-label="Visualizzazione" name="type" [ngModel]="draft().type" (ngModelChange)="patchDraft({ type: $event })"><option value="area">Area</option><option value="line">Linea</option><option value="bar">Colonne</option></select></label>
+        @if (id() !== 'last12' && draft().period === 'custom') {
+          <label>Dal mese<input type="month" name="from" required [ngModel]="draft().from" (ngModelChange)="patchDraft({ from: $event })"></label>
+          <label>Al mese<input type="month" name="to" required [ngModel]="draft().to" (ngModelChange)="patchDraft({ to: $event })"></label>
+        }
+      </div>
+      <label class="check"><input type="checkbox" name="zeroBaseline" [ngModel]="draft().zeroBaseline" (ngModelChange)="patchDraft({ zeroBaseline: $event })"><span>Includi lo zero nella scala verticale</span></label>
+      @if (id() === 'outgoings') {
+        <fieldset><legend>Esclusioni delle spese</legend><p class="field-help" [id]="id() + '-limit-help'">La soglia si applica a ogni singola spesa, sulla tua quota. Le spese uguali alla soglia restano incluse. I resoconti originali non cambiano.</p>
+          <div class="settings-grid">
+            <label>Escludi spese superiori a (€)<input type="text" inputmode="decimal" appMoneyInput name="expenseLimit" [ngModel]="draft().expenseLimit" (ngModelChange)="patchDraft({ expenseLimit: $event })" #limit="ngModel" min="0" [attr.aria-describedby]="id() + '-limit-help'" [attr.aria-invalid]="limit.invalid ? 'true' : null" placeholder="Nessun limite"></label>
+            <label>Escludi descrizioni contenenti<input type="text" name="excludedTerms" maxlength="500" [ngModel]="draft().excludedTerms" (ngModelChange)="patchDraft({ excludedTerms: $event })" placeholder="Es. vacanza, ristrutturazione"><span class="field-help">Separa le parole o frasi con una virgola.</span></label>
+          </div>
+        </fieldset>
+        <div class="average-controls"><label class="check"><input type="checkbox" name="movingAverage" [ngModel]="draft().movingAverage" (ngModelChange)="patchDraft({ movingAverage: $event })"><span>Mostra media mobile</span></label>
+          @if (draft().movingAverage) { <label>Finestra della media<select aria-label="Finestra della media" name="averageMonths" [ngModel]="draft().averageMonths" (ngModelChange)="patchDraft({ averageMonths: $event })"><option [ngValue]="3">3 mesi</option><option [ngValue]="6">6 mesi</option><option [ngValue]="12">12 mesi</option></select></label> }
+        </div>
+      }
+      @if (id() === 'salary') {
+        <fieldset><legend>Entrate da includere</legend><label class="check"><input type="checkbox" name="includeExtraSalary" [ngModel]="draft().includeExtraSalary" (ngModelChange)="patchDraft({ includeExtraSalary: $event })"><span>Includi tredicesima e quattordicesima</span></label><label class="check"><input type="checkbox" name="includeOtherIncome" [ngModel]="draft().includeOtherIncome" (ngModelChange)="patchDraft({ includeOtherIncome: $event })"><span>Includi altre entrate e rimborsi</span></label></fieldset>
+      }
+      <label class="check"><input type="checkbox" name="showTable" [ngModel]="draft().showTable" (ngModelChange)="patchDraft({ showTable: $event })"><span>Mostra anche la tabella dei valori</span></label>
+      @if (formError()) { <p role="alert" class="form-error">{{ formError() }}</p> }
+      <div class="settings-actions"><button type="button" class="text-button" (click)="resetDraft()">Ripristina predefiniti</button><div><button type="button" class="secondary" (click)="cancelEditing()">Annulla</button><button type="submit" class="primary" [disabled]="preferences.status() === 'saving'">Salva impostazioni</button></div></div>
+    </form>
+  }
+
+  <div class="metrics">
+    <div class="main-metric"><span>{{ definition().metric }}</span><strong>{{ currency(latest()?.y) }}</strong><small>{{ latest() ? month(latest()!) : 'In attesa di dati' }}</small></div>
+    <div class="secondary-metric"><span>{{ id() === 'salary' || id() === 'outgoings' ? 'Media dei mesi registrati' : 'Variazione nel periodo' }}</span><strong>{{ currency(id() === 'salary' || id() === 'outgoings' ? average() : change()) }}</strong><small>{{ points().length }} mesi registrati</small></div>
+  </div>
+  <div class="chart-meta"><span>{{ periodLabel() }}</span>@if (hasExpenseFilters()) { <span class="filter-badge">Esclusioni attive</span> }</div>
+  @if (id() === 'outgoings' && hasExpenseFilters()) {
+    <p class="exclusion-note">{{ excluded().count }} spese escluse · {{ currency(excluded().amount) }} fuori dal grafico@if (settings().expenseLimit !== null) { <span> · soglia {{ currency(settings().expenseLimit) }}</span> }</p>
+  }
+  @if (points().length) {
+    @let config = options();
+    <div class="chart-container" role="img" [attr.aria-label]="definition().title + ', ' + points().length + ' mesi. Ultimo valore: ' + currency(latest()?.y) + '. Valori consultabili nella tabella.'">
+      <div aria-hidden="true"><apx-chart [series]="config.series" [chart]="config.chart!" [xaxis]="config.xaxis!" [yaxis]="config.yaxis!" [stroke]="config.stroke!" [tooltip]="config.tooltip!" [dataLabels]="config.dataLabels!" [grid]="config.grid!" [markers]="config.markers!" [colors]="config.colors!" [fill]="config.fill!" [theme]="config.theme!" [plotOptions]="config.plotOptions!" [legend]="config.legend!" [responsive]="config.responsive!"></apx-chart></div>
+    </div>
+    @if (id() === 'outgoings' && settings().movingAverage) { <p class="chart-legend"><span class="legend-dot"></span>Spese incluse <span class="legend-line"></span>Media mobile · {{ settings().averageMonths }} mesi</p> }
+    <div class="card-footer"><button type="button" class="text-button" [attr.aria-expanded]="settings().showTable" [attr.aria-controls]="id() + '-data'" (click)="toggleTable()" [disabled]="preferences.status() === 'saving'">{{ settings().showTable ? 'Nascondi valori' : 'Mostra valori' }}</button><div class="month-picker"><label class="sr-only" [for]="id() + '-month'">Mese da aprire · {{ definition().title }}</label><select [id]="id() + '-month'" [ngModel]="selectionValid() ? selected() : ''" (ngModelChange)="selected.set($event)"><option value="">Scegli un mese</option>@for (point of points(); track point.x) { <option [value]="key(point)">{{ month(point) }}</option> }</select><button type="button" class="secondary" [disabled]="!selectionValid()" (click)="openSelected()">Apri mese</button></div></div>
+    @if (settings().showTable) {
+      <div class="data-table" [id]="id() + '-data'"><table><caption>Valori · {{ definition().title }}</caption><thead><tr><th scope="col">Mese</th><th scope="col">{{ id() === 'outgoings' ? 'Spese incluse' : 'Importo' }}</th>@if (id() === 'outgoings') { <th scope="col">Escluse</th> }</tr></thead><tbody>@for (point of points(); track point.x) { <tr><th scope="row"><button type="button" (click)="openMonth.emit(point)" [attr.aria-label]="'Apri resoconto di ' + month(point)">{{ month(point) }}</button></th><td>{{ currency(point.y) }}</td>@if (id() === 'outgoings') { <td>{{ point.excludedCount }}<small>{{ currency(point.excludedAmount) }}</small></td> }</tr> }</tbody></table></div>
+    }
+    <p class="data-note">{{ id() === 'salary' ? 'Mese di registrazione: lo stipendio si riferisce al mese precedente.' : 'I mesi senza dati non sono conteggiati come zero.' }}</p>
+  } @else {
+    <div class="empty-state"><span aria-hidden="true">◌</span><h3>Nessun dato da visualizzare</h3><p>{{ id() === 'last12' ? 'Non ci sono saldi registrati negli ultimi 12 mesi di calendario.' : 'Registra i dati nel resoconto o scegli un periodo diverso nelle impostazioni.' }}</p>@if (id() !== 'last12') { <button type="button" class="secondary" (click)="startEditing()">Modifica periodo</button> }</div>
+  }
+</article>
