@@ -237,7 +237,7 @@ export class MonthlyReportComponent {
     const reports = this.storageService.appData().reports
     const dataSet = new Set<string>()
     reports.forEach(r => {
-      if (r.payday) {
+      if (r.payday || r.balance !== 0) {
         dataSet.add(`${r.year}-${r.month}`)
       }
     })
@@ -266,6 +266,33 @@ export class MonthlyReportComponent {
     const report = this.report()
     return (report?.salary || 0) + this.totalIncomes() + (report?.salary13 || 0) + (report?.salary14 || 0)
   })
+
+  monthlyBalanceSummary = computed(() => this.getMonthlyBalanceSummary())
+
+  isCalendarMonth(): boolean {
+    const report = this.report()
+    return !!report && (report.year > 2026 || (report.year === 2026 && report.month >= 10))
+  }
+
+  getMonthlyBalanceSummary(): { closingBalance: number | null, balanceChange: number | null, unrecordedChange: number | null } {
+    const report = this.report()
+    const unavailable = { closingBalance: null, balanceChange: null, unrecordedChange: null }
+    if (!report || !this.isCalendarMonth()) return unavailable
+
+    const nextYear = report.month === 12 ? report.year + 1 : report.year
+    const nextMonth = report.month === 12 ? 1 : report.month + 1
+    const nextReport = this.storageService.getReport(nextYear, nextMonth)
+    // Nei dati esistenti, zero è il valore predefinito di un saldo non compilato
+    if (!nextReport?.balance) return unavailable
+    const closingBalance = nextReport.balance
+    if (!report.balance) return { ...unavailable, closingBalance }
+
+    const balanceChange = closingBalance - report.balance
+    const recordedIncome = (report.salary || 0) + (report.salary13 || 0) + (report.salary14 || 0)
+      + (report.incomes || []).reduce((sum, income) => sum + income.amount, 0)
+    const recordedExpenses = report.expenses.reduce((sum, expense) => sum + expense.amount, 0)
+    return { closingBalance, balanceChange, unrecordedChange: balanceChange - (recordedIncome - recordedExpenses) }
+  }
 
   sharedExpensesCount = computed(() => {
     return this.report()?.expenses.filter(e => e.shared).length ?? 0
@@ -309,14 +336,6 @@ export class MonthlyReportComponent {
           this.startEditing(expenseToEdit)
         }
         this.pendingEditId = null
-      }
-    })
-
-    // Inizializzazione una tantum: trovo il primo mese incompleto
-    effect(() => {
-      if (!this.storageService.initialized() && this.storageService.appData().reports.length > 0) {
-        this.storageService.initialized.set(true)
-        this.storageService.activeMonthYear.set(this.storageService.getFirstIncompleteMonth())
       }
     })
   }
@@ -463,9 +482,9 @@ export class MonthlyReportComponent {
 
   repeatExpense(expense: Expense) {
     this.expenseToRepeat.set(expense)
-    const firstIncomplete = this.storageService.getFirstIncompleteMonth()
-    this.repeatMonthYear.set(firstIncomplete)
-    const [year] = firstIncomplete.split('-').map(Number)
+    const currentMonth = this.storageService.getCurrentMonthYear()
+    this.repeatMonthYear.set(currentMonth)
+    const [year] = currentMonth.split('-').map(Number)
     this.repeatPickerYear.set(year)
     this.showRepeatModal.set(true)
   }
@@ -648,7 +667,7 @@ export class MonthlyReportComponent {
   }
 
   goToThisMonth() {
-    this.currentMonthYear.set(this.storageService.getFirstIncompleteMonth())
+    this.currentMonthYear.set(this.storageService.getCurrentMonthYear())
     this.closeMonthPicker()
   }
 }

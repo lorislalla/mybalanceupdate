@@ -4,6 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "test": "node --test tests/*.test.cjs",
     "dev": "ng serve",
     "build": "ng build",
     "preview": "ng serve --configuration=production"

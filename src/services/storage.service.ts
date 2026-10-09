@@ -8,8 +8,7 @@ import { SupabaseService } from './supabase.service'
 export class StorageService {
   // Mantengo la struttura a signal per compatibilità con i componenti esistenti
   appData: WritableSignal<AppData> = signal({ reports: [], globalNotes: '', calculatorItems: [] })
-  activeMonthYear = signal<string>(new Date().toISOString().substring(0, 7))
-  initialized = signal(false)
+  activeMonthYear = signal<string>(this.getCurrentMonthYear())
 
   constructor(private supabase: SupabaseService) {
     // Mi iscrivo ai flussi dati di Supabase per aggiornare lo stato locale
@@ -26,33 +25,12 @@ export class StorageService {
     })
   }
 
-  // Trovo il mese ideale per l'apertura: se il corrente ha già il payday, propongo il prossimo
-  getFirstIncompleteMonth(): string {
-    const reports = this.appData().reports
+  // Apro il mese corrente secondo il calendario locale, indipendentemente dallo stipendio
+  getCurrentMonthYear(): string {
     const today = new Date()
     const currentYear = today.getFullYear()
     const currentMonth = today.getMonth() + 1 // 1-12
 
-    // Cerco se esiste già il report per il mese corrente e se è stato impostato il payday
-    const currentReport = reports.find(r => r.year === currentYear && r.month === currentMonth)
-
-    if (currentReport && currentReport.payday) {
-      // Se il mese corrente è già "chiuso" col payday, suggerisco di aprire il mese prossimo
-      const nextMonthDate = new Date(currentYear, currentMonth, 1) // currentMonth è 1-based, JS Date con (year, 1-based-month, 1) punta al mese dopo
-      return `${nextMonthDate.getFullYear()}-${(nextMonthDate.getMonth() + 1).toString().padStart(2, '0')}`
-    }
-
-    // Altrimenti cerco se c'è un mese nel passato o futuro che non ha il payday, partendo dal più recente
-    const sortedDesc = [...reports].sort((a, b) =>
-      new Date(b.year, b.month - 1).getTime() - new Date(a.year, a.month - 1).getTime()
-    )
-
-    const firstIncomplete = sortedDesc.find(r => !r.payday)
-    if (firstIncomplete) {
-      return `${firstIncomplete.year}-${firstIncomplete.month.toString().padStart(2, '0')}`
-    }
-
-    // Se non trovo nulla, apro sul mese corrente
     return `${currentYear}-${currentMonth.toString().padStart(2, '0')}`
   }
 

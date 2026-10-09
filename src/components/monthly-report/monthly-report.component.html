@@ -312,10 +312,24 @@
           </h3>
 
           <div class="space-y-3">
-            <!-- Balance at Payday -->
-            <div class="flex justify-between items-end pb-2 border-b border-gray-700/50">
-              <span class="text-sm text-gray-400">Saldo dopo stipendio</span>
-              <span class="text-lg font-bold text-gray-200">{{ currentReport.balance | number: '1.0-0' }} €</span>
+            <!-- Saldo reale di riferimento -->
+            <div class="flex justify-between items-end gap-3 pb-2 border-b border-gray-700/50">
+              <span class="text-sm text-gray-400">{{ isCalendarMonth() ? 'Saldo al 1° del mese' : 'Saldo dopo stipendio' }}</span>
+              @if (isCalendarMonth()) {
+                <div class="flex items-center justify-end gap-0.5 shrink-0">
+                  <input
+                    type="number"
+                    aria-label="Saldo al 1° del mese"
+                    [ngModel]="currentReport.balance === 0 ? null : currentReport.balance"
+                    (ngModelChange)="updateReportField('balance', +$event)"
+                    class="no-spin w-28 text-right bg-transparent border-b border-transparent hover:border-gray-600 focus:border-indigo-500 text-gray-200 font-bold focus:outline-none transition-colors p-0 text-lg placeholder-gray-600/50"
+                    placeholder="Inserisci"
+                  />
+                  <span class="text-lg font-bold text-gray-200">€</span>
+                </div>
+              } @else {
+                <span class="text-lg font-bold text-gray-200">{{ currentReport.balance | number: '1.0-0' }} €</span>
+              }
             </div>
 
             <!-- Net Salary -->
@@ -488,23 +502,90 @@
               <span class="text-sm font-medium text-gray-300">Uscite totali</span>
               <span class="text-xl font-extrabold text-red-400 leading-none">-{{ totalExpenses() | number: '1.0-0' }} €</span>
             </div>
+
+            @if (isCalendarMonth()) {
+              @let summary = monthlyBalanceSummary();
+              <div class="pt-3 mt-3 border-t border-gray-700/50 space-y-3">
+                <div class="flex justify-between items-center gap-3">
+                  <div class="relative flex-1 min-w-0 flex items-center gap-1.5">
+                    <span class="text-sm text-gray-400">Saldo a fine mese</span>
+                    <details #closingInfo class="shrink-0">
+                      <summary
+                        class="list-none [&::-webkit-details-marker]:hidden cursor-pointer inline-flex items-center justify-center w-5 h-5 rounded-full border border-gray-600 text-xs text-gray-400 hover:text-white focus-visible:outline focus-visible:outline-indigo-400"
+                        aria-label="Informazioni sul saldo a fine mese"
+                        title="Corrisponde al saldo al 1° del mese successivo."
+                        (blur)="closingInfo.open = false"
+                        (keydown.escape)="closingInfo.open = false"
+                      >i</summary>
+                      <p class="absolute bottom-full left-0 mb-2 z-20 w-64 max-w-[calc(100vw-4rem)] rounded-lg border border-gray-600 bg-gray-900 p-3 text-xs text-gray-300 shadow-xl">Corrisponde al saldo al 1° del mese successivo.</p>
+                    </details>
+                  </div>
+                  @if (summary.closingBalance !== null) {
+                    <span class="text-lg font-bold text-gray-200 whitespace-nowrap">{{ summary.closingBalance | number: '1.0-0' }} €</span>
+                  } @else {
+                    <span class="text-xs text-gray-500 text-right">Non ancora disponibile</span>
+                  }
+                </div>
+                <div class="flex justify-between items-center gap-3">
+                  <div class="relative flex-1 min-w-0 flex items-center gap-1.5">
+                    <span class="text-sm text-gray-400">Variazione reale del saldo</span>
+                    <details #changeInfo class="shrink-0">
+                      <summary
+                        class="list-none [&::-webkit-details-marker]:hidden cursor-pointer inline-flex items-center justify-center w-5 h-5 rounded-full border border-gray-600 text-xs text-gray-400 hover:text-white focus-visible:outline focus-visible:outline-indigo-400"
+                        aria-label="Informazioni sulla variazione reale del saldo"
+                        title="Saldo finale meno saldo iniziale."
+                        (blur)="changeInfo.open = false"
+                        (keydown.escape)="changeInfo.open = false"
+                      >i</summary>
+                      <p class="absolute bottom-full left-0 mb-2 z-20 w-64 max-w-[calc(100vw-4rem)] rounded-lg border border-gray-600 bg-gray-900 p-3 text-xs text-gray-300 shadow-xl">Saldo finale meno saldo iniziale.</p>
+                    </details>
+                  </div>
+                  @if (summary.balanceChange !== null) {
+                    <span class="font-bold whitespace-nowrap" [class.text-green-400]="summary.balanceChange >= 0" [class.text-red-400]="summary.balanceChange < 0">{{ summary.balanceChange > 0 ? '+' : '' }}{{ summary.balanceChange | number: '1.0-0' }} €</span>
+                  } @else {
+                    <span class="text-xs text-gray-500">Non disponibile</span>
+                  }
+                </div>
+                <div class="flex justify-between items-center gap-3">
+                  <div class="relative flex-1 min-w-0 flex items-center gap-1.5">
+                    <span class="text-sm text-gray-400">Scostamento dai movimenti registrati</span>
+                    <details #discrepancyInfo class="shrink-0">
+                      <summary
+                        class="list-none [&::-webkit-details-marker]:hidden cursor-pointer inline-flex items-center justify-center w-5 h-5 rounded-full border border-gray-600 text-xs text-gray-400 hover:text-white focus-visible:outline focus-visible:outline-indigo-400"
+                        aria-label="Informazioni sullo scostamento dai movimenti registrati"
+                        title="Variazione reale − (entrate − spese registrate). Negativo: saldo inferiore a quanto spiegano i movimenti segnati; positivo: superiore. Può includere spese o altri movimenti non registrati."
+                        (blur)="discrepancyInfo.open = false"
+                        (keydown.escape)="discrepancyInfo.open = false"
+                      >i</summary>
+                      <p class="absolute bottom-full left-0 mb-2 z-20 w-64 max-w-[calc(100vw-4rem)] rounded-lg border border-gray-600 bg-gray-900 p-3 text-xs text-gray-300 shadow-xl">Variazione reale − (entrate − spese registrate). Negativo: saldo inferiore a quanto spiegano i movimenti segnati; positivo: superiore. Può includere spese o altri movimenti non registrati.</p>
+                    </details>
+                  </div>
+                  @if (summary.unrecordedChange !== null) {
+                    <span class="font-bold whitespace-nowrap" [class.text-green-400]="summary.unrecordedChange >= 0" [class.text-red-400]="summary.unrecordedChange < 0">{{ summary.unrecordedChange > 0 ? '+' : '' }}{{ summary.unrecordedChange | number: '1.0-0' }} €</span>
+                  } @else {
+                    <span class="text-xs text-gray-500">Non disponibile</span>
+                  }
+                </div>
+              </div>
+            }
           </div>
         </div>
 
         <!-- Compact Payday & Balance Input -->
+        @if (!isCalendarMonth()) {
         <div class="bg-gray-800/80 backdrop-blur-sm p-4 rounded-xl border border-gray-700/50 shadow-lg">
           <div class="grid grid-cols-2 gap-4">
-            <div class="col-span-1">
-              <label class="block text-[10px] uppercase font-bold text-gray-500 tracking-wider mb-1">Giorno Stip.</label>
-              <input
-                type="date"
-                #paydayInput
-                [ngModel]="currentReport.payday"
-                (change)="onPaydayChange(paydayInput.value)"
-                style="color-scheme: dark"
-                class="w-full bg-gray-900 border border-gray-700 rounded text-sm text-white px-2 py-1.5 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
-              />
-            </div>
+              <div class="col-span-1">
+                <label class="block text-[10px] uppercase font-bold text-gray-500 tracking-wider mb-1">Giorno Stip.</label>
+                <input
+                  type="date"
+                  #paydayInput
+                  [ngModel]="currentReport.payday"
+                  (change)="onPaydayChange(paydayInput.value)"
+                  style="color-scheme: dark"
+                  class="w-full bg-gray-900 border border-gray-700 rounded text-sm text-white px-2 py-1.5 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
+                />
+              </div>
             <div class="col-span-1">
               <label class="block text-[10px] uppercase font-bold text-gray-500 tracking-wider mb-1">Saldo Agg.</label>
               <div class="relative">
@@ -521,6 +602,7 @@
             </div>
           </div>
         </div>
+        }
 
         <!-- Notes Card -->
         <div class="bg-gray-800/80 backdrop-blur-sm p-4 rounded-xl border border-gray-700/50 shadow-lg h-auto">
