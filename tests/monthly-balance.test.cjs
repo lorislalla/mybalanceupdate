@@ -18,6 +18,7 @@ require.extensions['.ts'] = (module, filename) => {
 const { signal, computed } = require('@angular/core')
 const { StorageService } = require('../src/services/storage.service.ts')
 const { MonthlyReportComponent } = require('../src/components/monthly-report/monthly-report.component.ts')
+const { FormBuilder, Validators } = require('@angular/forms')
 
 function report(overrides = {}) {
   return {
@@ -33,6 +34,14 @@ function componentFor(current, otherReports = []) {
   const component = Object.create(MonthlyReportComponent.prototype)
   component.report = signal(current)
   component.storageService = storage
+  const fb = new FormBuilder()
+  const expenseControls = () => ({ description: ['', Validators.required], amount: [null, [Validators.required, Validators.min(0)]], shared: [false] })
+  component.newExpenseForm = fb.group(expenseControls())
+  component.editExpenseForm = fb.group(expenseControls())
+  component.editingExpenseId = signal(null)
+  component.isEditingNotes = signal(false)
+  component.notesDraft = signal('')
+  storage.supabase = { upsertReport: async () => {} }
   return { component, storage }
 }
 
@@ -109,4 +118,79 @@ test('editing November updates the closing information shown for October', () =>
   assert.deepEqual(summary(), {
     closingBalance: 20600, balanceChange: 600, unrecordedChange: 100
   })
+})
+
+test('monetary inputs accept Italian separators and decimal dots without losing cents', () => {
+  const { parseMoneyAmount } = require('../src/components/monthly-report/money-input.directive.ts')
+  for (const [text, value] of [['20.000,50', 20000.5], ['150,75', 150.75], ['150.75', 150.75], ['1.234', 1234], ['0', 0], ['-25,50', -25.5], ['', null]]) {
+    assert.equal(parseMoneyAmount(text), value, text)
+  }
+  for (const text of ['abc', '1,2,3', 'Infinity', '1e3', '12.3456', '12,345']) {
+    assert.equal(parseMoneyAmount(text), null, text)
+  }
+})
+
+test('typing an amount leaves the visible draft untouched and flags invalid text', () => {
+  const { MoneyInputDirective } = require('../src/components/monthly-report/money-input.directive.ts')
+  const field = Object.create(MoneyInputDirective.prototype)
+  const input = { value: '20.000,5' }
+  field.element = { nativeElement: input }
+  let value
+  field.registerOnChange(next => { value = next })
+  field.registerOnTouched(() => {})
+  field.registerOnValidatorChange(() => {})
+  field.onInput()
+  assert.equal(value, 20000.5)
+  assert.equal(input.value, '20.000,5')
+  input.value = 'abc'
+  field.onInput()
+  assert.deepEqual(field.validate(), { money: true })
+  assert.equal(value, null)
+  field.writeValue(150.75)
+  assert.equal(input.value, '150,75')
+  assert.equal(field.validate(), null)
+})
+
+test('cancelled expense edits reset the draft and allow adding a separate new expense', () => {
+  const current = report()
+  const { component, storage } = componentFor(current)
+  component.startEditing(current.expenses[0])
+  component.editExpenseForm.patchValue({ description: 'Da annullare', amount: 65.5, shared: true })
+  component.cancelEditing()
+  assert.equal(component.editingExpenseId(), null)
+  assert.equal(component.editExpenseForm.value.description, null)
+  assert.deepEqual(storage.getReport(2026, 10).expenses, [{ id: 'expense', description: 'Spesa', amount: 1500 }])
+  component.newExpenseForm.setValue({ description: 'Nuova', amount: 65.5, shared: true })
+  component.addExpense()
+  const expenses = storage.getReport(2026, 10).expenses
+  assert.equal(expenses.length, 2)
+  assert.equal(expenses[0].amount, 1500)
+  assert.equal(expenses[1].amount, 65.5)
+  assert.equal(expenses[1].totalAmount, 131)
+})
+
+test('saving an edited shared expense preserves its identity and personal share', () => {
+  const current = report()
+  const { component, storage } = componentFor(current)
+  component.startEditing(current.expenses[0])
+  component.editExpenseForm.setValue({ description: 'Aggiornata', amount: 75.25, shared: true })
+  component.saveExpense()
+  assert.deepEqual(storage.getReport(2026, 10).expenses, [{ id: 'expense', description: 'Aggiornata', amount: 75.25, shared: true, totalAmount: 150.5 }])
+  assert.equal(component.editingExpenseId(), null)
+})
+
+test('month notes save only on confirmation and preserve long multiline text exactly', () => {
+  const { component, storage } = componentFor(report({ notes: 'Originale' }))
+  component.startEditingNotes()
+  component.notesDraft.set('Bozza annullata')
+  assert.equal(storage.getReport(2026, 10).notes, 'Originale')
+  component.cancelEditingNotes()
+  assert.equal(component.isEditingNotes(), false)
+  component.startEditingNotes()
+  assert.equal(component.notesDraft(), 'Originale')
+  const longNote = 'Prima riga\n\n' + 'Nota lunga '.repeat(500) + '\nUltima riga'
+  component.notesDraft.set(longNote)
+  component.saveNotes()
+  assert.equal(storage.getReport(2026, 10).notes, longNote)
+  assert.equal(component.isEditingNotes(), false)
 })

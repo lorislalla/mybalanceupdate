@@ -1,0 +1,67 @@
+// Run after resoconto-browser.js with playwright-cli run-code --filename.
+async (page) => {
+  page.setDefaultTimeout(5000)
+  const assert = (condition, message) => { if (!condition) throw new Error(message) }
+  const resetScroll = async () => page.evaluate(() => { document.querySelector('main').scrollTop = 0 })
+  await page.setViewportSize({ width: 1280, height: 1000 })
+  await resetScroll()
+  const handles = page.locator('.expense-list .drag-handle')
+  let from = await handles.first().boundingBox()
+  let to = await handles.nth(2).boundingBox()
+  await page.mouse.move(from.x + from.width / 2, from.y + from.height / 2)
+  await page.mouse.down()
+  await page.mouse.move(from.x + from.width / 2 + 8, from.y + from.height / 2 + 8, { steps: 5 })
+  await page.mouse.move(from.x + from.width / 2, to.y + to.height, { steps: 25 })
+  await page.mouse.up()
+  await page.waitForFunction(() => !document.querySelector('.cdk-drag-preview'))
+  const desktopOrder = await page.locator('.expense-list .expense-description > span').allTextContents()
+  assert(desktopOrder[0] === 'Lavori in casa', 'Desktop drag did not reorder expenses')
+
+  const touch = await page.context().newCDPSession(page)
+  await touch.send('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 1 })
+  await page.setViewportSize({ width: 390, height: 1000 })
+  await resetScroll()
+  from = await handles.first().boundingBox()
+  to = await handles.nth(2).boundingBox()
+  const x = from.x + from.width / 2
+  const y = from.y + from.height / 2
+  await touch.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x, y }] })
+  // The UI deliberately requires a 180 ms hold to distinguish dragging from scrolling.
+  await page.waitForTimeout(220)
+  for (let step = 1; step <= 20; step++) {
+    await touch.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x, y: y + (to.y + to.height - y) * step / 20 }] })
+  }
+  await touch.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] })
+  await page.waitForFunction(() => !document.querySelector('.cdk-drag-preview'))
+  const touchOrder = await page.locator('.expense-list .expense-description > span').allTextContents()
+  assert(touchOrder[0] === 'Assicurazione auto', 'Touch drag did not reorder expenses')
+  await touch.send('Emulation.setTouchEmulationEnabled', { enabled: false })
+  await touch.detach()
+
+  await page.getByRole('button', { name: 'Modifica Nuova spesa', exact: true }).click()
+  await page.getByRole('button', { name: 'Elimina spesa', exact: true }).click()
+  await page.getByRole('dialog', { name: 'Elimina Spesa', exact: true }).getByRole('button', { name: 'Elimina', exact: true }).click()
+  await page.getByRole('button', { name: 'Aggiungi spesa', exact: true }).waitFor()
+  assert(await page.getByRole('button', { name: 'Modifica Nuova spesa', exact: true }).count() === 0, 'Expense delete failed')
+  await page.getByRole('button', { name: 'Elimina entrata Rimborso', exact: true }).click()
+  await page.getByRole('dialog', { name: 'Elimina Entrata', exact: true }).getByRole('button', { name: 'Elimina', exact: true }).click()
+  await page.getByRole('button', { name: 'Elimina entrata Rimborso', exact: true }).waitFor({ state: 'hidden' })
+  await page.getByRole('button', { name: 'Modifica Spesa supermercato', exact: true }).click()
+  await page.getByRole('button', { name: 'Ripeti in un altro mese', exact: true }).click()
+  await page.getByRole('dialog', { name: 'Ripeti Spesa', exact: true }).getByRole('button', { name: 'nov', exact: true }).click()
+  await page.getByRole('button', { name: 'Copia Spesa', exact: true }).click()
+  await page.waitForFunction(() => ng.getComponent(document.querySelector('app-monthly-report')).report().month === 11)
+  await page.getByRole('heading', { name: 'Modifica spesa', exact: true }).waitFor()
+  assert(await page.getByRole('combobox', { name: 'Spesa', exact: true }).inputValue() === 'Spesa supermercato', 'Repeated expense did not open for editing')
+  await page.locator('.expense-composer').getByRole('button', { name: 'Annulla', exact: true }).click()
+  await page.getByRole('button', { name: 'Mese successivo', exact: true }).click()
+  await page.getByRole('button', { name: 'Inserisci 13ª mensilità', exact: true }).waitFor()
+  await page.getByRole('button', { name: 'Seleziona mese', exact: true }).click()
+  await page.getByRole('dialog', { name: 'Seleziona Mese', exact: true }).getByRole('button', { name: 'giu', exact: true }).click()
+  await page.getByRole('button', { name: 'Inserisci 14ª mensilità', exact: true }).waitFor()
+  await page.getByRole('button', { name: 'Seleziona mese', exact: true }).click()
+  await page.getByRole('dialog', { name: 'Seleziona Mese', exact: true }).getByRole('button', { name: 'ott', exact: true }).click()
+  await page.getByRole('heading', { name: 'Confronto del mese', exact: true }).waitFor()
+  await resetScroll()
+  return { desktopOrder, touchOrder, expenseDeletion: 'passed', incomeDeletion: 'passed', repeat: 'passed', extraSalaryFields: 'passed' }
+}

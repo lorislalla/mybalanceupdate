@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ChangeDetectionStrategy, Directive, ElementRef, inject, OnDestroy, signal, computed, effect } from '@angular/core'
+import { Component, ChangeDetectionStrategy, inject, signal, computed, effect, untracked } from '@angular/core'
 import { CommonModule, DatePipe } from '@angular/common'
 import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms'
 import { DragDropModule, CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop'
@@ -6,104 +6,16 @@ import { StorageService } from '../../services/storage.service'
 import { MonthlyReport, Expense, Income } from '../../models/financial-data.model'
 import { TextFieldModule } from '@angular/cdk/text-field'
 
-@Directive({
-  selector: '[appOverflowMarquee]'
-})
-class OverflowMarqueeDirective implements AfterViewInit, OnDestroy {
-  private element = inject<ElementRef<HTMLElement>>(ElementRef)
-  private resizeObserver?: ResizeObserver
-
-  ngAfterViewInit() {
-    const host = this.element.nativeElement
-    const content = host.firstElementChild as HTMLElement | null
-    if (!content) return
-
-    const updateOverflow = () => {
-      const distance = host.clientWidth - content.scrollWidth
-      host.classList.toggle('is-overflowing', distance < 0)
-      host.style.setProperty('--marquee-distance', `${Math.min(0, distance)}px`)
-    }
-
-    this.resizeObserver = new ResizeObserver(updateOverflow)
-    this.resizeObserver.observe(host)
-    this.resizeObserver.observe(content)
-    updateOverflow()
-  }
-
-  ngOnDestroy() {
-    this.resizeObserver?.disconnect()
-  }
-}
+import { MoneyInputDirective } from './money-input.directive'
+import { MoneyFieldComponent } from './money-field.component'
 
 @Component({
   selector: 'app-monthly-report',
   templateUrl: './monthly-report.component.html',
   providers: [DatePipe],
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, DragDropModule, TextFieldModule, OverflowMarqueeDirective],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, DragDropModule, TextFieldModule, MoneyInputDirective, MoneyFieldComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  styles: [
-    `
-      .cdk-drag-preview {
-        box-sizing: border-box;
-        border-radius: 6px;
-        box-shadow: 0 5px 5px -3px rgba(0, 0, 0, 0.2), 0 8px 10px 1px rgba(0, 0, 0, 0.14), 0 3px 14px 2px rgba(0, 0, 0, 0.12);
-        background-color: #1f2937;
-        color: #e5e7eb;
-        opacity: 0.95;
-      }
-      .cdk-drag-placeholder {
-        opacity: 0.3;
-        background: #374151;
-        border: 2px dashed #4b5563;
-        border-radius: 6px;
-      }
-      .cdk-drag-animating {
-        transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
-      }
-      .cdk-drop-list-dragging .cdk-drag {
-        transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
-      }
-      .expense-description-marquee {
-        min-width: 0;
-        overflow: hidden;
-        white-space: nowrap;
-      }
-      .expense-description-marquee-content {
-        display: block;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-      @media (max-width: 767px) {
-        .expense-description-marquee-content {
-          display: inline-flex;
-          align-items: center;
-          width: max-content;
-          overflow: visible;
-          text-overflow: clip;
-        }
-        .expense-description-marquee.is-overflowing .expense-description-marquee-content {
-          animation: expense-description-marquee 7s ease-in-out 1s infinite alternate;
-        }
-      }
-      @keyframes expense-description-marquee {
-        0%, 20% {
-          transform: translateX(0);
-        }
-        80%, 100% {
-          transform: translateX(var(--marquee-distance));
-        }
-      }
-      /* Nascondo gli spinner nativi degli input numerici */
-      .no-spin::-webkit-inner-spin-button,
-      .no-spin::-webkit-outer-spin-button {
-        -webkit-appearance: none;
-        margin: 0;
-      }
-      .no-spin {
-        -moz-appearance: textfield;
-      }
-    `
-  ]
+  styleUrl: './monthly-report.component.css'
 })
 export class MonthlyReportComponent {
   private storageService = inject(StorageService)
@@ -140,6 +52,7 @@ export class MonthlyReportComponent {
   // =============================================
 
   editingExpenseId = signal<string | null>(null)
+  editingExpense = computed(() => this.report()?.expenses.find(expense => expense.id === this.editingExpenseId()))
   editExpenseForm = this.fb.group({
     description: ['', Validators.required],
     amount: [null as number | null, [Validators.required, Validators.min(0)]],
@@ -294,27 +207,29 @@ export class MonthlyReportComponent {
     return { closingBalance, balanceChange, unrecordedChange: balanceChange - (recordedIncome - recordedExpenses) }
   }
 
-  sharedExpensesCount = computed(() => {
-    return this.report()?.expenses.filter(e => e.shared).length ?? 0
-  })
-
-  sharedExpensesTotal = computed(() => {
-    return (
-      this.report()
-        ?.expenses.filter(e => e.shared)
-        .reduce((acc, exp) => acc + (exp.totalAmount || exp.amount * 2), 0) ?? 0
-    )
-  })
-
   // =============================================
   // Sezione: Inizializzazione ed effetti
   // =============================================
 
+  isEditingNotes = signal(false)
+  notesDraft = signal('')
+
   constructor() {
+    let loadedMonth = ''
     // Carico il report corrispondente ogni volta che cambia il mese selezionato
     effect(() => {
-      this.cancelEditing()
-      const [year, month] = this.currentMonthYear().split('-').map(Number)
+      const monthYear = this.currentMonthYear()
+      if (monthYear !== loadedMonth) {
+        untracked(() => {
+          this.cancelEditing()
+          this.newExpenseForm.reset({ shared: false })
+          this.cancelEditingIncome()
+          this.cancelAddingIncome()
+          this.cancelEditingNotes()
+        })
+        loadedMonth = monthYear
+      }
+      const [year, month] = monthYear.split('-').map(Number)
       const loadedReport = this.storageService.getReport(year, month)
 
       const newReport: MonthlyReport = loadedReport || {
@@ -419,6 +334,7 @@ export class MonthlyReportComponent {
 
   cancelEditing() {
     this.editingExpenseId.set(null)
+    this.editExpenseForm.reset({ shared: false })
   }
 
   saveExpense() {
@@ -473,6 +389,7 @@ export class MonthlyReportComponent {
       this.updateReportField('expenses', updatedExpenses)
     }
 
+    if (this.editingExpenseId() === expenseIdToDelete) this.cancelEditing()
     this.cancelDelete()
   }
 
@@ -638,6 +555,21 @@ export class MonthlyReportComponent {
     }
 
     this.cancelDeleteIncome()
+  }
+
+  startEditingNotes() {
+    this.notesDraft.set(this.report()?.notes || '')
+    this.isEditingNotes.set(true)
+  }
+
+  saveNotes() {
+    this.updateReportField('notes', this.notesDraft())
+    this.cancelEditingNotes()
+  }
+
+  cancelEditingNotes() {
+    this.isEditingNotes.set(false)
+    this.notesDraft.set('')
   }
 
   // =============================================
