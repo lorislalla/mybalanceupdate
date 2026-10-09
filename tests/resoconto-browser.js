@@ -99,7 +99,7 @@ async (page) => {
   await page.getByRole('button', { name: 'Aggiungi spesa', exact: true }).waitFor()
   assert(await page.getByRole('button', { name: 'Aggiungi spesa', exact: true }).isVisible(), 'Escape did not leave expense editing')
 
-  await page.getByRole('button', { name: '+ Aggiungi', exact: true }).click()
+  await page.getByRole('button', { name: 'Aggiungi altra entrata', exact: true }).click()
   await page.getByRole('combobox', { name: 'Descrizione entrata', exact: true }).fill('Rimborso')
   await page.getByRole('textbox', { name: 'Importo entrata', exact: true }).fill('100,50')
   await page.getByRole('button', { name: 'Aggiungi entrata', exact: true }).click()

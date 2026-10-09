@@ -22,8 +22,8 @@ import { MoneyInputDirective } from './money-input.directive'
       </span>
       </label>
       <div class="actions">
-        <button type="button" (click)="cancel()">Annulla</button>
-        <button type="button" [disabled]="model.invalid" (click)="save()" class="save">Salva</button>
+        <button type="button" aria-label="Annulla" title="Annulla" (click)="cancel()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 6 12 12M6 18 18 6" /></svg></button>
+        <button type="button" aria-label="Salva" title="Salva" [disabled]="model.invalid" (click)="save()" class="save"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m5 12 4 4L19 6" /></svg></button>
       </div>
       @if (model.invalid) { <p role="alert">Inserisci un importo valido, con al massimo due decimali.</p> }
     } @else {
@@ -32,7 +32,12 @@ import { MoneyInputDirective } from './money-input.directive'
         @if (value() !== 0) {
           <strong class="currency-value" [class.income]="kind() === 'income' && value() > 0" [class.negative]="value() < 0">{{ value() | number: '1.2-2' }} €</strong>
         } @else { <span class="empty-value">Non inserito</span> }
-        <button type="button" [aria-label]="(value() === 0 ? 'Inserisci ' : 'Modifica ') + label()" (click)="startEditing()">{{ value() === 0 ? 'Inserisci' : 'Modifica' }}</button>
+        <button type="button" [aria-label]="(value() === 0 ? 'Inserisci ' : 'Modifica ') + label()" [title]="(value() === 0 ? 'Inserisci ' : 'Modifica ') + label()" (click)="startEditing()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            @if (value() === 0) { <path d="M12 5v14M5 12h14" /> }
+            @else { <path d="m16 3 5 5-12 12-6 1 1-6zM14 5l5 5" /> }
+          </svg>
+        </button>
       </div>
     }
   `,
@@ -51,13 +56,14 @@ import { MoneyInputDirective } from './money-input.directive'
     .input-wrap:focus-within { border-color: #a5b4fc; outline: 2px solid #6366f1; outline-offset: 2px; }
     input:focus { outline: none; }
     .actions { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
-    button { min-height: 32px; padding: 5px 10px; border-radius: 6px; border: 1px solid #475569; color: #e2e8f0; cursor: pointer; background: #1b273a; font-size: 13px; }
+    button { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; width: 32px; min-height: 32px; padding: 0; border-radius: 6px; border: 1px solid #475569; color: #e2e8f0; cursor: pointer; background: #1b273a; }
+    button svg { width: 18px; height: 18px; }
     button:hover { background: #334155; }
     .save { background: #4f46e5; border-color: #6366f1; color: white; }
     button:disabled { opacity: .5; cursor: not-allowed; }
     button:focus-visible { outline: 2px solid #a5b4fc; outline-offset: 3px; }
     p { margin-top: 8px; font-size: 13px; color: #fda4af; }
-    @media (max-width: 860px), (pointer: coarse) { button { min-height: 36px; } }
+    @media (max-width: 860px), (pointer: coarse) { button { width: 36px; min-height: 36px; } }
   `
 })
 export class MoneyFieldComponent {

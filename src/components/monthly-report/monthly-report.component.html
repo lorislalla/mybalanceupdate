@@ -96,9 +96,9 @@
           </div>
           @if (editingExpense(); as expense) {
             <div class="expense-extra-actions">
-              <button type="button" class="secondary-button" (click)="cancelEditing(); expenseDescription.focus()">Annulla</button>
-              <button type="button" class="secondary-button" aria-label="Ripeti in un altro mese" title="Ripeti in un altro mese" (click)="repeatExpense(expense)">Ripeti</button>
-              <button type="button" class="danger-button" aria-label="Elimina spesa" (click)="promptDeleteExpense(expense)">Elimina</button>
+              <button type="button" class="icon-button secondary-button" (click)="cancelEditing(); expenseDescription.focus()" aria-label="Annulla" title="Annulla"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 6 12 12M6 18 18 6" /></svg></button>
+              <button type="button" class="icon-button secondary-button" aria-label="Ripeti in un altro mese" title="Ripeti in un altro mese" (click)="repeatExpense(expense)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 7H8a4 4 0 0 0-4 4v1M16 3l4 4-4 4M4 17h12a4 4 0 0 0 4-4v-1M8 21l-4-4 4-4" /></svg></button>
+              <button type="button" class="icon-button danger-button" aria-label="Elimina spesa" (click)="promptDeleteExpense(expense)" title="Elimina"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7M14 10v7" /></svg></button>
             </div>
           }
           @let expenseForm = editingExpenseId() ? editExpenseForm : newExpenseForm;
@@ -121,7 +121,7 @@
               <strong class="amount">{{ expense.amount | number: '1.2-2' }} €</strong>
               <button type="button" class="icon-button edit-expense" [attr.aria-label]="'Modifica ' + expense.description" title="Modifica spesa"
                 (click)="startEditing(expense); expenseDescription.focus(); expenseComposer.scrollIntoView({block: 'nearest', behavior: 'smooth'})">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M9.2 3.8 10 2h4l.8 1.8 1.8 1 2-.2 2 3.4-1.2 1.6v2.1l1.2 1.6-2 3.5-2-.2-1.8 1L14 20h-4l-.8-2.4-1.8-1-2 .2-2-3.5 1.2-1.6V9.6L3.4 8l2-3.4 2 .2z"/><circle cx="12" cy="10.5" r="3"/></svg>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m16 3 5 5-12 12-6 1 1-6zM14 5l5 5" /></svg>
               </button>
             </div>
           } @empty { <p class="empty-state">Nessuna spesa registrata per questo mese.</p> }
@@ -158,12 +158,12 @@
             @if (currentReport.month === 12 || currentReport.salary13) {
               <app-money-field kind="income" label="13ª mensilità" [value]="currentReport.salary13 || 0" [month]="currentMonthYear()" (valueSaved)="updateReportField('salary13', $event)" />
             }
-            <div class="section-heading income-heading"><span>Altre entrate</span><button type="button" class="secondary-button" (click)="toggleAddIncome()">+ Aggiungi</button></div>
+            <div class="section-heading income-heading"><span>Altre entrate</span><button type="button" class="icon-button secondary-button" (click)="toggleAddIncome()" aria-label="Aggiungi altra entrata" title="Aggiungi altra entrata"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg></button></div>
             @if (isAddingIncome()) {
               <form class="income-form" [formGroup]="newIncomeForm" (ngSubmit)="addIncome()" (keydown.escape)="cancelAddingIncome(); $event.preventDefault()">
                 <label>Descrizione entrata<input type="text" formControlName="description" list="income-suggestions" placeholder="Es. rimborso" /></label>
                 <label>Importo entrata<input type="text" appMoneyInput inputmode="decimal" formControlName="amount" placeholder="0,00 €" /></label>
-                <div class="actions"><button type="button" class="secondary-button" (click)="cancelAddingIncome()">Annulla</button><button type="submit" class="primary-button" [disabled]="newIncomeForm.invalid">Aggiungi entrata</button></div>
+                <div class="actions"><button type="button" class="icon-button secondary-button" (click)="cancelAddingIncome()" aria-label="Annulla" title="Annulla"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 6 12 12M6 18 18 6" /></svg></button><button type="submit" class="icon-button primary-button" [disabled]="newIncomeForm.invalid" aria-label="Aggiungi entrata" title="Aggiungi entrata"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg></button></div>
               </form>
             }
             @for (income of currentReport.incomes; track income.id) {
@@ -171,11 +171,11 @@
                 <form class="income-form" [formGroup]="editIncomeForm" (ngSubmit)="saveIncome()" (keydown.escape)="cancelEditingIncome(); $event.preventDefault()">
                   <label>Descrizione entrata<input type="text" formControlName="description" list="income-suggestions" /></label>
                   <label>Importo entrata<input type="text" appMoneyInput inputmode="decimal" formControlName="amount" /></label>
-                  <div class="actions"><button type="button" class="secondary-button" (click)="cancelEditingIncome()">Annulla</button><button type="submit" class="primary-button" [disabled]="editIncomeForm.invalid">Salva entrata</button></div>
+                  <div class="actions"><button type="button" class="icon-button secondary-button" (click)="cancelEditingIncome()" aria-label="Annulla" title="Annulla"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 6 12 12M6 18 18 6" /></svg></button><button type="submit" class="icon-button primary-button" [disabled]="editIncomeForm.invalid" aria-label="Salva entrata" title="Salva entrata"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m5 12 4 4L19 6" /></svg></button></div>
                 </form>
               } @else {
                 <div class="income-row"><span>{{ income.description }}</span><strong class="amount">{{ income.amount | number: '1.2-2' }} €</strong>
-                  <div class="income-actions"><button type="button" class="icon-button" [attr.aria-label]="'Modifica entrata ' + income.description" (click)="startEditingIncome(income)">✎</button><button type="button" class="icon-button danger-button" [attr.aria-label]="'Elimina entrata ' + income.description" (click)="promptDeleteIncome(income)">×</button></div>
+                  <div class="income-actions"><button type="button" class="icon-button" [attr.aria-label]="'Modifica entrata ' + income.description" (click)="startEditingIncome(income)" title="Modifica entrata"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m16 3 5 5-12 12-6 1 1-6zM14 5l5 5" /></svg></button><button type="button" class="icon-button danger-button" [attr.aria-label]="'Elimina entrata ' + income.description" (click)="promptDeleteIncome(income)" title="Elimina entrata"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7M14 10v7" /></svg></button></div>
                 </div>
               }
             }
@@ -205,12 +205,12 @@
 
         <section class="month-notes" aria-labelledby="notes-heading">
           <div class="section-heading"><h2 id="notes-heading">Note del mese</h2>
-            @if (!isEditingNotes()) { <button type="button" class="secondary-button" (click)="startEditingNotes()">{{ currentReport.notes ? 'Modifica note' : 'Aggiungi note' }}</button> }
+            @if (!isEditingNotes()) { <button type="button" class="icon-button" [attr.aria-label]="currentReport.notes ? 'Modifica note' : 'Aggiungi note'" [title]="currentReport.notes ? 'Modifica note' : 'Aggiungi note'" (click)="startEditingNotes()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m16 3 5 5-12 12-6 1 1-6zM14 5l5 5" /></svg></button> }
           </div>
           @if (isEditingNotes()) {
             <label for="month-notes-editor" class="sr-only">Note del mese</label>
             <textarea id="month-notes-editor" [ngModel]="notesDraft()" (ngModelChange)="notesDraft.set($event)" cdkTextareaAutosize [cdkAutosizeMinRows]="5" (keydown.escape)="cancelEditingNotes(); $event.preventDefault()" placeholder="Scrivi le tue note..."></textarea>
-            <div class="actions"><button type="button" class="secondary-button" (click)="cancelEditingNotes()">Annulla</button><button type="button" class="primary-button" (click)="saveNotes()">Salva note</button></div>
+            <div class="actions"><button type="button" class="icon-button secondary-button" (click)="cancelEditingNotes()" aria-label="Annulla" title="Annulla"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 6 12 12M6 18 18 6" /></svg></button><button type="button" class="icon-button primary-button" (click)="saveNotes()" aria-label="Salva note" title="Salva note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m5 12 4 4L19 6" /></svg></button></div>
           } @else { <p class="notes-text" [class.empty-state]="!currentReport.notes">{{ currentReport.notes || 'Nessuna nota per questo mese.' }}</p> }
         </section>
       </div>
@@ -233,10 +233,8 @@
           Sei sicuro di voler eliminare <span class="text-white font-semibold">"{{ expenseToDelete()?.description }}"</span>? Questa azione è irreversibile.
         </p>
         <div class="flex justify-end gap-3">
-          <button (click)="cancelDelete()" class="px-4 py-2 text-gray-300 hover:text-white hover:bg-gray-700 rounded-md transition-colors text-sm">Annulla</button>
-          <button (click)="confirmDelete()" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md shadow-lg shadow-red-600/20 transition-all text-sm font-medium">
-            Elimina
-          </button>
+          <button (click)="cancelDelete()" class="icon-button secondary-button" aria-label="Annulla" title="Annulla"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 6 12 12M6 18 18 6" /></svg></button>
+          <button (click)="confirmDelete()" class="icon-button danger-button" aria-label="Elimina" title="Elimina"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7M14 10v7" /></svg></button>
         </div>
       </div>
     </div>
@@ -256,13 +254,11 @@
           Sei sicuro di voler eliminare <span class="text-white font-semibold">"{{ incomeToDelete()?.description }}"</span>? Questa azione è irreversibile.
         </p>
         <div class="flex justify-end gap-3">
-          <button (click)="cancelDeleteIncome()" class="px-4 py-2 text-gray-300 hover:text-white hover:bg-gray-700 rounded-md transition-colors text-sm">Annulla</button>
+          <button (click)="cancelDeleteIncome()" class="icon-button secondary-button" aria-label="Annulla" title="Annulla"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 6 12 12M6 18 18 6" /></svg></button>
           <button
             (click)="confirmDeleteIncome()"
-            class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md shadow-lg shadow-red-600/20 transition-all text-sm font-medium"
-          >
-            Elimina
-          </button>
+            class="icon-button danger-button"
+           aria-label="Elimina" title="Elimina"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7M14 10v7" /></svg></button>
         </div>
       </div>
     </div>
@@ -280,7 +276,7 @@
       <div class="bg-gray-800 rounded-xl shadow-2xl w-full max-w-sm overflow-hidden border border-gray-700" (click)="$event.stopPropagation()">
         <div class="p-4 border-b border-gray-700 flex justify-between items-center bg-gray-900/50">
           <h3 id="repeat-expense-title" class="font-bold text-lg text-white">Ripeti Spesa</h3>
-          <button (click)="cancelRepeat()" class="text-gray-400 hover:text-white">
+          <button (click)="cancelRepeat()" class="icon-button secondary-button">
             <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
             </svg>
@@ -327,13 +323,11 @@
         </div>
 
         <div class="p-4 pt-0 flex gap-3">
-          <button (click)="cancelRepeat()" class="flex-1 py-3 bg-gray-700 hover:bg-gray-600 text-gray-200 rounded-lg text-sm font-medium transition-colors">Annulla</button>
+          <button (click)="cancelRepeat()" class="icon-button secondary-button" aria-label="Annulla" title="Annulla"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 6 12 12M6 18 18 6" /></svg></button>
           <button
             (click)="confirmRepeat()"
-            class="flex-1 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-sm font-bold transition-colors shadow-lg shadow-indigo-600/20"
-          >
-            Copia Spesa
-          </button>
+            class="icon-button primary-button"
+           aria-label="Copia Spesa" title="Copia Spesa"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 9h12v12H9zM15 9V3H3v12h6" /></svg></button>
         </div>
       </div>
     </div>

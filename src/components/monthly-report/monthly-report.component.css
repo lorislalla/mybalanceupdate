@@ -47,6 +47,9 @@ button:disabled { opacity: .45; cursor: not-allowed; }
 .drag-handle { width: 26px; cursor: grab; touch-action: none; }
 .drag-handle:active { cursor: grabbing; }
 .icon-button { width: 32px; border: 1px solid #475569; background: #1b273a; }
+.icon-button.primary-button { background: #4f46e5; border-color: #6366f1; color: #fff; }
+.icon-button.primary-button:hover { background: #4338ca; }
+.icon-button.danger-button { color: #fda4af; }
 .drag-handle svg, .icon-button svg { width: 18px; height: 18px; }
 .balance-panel { padding: 14px; border: 1px solid #475569; border-radius: 12px; background: #1b273a; }
 .balance-title { padding-bottom: 12px; border-bottom: 1px solid #475569; }
@@ -67,9 +70,10 @@ button:disabled { opacity: .45; cursor: not-allowed; }
 .info-label details p { position: absolute; z-index: 30; bottom: calc(100% + 8px); left: 0; width: 270px; max-width: calc(100vw - 72px); padding: 12px; border: 1px solid #64748b; border-radius: 8px; color: #e2e8f0; background: #0f172a; box-shadow: 0 8px 20px #0006; font-size: 13px; line-height: 1.5; }
 .income-heading { font-size: 14px; color: #b7c3d6; }
 .income-form { display: grid; gap: 10px; margin: 10px 0; }
-.income-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 10px; align-items: center; border-bottom: 1px solid #334155; padding: 8px 0; font-size: 14px; }
-.income-row > span { overflow-wrap: anywhere; }
-.income-actions { grid-column: 1 / -1; display: flex; justify-content: flex-end; gap: 8px; }
+.income-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; align-items: center; padding: 8px 0; font-size: 14px; }
+.income-row > span { grid-column: 1 / -1; color: #b7c3d6; overflow-wrap: anywhere; }
+.income-row > .amount { font-size: 16px; white-space: normal; overflow-wrap: anywhere; }
+.income-actions { display: flex; justify-content: flex-end; gap: 8px; }
 .month-notes { border-top: 1px solid #475569; margin-top: 20px; padding-top: 4px; }
 .month-notes .section-heading { margin-bottom: 12px; }
 .month-notes .actions { margin-top: 8px; }
