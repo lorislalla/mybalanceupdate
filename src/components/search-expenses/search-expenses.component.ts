@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, inject, signal, computed, output } from '@angular/core'
+import { Component, ChangeDetectionStrategy, inject, signal, computed, output, afterNextRender, ElementRef, viewChild } from '@angular/core'
 import { CommonModule } from '@angular/common'
 import { FormsModule } from '@angular/forms'
 import { StorageService } from '../../services/storage.service'
@@ -20,6 +20,11 @@ export class SearchExpensesComponent {
   selectedResult = signal<SearchResult | null>(null)
 
   searchQuery = signal('')
+  private searchInput = viewChild<ElementRef<HTMLInputElement>>('searchInput')
+
+  constructor() {
+    afterNextRender(() => this.searchInput()?.nativeElement.focus())
+  }
 
   // Cerco spese e entrate che contengono la query nel campo descrizione
   searchResults = computed<SearchResult[]>(() => {

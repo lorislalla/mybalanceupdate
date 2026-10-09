@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, ElementRef, inject, signal, computed } from '@angular/core'
+import { Component, ChangeDetectionStrategy, ElementRef, inject, signal, computed, effect } from '@angular/core'
 import { CommonModule } from '@angular/common'
 import { FormsModule } from '@angular/forms'
 import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop'
@@ -10,36 +10,7 @@ import { CalculatorItem } from '../../models/financial-data.model'
   templateUrl: './calculator.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, FormsModule, DragDropModule],
-  styles: [
-    `
-      .cdk-drag-preview {
-        box-sizing: border-box;
-        border-radius: 6px;
-        box-shadow: 0 5px 5px -3px rgba(0, 0, 0, 0.2), 0 8px 10px 1px rgba(0, 0, 0, 0.14), 0 3px 14px 2px rgba(0, 0, 0, 0.12);
-        opacity: 0.95;
-      }
-      .cdk-drag-placeholder {
-        opacity: 0.3;
-        background: #374151;
-        border: 2px dashed #4b5563;
-        border-radius: 6px;
-      }
-      .cdk-drag-animating {
-        transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
-      }
-      .cdk-drop-list-dragging .cdk-drag {
-        transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
-      }
-      .no-spin::-webkit-inner-spin-button,
-      .no-spin::-webkit-outer-spin-button {
-        -webkit-appearance: none;
-        margin: 0;
-      }
-      .no-spin {
-        -moz-appearance: textfield;
-      }
-    `
-  ]
+  styleUrl: './calculator.component.css'
 })
 export class CalculatorComponent {
   private storageService = inject(StorageService)
@@ -49,10 +20,27 @@ export class CalculatorComponent {
   newDescription = signal('')
   newAmount = signal('')
   newColor = signal('#6366f1')
+  copyStatus = signal<'idle' | 'copied' | 'error'>('idle')
 
   // Calcolo gli items e il totale dal servizio di storage
   items = computed(() => this.storageService.appData().calculatorItems || [])
   total = computed(() => this.items().reduce((sum, item) => sum + (item.amount || 0), 0))
+
+  constructor() {
+    effect(() => {
+      this.total()
+      this.copyStatus.set('idle')
+    })
+  }
+
+  async copyRoundedTotal() {
+    try {
+      await navigator.clipboard.writeText(String(Math.round(this.total() / 100) * 100))
+      this.copyStatus.set('copied')
+    } catch {
+      this.copyStatus.set('error')
+    }
+  }
 
   addItem() {
     const amount = this.parseAmount(this.newAmount())
