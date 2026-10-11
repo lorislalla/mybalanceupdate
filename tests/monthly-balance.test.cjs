@@ -19,6 +19,7 @@ const { signal, computed } = require('@angular/core')
 const { StorageService } = require('../src/services/storage.service.ts')
 const { MonthlyReportComponent } = require('../src/components/monthly-report/monthly-report.component.ts')
 const { FormBuilder, Validators } = require('@angular/forms')
+const { integerAmountValidator } = require('../src/components/monthly-report/money-input.directive.ts')
 
 function report(overrides = {}) {
   return {
@@ -35,7 +36,7 @@ function componentFor(current, otherReports = []) {
   component.report = signal(current)
   component.storageService = storage
   const fb = new FormBuilder()
-  const expenseControls = () => ({ description: ['', Validators.required], amount: [null, [Validators.required, Validators.min(0)]], shared: [false] })
+  const expenseControls = () => ({ description: ['', Validators.required], amount: [null, [Validators.required, Validators.min(0), integerAmountValidator]], shared: [false] })
   component.newExpenseForm = fb.group(expenseControls())
   component.editExpenseForm = fb.group(expenseControls())
   component.editingExpenseId = signal(null)
@@ -160,22 +161,22 @@ test('cancelled expense edits reset the draft and allow adding a separate new ex
   assert.equal(component.editingExpenseId(), null)
   assert.equal(component.editExpenseForm.value.description, null)
   assert.deepEqual(storage.getReport(2026, 10).expenses, [{ id: 'expense', description: 'Spesa', amount: 1500 }])
-  component.newExpenseForm.setValue({ description: 'Nuova', amount: 65.5, shared: true })
+  component.newExpenseForm.setValue({ description: 'Nuova', amount: 65, shared: true })
   component.addExpense()
   const expenses = storage.getReport(2026, 10).expenses
   assert.equal(expenses.length, 2)
   assert.equal(expenses[0].amount, 1500)
-  assert.equal(expenses[1].amount, 65.5)
-  assert.equal(expenses[1].totalAmount, 131)
+  assert.equal(expenses[1].amount, 65)
+  assert.equal(expenses[1].totalAmount, 130)
 })
 
 test('saving an edited shared expense preserves its identity and personal share', () => {
   const current = report()
   const { component, storage } = componentFor(current)
   component.startEditing(current.expenses[0])
-  component.editExpenseForm.setValue({ description: 'Aggiornata', amount: 75.25, shared: true })
+  component.editExpenseForm.setValue({ description: 'Aggiornata', amount: 75, shared: true })
   component.saveExpense()
-  assert.deepEqual(storage.getReport(2026, 10).expenses, [{ id: 'expense', description: 'Aggiornata', amount: 75.25, shared: true, totalAmount: 150.5 }])
+  assert.deepEqual(storage.getReport(2026, 10).expenses, [{ id: 'expense', description: 'Aggiornata', amount: 75, shared: true, totalAmount: 150 }])
   assert.equal(component.editingExpenseId(), null)
 })
 
@@ -193,4 +194,75 @@ test('month notes save only on confirmation and preserve long multiline text exa
   component.saveNotes()
   assert.equal(storage.getReport(2026, 10).notes, longNote)
   assert.equal(component.isEditingNotes(), false)
+})
+
+test('expense creation and editing reject fractional amounts without changing existing records', () => {
+  const current = report({ expenses: [{ id: 'old', description: 'Storica', amount: 67.5 }] })
+  const { component, storage } = componentFor(current)
+  component.newExpenseForm.setValue({ description: 'Nuova', amount: 25.5, shared: false })
+  component.addExpense()
+  component.startEditing(current.expenses[0])
+  component.editExpenseForm.patchValue({ description: 'Modificata' })
+  component.saveExpense()
+  assert.deepEqual(storage.getReport(2026, 10).expenses, current.expenses)
+  component.editExpenseForm.patchValue({ amount: 68 })
+  component.saveExpense()
+  assert.equal(storage.getReport(2026, 10).expenses[0].amount, 68)
+})
+
+test('integer mode rejects decimal separators, exponents and unsafe integers', () => {
+  const { parseMoneyAmount } = require('../src/components/monthly-report/money-input.directive.ts')
+  for (const [text, value] of [['67', 67], ['0', 0], ['-25', -25], [' 1000 ', 1000], ['', null]]) {
+    assert.equal(parseMoneyAmount(text, true), value)
+  }
+  for (const text of ['67,00', '67.5', '1.000', '1e3', '12,', 'abc', '9007199254740993']) {
+    assert.equal(parseMoneyAmount(text, true), null, text)
+  }
+})
+
+test('integer fields stay unformatted on blur and pasted decimals remain invalid without rounding', () => {
+  const { MoneyInputDirective } = require('../src/components/monthly-report/money-input.directive.ts')
+  const field = Object.create(MoneyInputDirective.prototype)
+  field.integerOnly = true
+  const input = { value: '' }
+  field.element = { nativeElement: input }
+  let value
+  field.registerOnChange(next => { value = next })
+  field.registerOnTouched(() => {})
+  field.registerOnValidatorChange(() => {})
+  field.writeValue(67)
+  assert.equal(input.value, '67')
+  field.onBlur()
+  assert.equal(input.value, '67')
+  input.value = '67,50'
+  field.onInput()
+  field.onBlur()
+  assert.equal(value, null)
+  assert.equal(input.value, '67,50')
+  assert.deepEqual(field.validate(), { money: true })
+  field.writeValue(67.5)
+  assert.equal(input.value, '67,5', 'Existing cents must never be rounded silently')
+  assert.deepEqual(field.validate(), { money: true })
+})
+
+test('integer fields block decimal typing, support replacement and keep editing shortcuts', () => {
+  const { MoneyInputDirective } = require('../src/components/monthly-report/money-input.directive.ts')
+  const field = Object.create(MoneyInputDirective.prototype)
+  field.integerOnly = true
+  const input = { value: '67', selectionStart: 2, selectionEnd: 2 }
+  field.element = { nativeElement: input }
+  const blocked = event => {
+    let prevented = false
+    field.onKeyDown({ ...event, preventDefault: () => { prevented = true } })
+    return prevented
+  }
+  for (const key of [',', '.', 'e', '-', ' ']) assert.equal(blocked({ key }), true, key)
+  for (const key of ['8', 'Backspace', 'ArrowLeft', 'Tab']) assert.equal(blocked({ key }), false, key)
+  assert.equal(blocked({ key: 'v', ctrlKey: true }), false)
+  input.selectionStart = 0
+  input.selectionEnd = 2
+  assert.equal(blocked({ key: '-' }), false)
+  let prevented = false
+  field.onBeforeInput({ inputType: 'insertText', data: ',', preventDefault: () => { prevented = true } })
+  assert.equal(prevented, true)
 })

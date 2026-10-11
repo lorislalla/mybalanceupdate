@@ -77,7 +77,7 @@
               <input #expenseDescription id="expense-description" type="text" formControlName="description" list="expense-suggestions" placeholder="Es. spesa al supermercato" />
             </label>
             <label for="expense-amount">Importo · tua quota
-              <input id="expense-amount" type="text" appMoneyInput inputmode="decimal" formControlName="amount" autocomplete="off" placeholder="0,00 €" />
+              <input id="expense-amount" type="text" appMoneyInput integerOnly inputmode="numeric" formControlName="amount" autocomplete="off" placeholder="0 €" />
             </label>
             <label class="shared-toggle"><span>Condivisa a metà</span>
               <span class="toggle-control">
@@ -102,8 +102,8 @@
             </div>
           }
           @let expenseForm = editingExpenseId() ? editExpenseForm : newExpenseForm;
-          @if (expenseForm.controls.amount.dirty && expenseForm.controls.amount.invalid) {
-            <p class="field-error" role="alert">Inserisci un importo valido, positivo e con al massimo due decimali.</p>
+          @if ((expenseForm.controls.amount.dirty || editingExpenseId()) && expenseForm.controls.amount.invalid) {
+            <p class="field-error" role="alert">Inserisci un importo intero, maggiore o uguale a zero, senza virgole o decimali.</p>
           }
         </form>
 
@@ -162,7 +162,8 @@
             @if (isAddingIncome()) {
               <form class="income-form" [formGroup]="newIncomeForm" (ngSubmit)="addIncome()" (keydown.escape)="cancelAddingIncome(); $event.preventDefault()">
                 <label>Descrizione entrata<input type="text" formControlName="description" list="income-suggestions" placeholder="Es. rimborso" /></label>
-                <label>Importo entrata<input type="text" appMoneyInput inputmode="decimal" formControlName="amount" placeholder="0,00 €" /></label>
+                <label>Importo entrata<input type="text" appMoneyInput integerOnly inputmode="numeric" formControlName="amount" placeholder="0 €" /></label>
+                @if (newIncomeForm.controls.amount.dirty && newIncomeForm.controls.amount.invalid) { <p class="field-error" role="alert">Inserisci un importo intero, maggiore o uguale a zero, senza virgole o decimali.</p> }
                 <div class="actions"><button type="button" class="icon-button secondary-button" (click)="cancelAddingIncome()" aria-label="Annulla" title="Annulla"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 6 12 12M6 18 18 6" /></svg></button><button type="submit" class="icon-button primary-button" [disabled]="newIncomeForm.invalid" aria-label="Aggiungi entrata" title="Aggiungi entrata"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg></button></div>
               </form>
             }
@@ -170,7 +171,8 @@
               @if (editingIncomeId() === income.id) {
                 <form class="income-form" [formGroup]="editIncomeForm" (ngSubmit)="saveIncome()" (keydown.escape)="cancelEditingIncome(); $event.preventDefault()">
                   <label>Descrizione entrata<input type="text" formControlName="description" list="income-suggestions" /></label>
-                  <label>Importo entrata<input type="text" appMoneyInput inputmode="decimal" formControlName="amount" /></label>
+                  <label>Importo entrata<input type="text" appMoneyInput integerOnly inputmode="numeric" formControlName="amount" /></label>
+                  @if (editIncomeForm.controls.amount.invalid) { <p class="field-error" role="alert">Inserisci un importo intero, maggiore o uguale a zero, senza virgole o decimali.</p> }
                   <div class="actions"><button type="button" class="icon-button secondary-button" (click)="cancelEditingIncome()" aria-label="Annulla" title="Annulla"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 6 12 12M6 18 18 6" /></svg></button><button type="submit" class="icon-button primary-button" [disabled]="editIncomeForm.invalid" aria-label="Salva entrata" title="Salva entrata"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m5 12 4 4L19 6" /></svg></button></div>
                 </form>
               } @else {

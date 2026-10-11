@@ -13,7 +13,7 @@ import { MoneyInputDirective } from './money-input.directive'
       <span class="label">{{ label() }}</span>
       <span class="input-wrap">
         <span aria-hidden="true">€</span>
-        <input #amountInput type="text" appMoneyInput inputmode="decimal" autocomplete="off"
+        <input #amountInput type="text" appMoneyInput integerOnly inputmode="numeric" autocomplete="off"
           [aria-label]="label()" [ngModel]="draft()" (ngModelChange)="draft.set($event)"
           (input)="dirty.set(true)"
           #model="ngModel" placeholder="Inserisci importo" [attr.aria-invalid]="model.invalid"
@@ -25,7 +25,7 @@ import { MoneyInputDirective } from './money-input.directive'
         <button type="button" aria-label="Annulla" title="Annulla" (click)="cancel()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 6 12 12M6 18 18 6" /></svg></button>
         <button type="button" aria-label="Salva" title="Salva" [disabled]="model.invalid" (click)="save()" class="save"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m5 12 4 4L19 6" /></svg></button>
       </div>
-      @if (model.invalid) { <p role="alert">Inserisci un importo valido, con al massimo due decimali.</p> }
+      @if (model.invalid) { <p role="alert">Inserisci un importo intero, senza virgole o decimali.</p> }
     } @else {
       <span class="label">{{ label() }}</span>
       <div class="read-value">
@@ -110,6 +110,7 @@ export class MoneyFieldComponent {
 
   save() {
     const value = this.draft() ?? 0
+    if (this.model()?.invalid || !Number.isSafeInteger(value)) return
     this.valueSaved.emit(value)
     this.dirty.set(false)
     this.draft.set(value || null)

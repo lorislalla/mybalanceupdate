@@ -6,7 +6,7 @@ import { StorageService } from '../../services/storage.service'
 import { MonthlyReport, Expense, Income } from '../../models/financial-data.model'
 import { TextFieldModule } from '@angular/cdk/text-field'
 
-import { MoneyInputDirective } from './money-input.directive'
+import { integerAmountValidator, MoneyInputDirective } from './money-input.directive'
 import { MoneyFieldComponent } from './money-field.component'
 
 @Component({
@@ -38,13 +38,13 @@ export class MonthlyReportComponent {
 
   newExpenseForm = this.fb.group({
     description: ['', Validators.required],
-    amount: [null as number | null, [Validators.required, Validators.min(0)]],
+    amount: [null as number | null, [Validators.required, Validators.min(0), integerAmountValidator]],
     shared: [false]
   })
 
   newIncomeForm = this.fb.group({
     description: ['', Validators.required],
-    amount: [null as number | null, [Validators.required, Validators.min(0)]]
+    amount: [null as number | null, [Validators.required, Validators.min(0), integerAmountValidator]]
   })
 
   // =============================================
@@ -55,14 +55,14 @@ export class MonthlyReportComponent {
   editingExpense = computed(() => this.report()?.expenses.find(expense => expense.id === this.editingExpenseId()))
   editExpenseForm = this.fb.group({
     description: ['', Validators.required],
-    amount: [null as number | null, [Validators.required, Validators.min(0)]],
+    amount: [null as number | null, [Validators.required, Validators.min(0), integerAmountValidator]],
     shared: [false]
   })
 
   editingIncomeId = signal<string | null>(null)
   editIncomeForm = this.fb.group({
     description: ['', Validators.required],
-    amount: [null as number | null, [Validators.required, Validators.min(0)]]
+    amount: [null as number | null, [Validators.required, Validators.min(0), integerAmountValidator]]
   })
 
   // =============================================
