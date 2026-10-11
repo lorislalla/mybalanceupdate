@@ -23,7 +23,7 @@
       @if (id() === 'outgoings') {
         <fieldset><legend>Esclusioni delle spese</legend><p class="field-help" [id]="id() + '-limit-help'">La soglia si applica a ogni singola spesa, sulla tua quota. Le spese uguali alla soglia restano incluse. I resoconti originali non cambiano.</p>
           <div class="settings-grid">
-            <label>Escludi spese superiori a (€)<input type="text" inputmode="decimal" appMoneyInput name="expenseLimit" [ngModel]="draft().expenseLimit" (ngModelChange)="patchDraft({ expenseLimit: $event })" #limit="ngModel" min="0" [attr.aria-describedby]="id() + '-limit-help'" [attr.aria-invalid]="limit.invalid ? 'true' : null" placeholder="Nessun limite"></label>
+            <label>Escludi spese superiori a (€)<input type="text" inputmode="numeric" appMoneyInput integerOnly name="expenseLimit" [ngModel]="draft().expenseLimit" (ngModelChange)="patchDraft({ expenseLimit: $event })" #limit="ngModel" min="0" [attr.aria-describedby]="id() + '-limit-help'" [attr.aria-invalid]="limit.invalid ? 'true' : null" placeholder="Nessun limite"></label>
             <label>Escludi descrizioni contenenti<input type="text" name="excludedTerms" maxlength="500" [ngModel]="draft().excludedTerms" (ngModelChange)="patchDraft({ excludedTerms: $event })" placeholder="Es. vacanza, ristrutturazione"><span class="field-help">Separa le parole o frasi con una virgola.</span></label>
           </div>
         </fieldset>

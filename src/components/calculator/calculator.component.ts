@@ -4,12 +4,13 @@ import { FormsModule } from '@angular/forms'
 import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop'
 import { StorageService } from '../../services/storage.service'
 import { CalculatorItem } from '../../models/financial-data.model'
+import { MoneyInputDirective } from '../monthly-report/money-input.directive'
 
 @Component({
   selector: 'app-calculator',
   templateUrl: './calculator.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule, DragDropModule],
+  imports: [CommonModule, FormsModule, DragDropModule, MoneyInputDirective],
   styleUrl: './calculator.component.css'
 })
 export class CalculatorComponent {
@@ -18,7 +19,7 @@ export class CalculatorComponent {
 
   // Stato locale per il form di aggiunta
   newDescription = signal('')
-  newAmount = signal('')
+  newAmount = signal<number | null>(null)
   newColor = signal('#6366f1')
   copyStatus = signal<'idle' | 'copied' | 'error'>('idle')
 
@@ -43,8 +44,8 @@ export class CalculatorComponent {
   }
 
   addItem() {
-    const amount = this.parseAmount(this.newAmount())
-    if (!this.newDescription() || amount === null) return
+    const amount = this.newAmount()
+    if (!this.newDescription() || !this.isValidAmount(amount)) return
 
     const newItem: CalculatorItem = {
       id: crypto.randomUUID(),
@@ -55,7 +56,7 @@ export class CalculatorComponent {
 
     this.storageService.updateCalculatorItems([...this.items(), newItem])
     this.newDescription.set('')
-    this.newAmount.set('')
+    this.newAmount.set(null)
     this.newColor.set('#6366f1')
   }
 
@@ -72,21 +73,12 @@ export class CalculatorComponent {
     this.storageService.updateCalculatorItems(filtered)
   }
 
-  updateAmount(id: string, value: string) {
-    const amount = this.parseAmount(value)
-    if (amount !== null) this.updateItem(id, 'amount', amount)
+  updateAmount(id: string, value: number | null) {
+    if (this.isValidAmount(value)) this.updateItem(id, 'amount', value)
   }
 
-  isValidAmount(value: string) {
-    return this.parseAmount(value) !== null
-  }
-
-  private parseAmount(value: string): number | null {
-    const normalized = value.trim().replace(',', '.')
-    if (!normalized) return null
-
-    const amount = Number(normalized)
-    return Number.isFinite(amount) ? amount : null
+  isValidAmount(value: number | null): value is number {
+    return Number.isSafeInteger(value)
   }
 
   selectAmount(event: Event) {

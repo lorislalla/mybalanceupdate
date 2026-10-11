@@ -107,7 +107,7 @@
           }
         </form>
 
-        <div class="section-heading"><h2>Spese registrate</h2><strong class="amount">{{ totalExpenses() | number: '1.2-2' }} €</strong></div>
+        <div class="section-heading"><h2>Spese registrate</h2><strong class="amount">{{ totalExpenses() | number: '1.0-0' }} €</strong></div>
         <div class="expense-list" cdkDropList [cdkDropListData]="currentReport.expenses" (cdkDropListDropped)="drop($event)">
           @for (expense of currentReport.expenses; track expense.id) {
             <div class="expense-row" cdkDrag [cdkDragStartDelay]="{ touch: 180, mouse: 0 }" [class.is-editing]="editingExpenseId() === expense.id">
@@ -116,9 +116,9 @@
               </button>
               <div class="expense-description">
                 <span>{{ expense.description }}</span>
-                @if (expense.shared) { <small>Condivisa · totale {{ (expense.totalAmount ?? expense.amount * 2) | number: '1.2-2' }} €</small> }
+                @if (expense.shared) { <small>Condivisa · totale {{ (expense.totalAmount ?? expense.amount * 2) | number: '1.0-0' }} €</small> }
               </div>
-              <strong class="amount">{{ expense.amount | number: '1.2-2' }} €</strong>
+              <strong class="amount">{{ expense.amount | number: '1.0-0' }} €</strong>
               <button type="button" class="icon-button edit-expense" [attr.aria-label]="'Modifica ' + expense.description" title="Modifica spesa"
                 (click)="startEditing(expense); expenseDescription.focus(); expenseComposer.scrollIntoView({block: 'nearest', behavior: 'smooth'})">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m16 3 5 5-12 12-6 1 1-6zM14 5l5 5" /></svg>
@@ -143,7 +143,7 @@
                 <div class="info-label"><span>Saldo a fine mese</span>
                   <details #closingInfo><summary aria-label="Informazioni sul saldo a fine mese" (blur)="closingInfo.open = false" (keydown.escape)="closingInfo.open = false">i</summary><p>Corrisponde al saldo al 1° del mese successivo.</p></details>
                 </div>
-                @if (monthlyBalanceSummary().closingBalance !== null) { <strong class="amount">{{ monthlyBalanceSummary().closingBalance | number: '1.2-2' }} €</strong> }
+                @if (monthlyBalanceSummary().closingBalance !== null) { <strong class="amount">{{ monthlyBalanceSummary().closingBalance | number: '1.0-0' }} €</strong> }
                 @else { <span class="unavailable">Non ancora disponibile</span> }
               </div>
             }
@@ -176,13 +176,13 @@
                   <div class="actions"><button type="button" class="icon-button secondary-button" (click)="cancelEditingIncome()" aria-label="Annulla" title="Annulla"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 6 12 12M6 18 18 6" /></svg></button><button type="submit" class="icon-button primary-button" [disabled]="editIncomeForm.invalid" aria-label="Salva entrata" title="Salva entrata"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m5 12 4 4L19 6" /></svg></button></div>
                 </form>
               } @else {
-                <div class="income-row"><span>{{ income.description }}</span><strong class="amount">{{ income.amount | number: '1.2-2' }} €</strong>
+                <div class="income-row"><span>{{ income.description }}</span><strong class="amount">{{ income.amount | number: '1.0-0' }} €</strong>
                   <div class="income-actions"><button type="button" class="icon-button" [attr.aria-label]="'Modifica entrata ' + income.description" (click)="startEditingIncome(income)" title="Modifica entrata"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m16 3 5 5-12 12-6 1 1-6zM14 5l5 5" /></svg></button><button type="button" class="icon-button danger-button" [attr.aria-label]="'Elimina entrata ' + income.description" (click)="promptDeleteIncome(income)" title="Elimina entrata"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7M14 10v7" /></svg></button></div>
                 </div>
               }
             }
-            <div class="balance-line"><span>Entrate registrate</span><strong class="amount positive">{{ totalSalary() | number: '1.2-2' }} €</strong></div>
-            <div class="balance-line"><span>Spese registrate</span><strong class="amount negative">{{ totalExpenses() | number: '1.2-2' }} €</strong></div>
+            <div class="balance-line"><span>Entrate registrate</span><strong class="amount positive">{{ totalSalary() | number: '1.0-0' }} €</strong></div>
+            <div class="balance-line"><span>Spese registrate</span><strong class="amount negative">{{ totalExpenses() | number: '1.0-0' }} €</strong></div>
           </section>
 
           @if (isCalendarMonth()) {
@@ -192,13 +192,13 @@
               <div class="balance-line"><div class="info-label"><span>Variazione reale</span>
                 <details #changeInfo><summary aria-label="Informazioni sulla variazione reale del saldo" (blur)="changeInfo.open = false" (keydown.escape)="changeInfo.open = false">i</summary><p>Saldo finale meno saldo iniziale.</p></details>
               </div>
-                @if (summary.balanceChange !== null) { <strong class="amount" [class.positive]="summary.balanceChange > 0" [class.negative]="summary.balanceChange < 0">{{ summary.balanceChange > 0 ? '+' : '' }}{{ summary.balanceChange | number: '1.2-2' }} €</strong> }
+                @if (summary.balanceChange !== null) { <strong class="amount" [class.positive]="summary.balanceChange > 0" [class.negative]="summary.balanceChange < 0">{{ summary.balanceChange > 0 ? '+' : '' }}{{ summary.balanceChange | number: '1.0-0' }} €</strong> }
                 @else { <span class="unavailable">Non disponibile</span> }
               </div>
               <div class="balance-line"><div class="info-label"><span>Scostamento</span>
                 <details #discrepancyInfo><summary aria-label="Informazioni sullo scostamento" (blur)="discrepancyInfo.open = false" (keydown.escape)="discrepancyInfo.open = false">i</summary><p>Variazione reale − (entrate − spese registrate). Negativo: saldo inferiore a quanto spiegano i movimenti segnati; positivo: superiore. Può includere spese o altri movimenti non registrati.</p></details>
               </div>
-                @if (summary.unrecordedChange !== null) { <strong class="amount" [class.positive]="summary.unrecordedChange > 0" [class.negative]="summary.unrecordedChange < 0">{{ summary.unrecordedChange > 0 ? '+' : '' }}{{ summary.unrecordedChange | number: '1.2-2' }} €</strong> }
+                @if (summary.unrecordedChange !== null) { <strong class="amount" [class.positive]="summary.unrecordedChange > 0" [class.negative]="summary.unrecordedChange < 0">{{ summary.unrecordedChange > 0 ? '+' : '' }}{{ summary.unrecordedChange | number: '1.0-0' }} €</strong> }
                 @else { <span class="unavailable">Non disponibile</span> }
               </div>
             </section>

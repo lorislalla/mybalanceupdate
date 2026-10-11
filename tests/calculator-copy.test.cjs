@@ -39,3 +39,38 @@ test('a denied clipboard write reports an error instead of claiming a successful
   await component.copyRoundedTotal()
   assert.equal(component.copyStatus(), 'error')
 })
+
+test('calculator edits reject fractional and empty drafts without overwriting the saved integer', () => {
+  const component = Object.create(CalculatorComponent.prototype)
+  let items = [{ id: 'account', description: 'Conto', amount: 67 }]
+  component.items = () => items
+  component.storageService = { updateCalculatorItems: next => { items = next } }
+  for (const value of [67.5, null, NaN, Infinity, 9007199254740992]) {
+    component.updateAmount('account', value)
+    assert.equal(items[0].amount, 67)
+  }
+  for (const value of [-300, 0, 10000]) {
+    component.updateAmount('account', value)
+    assert.equal(items[0].amount, value)
+  }
+})
+
+test('calculator creation accepts whole euro amounts including zero and negatives', () => {
+  const component = Object.create(CalculatorComponent.prototype)
+  let items = []
+  component.items = () => items
+  component.storageService = { updateCalculatorItems: next => { items = next } }
+  component.newDescription = signal('Prestito')
+  component.newAmount = signal(12.5)
+  component.newColor = signal('#6366f1')
+  component.addItem()
+  assert.equal(items.length, 0)
+  component.newAmount.set(-250)
+  component.addItem()
+  assert.equal(items[0].amount, -250)
+  assert.equal(component.newAmount(), null)
+  component.newDescription.set('Azzerato')
+  component.newAmount.set(0)
+  component.addItem()
+  assert.equal(items[1].amount, 0)
+})

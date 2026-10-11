@@ -33,6 +33,8 @@ input.row-color { height: 32px; border: 1px solid #475569; border-radius: 6px; b
 .calculator-total span { display: block; margin-bottom: 4px; font-size: 14px; color: #b7c3d6; }
 .calculator-total strong { display: block; font-size: 24px; font-weight: 600; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
 .copy-status { color: #fda4af; font-size: 13px; text-align: right; margin-top: 8px; }
+.field-error { grid-column: 1 / -1; margin: 4px 0 0; color: #fda4af; font-size: 13px; }
+input[aria-invalid=true] { border-color: #fda4af; }
 .empty-state { padding: 12px 0; color: #94a3b8; font-size: 14px; }
 .cdk-drag-preview { box-sizing: border-box; border-radius: 8px; color: #e2e8f0; background: #1b273a; box-shadow: 0 8px 24px #0008; }
 .cdk-drag-placeholder { opacity: .3; background: #334155; }

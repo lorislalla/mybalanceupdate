@@ -7,7 +7,7 @@ import { MoneyInputDirective } from '../monthly-report/money-input.directive'
 import { ChartPreferencesService } from './chart-preferences.service'
 import { ChartId, ChartPoint, ChartSettings, chartPoints, defaultSettings, monthIndex, movingAverage } from './chart-data'
 
-const euro = new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR', useGrouping: true })
+const euro = new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR', useGrouping: true, minimumFractionDigits: 0, maximumFractionDigits: 0 })
 const monthLabel = new Intl.DateTimeFormat('it-IT', { month: 'long', year: 'numeric' })
 const shortMonth = new Intl.DateTimeFormat('it-IT', { month: 'short', year: '2-digit' })
 const definitions = {
@@ -61,7 +61,7 @@ export class FinancialChartComponent {
   patchDraft(patch: Partial<ChartSettings>) { this.draft.update(value => ({ ...value, ...patch })) }
   async saveSettings(valid: boolean | null) {
     const draft = this.draft()
-    if (!valid || (draft.expenseLimit !== null && draft.expenseLimit < 0)) { this.formError.set('Inserisci una soglia valida, maggiore o uguale a zero.'); return }
+    if (!valid || (draft.expenseLimit !== null && (!Number.isSafeInteger(draft.expenseLimit) || draft.expenseLimit < 0))) { this.formError.set('Inserisci una soglia in euro interi, maggiore o uguale a zero.'); return }
     if (this.id() !== 'last12' && draft.period === 'custom' && (!draft.from || !draft.to || draft.from > draft.to)) {
       this.formError.set('Seleziona un mese iniziale e uno finale, in ordine cronologico.'); return
     }
@@ -95,8 +95,8 @@ export class FinancialChartComponent {
     const low = values.length ? Math.min(...values) : 0
     const high = values.length ? Math.max(...values) : 0
     const padding = Math.max((high - low) * 0.15, Math.abs(high) * 0.04, 1)
-    const rangeMin = settings.zeroBaseline ? Math.min(0, low - (low < 0 ? padding : 0)) : low - padding
-    const rangeMax = settings.zeroBaseline ? Math.max(0, high + padding) : high + padding
+    const rangeMin = Math.floor(settings.zeroBaseline ? Math.min(0, low - (low < 0 ? padding : 0)) : low - padding)
+    const rangeMax = Math.ceil(settings.zeroBaseline ? Math.max(0, high + padding) : high + padding)
     const selectPoint = (_event: unknown, _context: unknown, opts: { seriesIndex: number; dataPointIndex: number }) => {
       if (opts.seriesIndex !== 0) return
       const data = series[0].data as { x: number; y: number | null }[]
@@ -131,8 +131,8 @@ export class FinancialChartComponent {
         tooltip: { enabled: false }
       },
       yaxis: {
-        min: rangeMin, max: rangeMax, tickAmount: 4, forceNiceScale: true,
-        labels: { minWidth: 48, maxWidth: 78, style: { fontSize: '11px' }, formatter: value => `${new Intl.NumberFormat('it-IT', { notation: Math.abs(value) >= 10000 ? 'compact' : 'standard', maximumFractionDigits: rangeMax - rangeMin < 10 ? 2 : 1, useGrouping: true }).format(value)} €` }
+        min: rangeMin, max: rangeMax, tickAmount: Math.min(4, rangeMax - rangeMin), decimalsInFloat: 0, forceNiceScale: true,
+        labels: { minWidth: 48, maxWidth: 102, style: { fontSize: '11px' }, formatter: value => this.currency(value) }
       },
       tooltip: { theme: 'dark', shared: series.length > 1, intersect: series.length === 1 && settings.type !== 'bar', x: { formatter: value => monthLabel.format(Number(value)) }, y: { formatter: value => this.currency(value) } },
       responsive: [{ breakpoint: 600, options: { chart: { height: 260 }, xaxis: { tickAmount: 3 }, grid: { padding: { left: 0, right: 4 } } } }]

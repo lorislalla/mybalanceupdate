@@ -24,6 +24,7 @@ async (page) => {
   await page.getByRole('button', { name: 'Modifica Spesa', exact: true }).click()
   const amount = page.getByRole('textbox', { name: 'Importo · tua quota', exact: true })
   await amount.waitFor()
+  await page.waitForFunction(() => document.querySelector('#expense-amount')?.value === '67')
   assert(await amount.inputValue() === '67', 'Editing added decimal zeroes')
   assert(await amount.getAttribute('inputmode') === 'numeric', 'Mobile keyboard is not numeric')
   await amount.focus()

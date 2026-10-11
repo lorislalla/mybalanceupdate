@@ -5,7 +5,7 @@
       <input id="new-calculator-description" type="text" name="description" [ngModel]="newDescription()" (ngModelChange)="newDescription.set($event)" placeholder="Es. Conto in banca" />
     </label>
     <label for="new-calculator-amount">Importo (€)
-      <input id="new-calculator-amount" type="text" name="amount" aria-label="Importo nuova voce" inputmode="decimal" [ngModel]="newAmount()" (ngModelChange)="newAmount.set($event)" placeholder="0,00" (focus)="selectAmount($event)" (click)="selectAmount($event)" />
+      <input id="new-calculator-amount" type="text" name="amount" aria-label="Importo nuova voce" appMoneyInput integerOnly inputmode="numeric" [ngModel]="newAmount()" (ngModelChange)="newAmount.set($event)" #newAmountModel="ngModel" [attr.aria-invalid]="newAmountModel.invalid ? 'true' : null" [attr.aria-describedby]="newAmountModel.invalid ? 'new-calculator-amount-error' : null" placeholder="0" (focus)="selectAmount($event)" (click)="selectAmount($event)" />
     </label>
     <label for="new-calculator-color" class="color-label">Colore
       <input id="new-calculator-color" type="color" name="color" [ngModel]="newColor()" (ngModelChange)="newColor.set($event)" title="Colore nuova voce" />
@@ -13,6 +13,7 @@
     <button type="submit" class="icon-button primary-button add-button" aria-label="Aggiungi voce" title="Aggiungi voce" [disabled]="!newDescription() || !isValidAmount(newAmount())">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
     </button>
+    @if (newAmountModel.invalid) { <p id="new-calculator-amount-error" class="field-error" role="alert">Inserisci un importo intero, senza virgole o decimali.</p> }
   </form>
 
   <div cdkDropList [cdkDropListData]="items()" (cdkDropListDropped)="drop($event)" class="calculator-list">
@@ -23,18 +24,19 @@
         </button>
         <input type="color" class="row-color" [attr.aria-label]="'Colore ' + item.description" [ngModel]="item.color || '#6366f1'" (ngModelChange)="updateItem(item.id, 'color', $event)" title="Cambia colore" />
         <input type="text" class="row-description" [attr.aria-label]="'Descrizione ' + item.description" [ngModel]="item.description" (ngModelChange)="updateItem(item.id, 'description', $event)" />
-        <input type="text" inputmode="decimal" class="row-amount" [class.positive]="item.amount > 0" [class.negative]="item.amount < 0" [attr.aria-label]="'Importo ' + item.description"
-          [value]="item.amount" (input)="updateAmount(item.id, $any($event.target).value)" data-calculator-amount (focus)="selectAmount($event)" (click)="selectAmount($event)" (keydown.tab)="focusAdjacentAmount($event)" />
+        <input type="text" appMoneyInput integerOnly inputmode="numeric" class="row-amount" [class.positive]="item.amount > 0" [class.negative]="item.amount < 0" [attr.aria-label]="'Importo ' + item.description"
+          [ngModel]="item.amount" (ngModelChange)="updateAmount(item.id, $event)" #amountModel="ngModel" [attr.aria-invalid]="amountModel.invalid ? 'true' : null" [attr.aria-describedby]="amountModel.invalid ? 'calculator-amount-error-' + item.id : null" data-calculator-amount (focus)="selectAmount($event)" (click)="selectAmount($event)" (keydown.tab)="focusAdjacentAmount($event)" />
         <button type="button" class="icon-button danger-button remove-button" [attr.aria-label]="'Elimina ' + item.description" title="Elimina voce" (click)="removeItem(item.id)">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7M14 10v7" /></svg>
         </button>
+        @if (amountModel.invalid) { <p [id]="'calculator-amount-error-' + item.id" class="field-error" role="alert">Inserisci un importo intero, senza virgole o decimali.</p> }
       </div>
     } @empty { <p class="empty-state">Aggiungi voci per calcolare il totale.</p> }
   </div>
 
   @if (items().length > 0) {
     <div class="calculator-total">
-      <div><span>Totale calcolato</span><strong [class.positive]="total() > 0" [class.negative]="total() < 0">{{ total() | number: '1.2-2' }} €</strong></div>
+      <div><span>Totale calcolato</span><strong [class.positive]="total() > 0" [class.negative]="total() < 0">{{ total() | number: '1.0-0' }} €</strong></div>
       <button type="button" class="icon-button" aria-label="Copia totale arrotondato alle centinaia" title="Copia totale arrotondato alle centinaia" (click)="copyRoundedTotal()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
           @if (copyStatus() === 'copied') { <path d="m5 12 4 4L19 6" /> }

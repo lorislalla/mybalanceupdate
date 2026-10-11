@@ -46,7 +46,7 @@
             <p class="text-[10px] text-gray-500 font-medium">{{ getMonthName(result.month) }} {{ result.year }}</p>
           </div>
           <div class="flex flex-col items-end">
-            <span class="font-mono font-bold text-sm" [class.text-red-400]="result.type === 'expense'" [class.text-green-400]="result.type === 'income'"> {{ result.type === 'expense' ? '-' : '+' }}{{ result.amount | number : '1.2-2' }} € </span>
+            <span class="font-mono font-bold text-sm" [class.text-red-400]="result.type === 'expense'" [class.text-green-400]="result.type === 'income'"> {{ result.type === 'expense' ? '-' : '+' }}{{ result.amount | number : '1.0-0' }} € </span>
           </div>
         </div>
         }

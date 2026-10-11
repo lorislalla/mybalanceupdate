@@ -30,7 +30,7 @@ import { MoneyInputDirective } from './money-input.directive'
       <span class="label">{{ label() }}</span>
       <div class="read-value">
         @if (value() !== 0) {
-          <strong class="currency-value" [class.income]="kind() === 'income' && value() > 0" [class.negative]="value() < 0">{{ value() | number: '1.2-2' }} €</strong>
+          <strong class="currency-value" [class.income]="kind() === 'income' && value() > 0" [class.negative]="value() < 0">{{ value() | number: '1.0-0' }} €</strong>
         } @else { <span class="empty-value">Non inserito</span> }
         <button type="button" [aria-label]="(value() === 0 ? 'Inserisci ' : 'Modifica ') + label()" [title]="(value() === 0 ? 'Inserisci ' : 'Modifica ') + label()" (click)="startEditing()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">

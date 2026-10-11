@@ -16,6 +16,7 @@ async (page) => {
   await page.getByRole('button', { name: 'Cerca', exact: true }).click()
   await page.waitForFunction(() => document.activeElement === document.querySelector('app-search-expenses input'))
   await page.getByRole('button', { name: 'Calcolo', exact: true }).click()
+  await page.locator('app-calculator').waitFor()
   await page.context().grantPermissions(['clipboard-read', 'clipboard-write'])
   const fixtures = [[19910, '19900'], [5655, '5700'], [7550, '7600'], [-7550, '-7500']]
   for (const [amount, expected] of fixtures) {
@@ -28,10 +29,10 @@ async (page) => {
     if (await page.evaluate(() => navigator.clipboard.readText()) !== expected) throw new Error(`Wrong clipboard value for ${amount}`)
   }
   await page.getByRole('textbox', { name: 'Nuova voce', exact: true }).fill('Prestito')
-  await page.getByRole('textbox', { name: 'Importo nuova voce', exact: true }).fill('-250,50')
+  await page.getByRole('textbox', { name: 'Importo nuova voce', exact: true }).fill('-250')
   await page.getByRole('button', { name: 'Aggiungi voce', exact: true }).click()
   await page.getByRole('textbox', { name: 'Importo Prestito', exact: true }).waitFor()
-  await page.getByRole('textbox', { name: 'Importo Prestito', exact: true }).fill('-300,50')
+  await page.getByRole('textbox', { name: 'Importo Prestito', exact: true }).fill('-300')
   await page.getByRole('textbox', { name: 'Importo Prestito', exact: true }).press('Tab')
   await page.waitForFunction(() => document.activeElement?.getAttribute('aria-label') === 'Importo Conto in banca')
   await page.locator('input[type="color"][aria-label="Colore Prestito"]').evaluate(el => {
