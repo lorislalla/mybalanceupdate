@@ -28,6 +28,7 @@ async (page) => {
   assert(await page.getByRole('heading', { name: 'Nessun dato da visualizzare', exact: true }).count() === 4, 'Empty states are missing')
   await seed()
   await page.waitForFunction(() => document.querySelectorAll('.apexcharts-svg').length === 4)
+  assert(await page.evaluate(() => document.documentElement.scrollHeight <= innerHeight), 'Charts created an outer page scrollbar')
   assert(JSON.stringify(await page.locator('.chart-card h2').allTextContents()) === JSON.stringify(['Saldo complessivo', 'Saldo · ultimi 12 mesi', 'Spese mensili', 'Entrate mensili']), 'Four chart order is wrong')
   const marker = page.locator('app-financial-chart').first().locator('.apexcharts-marker').nth(4)
   await marker.click()
@@ -75,11 +76,13 @@ async (page) => {
     await page.waitForFunction(() => [...document.querySelectorAll('.chart-container .apexcharts-svg')].every(svg => svg.width.baseVal.value <= svg.closest('.chart-container').clientWidth))
     dimensions.push(await page.locator('app-summary-view').evaluate(el => ({
       width: innerWidth, document: document.documentElement.scrollWidth, client: el.clientWidth, scroll: el.scrollWidth,
+      viewportHeight: innerHeight, documentHeight: document.documentElement.scrollHeight,
       cards: [...el.querySelectorAll('.chart-card')].map(card => ({ client: card.clientWidth, scroll: card.scrollWidth }))
     })))
     await outgoing.getByRole('button', { name: 'Annulla', exact: true }).click()
   }
   assert(dimensions.every(d => d.width === d.document && d.client === d.scroll && d.cards.every(c => c.client === c.scroll)), 'Chart or settings horizontal overflow')
+  assert(dimensions.every(d => d.documentHeight <= d.viewportHeight), 'Charts or settings created an outer page scrollbar')
   await page.setViewportSize({ width: 1440, height: 1000 })
   const targetMonth = await outgoing.evaluate(el => { const c = ng.getComponent(el); return c.key(c.points().at(-1)) })
   await outgoing.getByRole('combobox', { name: 'Mese da aprire · Spese mensili', exact: true }).selectOption(targetMonth)
