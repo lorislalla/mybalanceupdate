@@ -30,7 +30,7 @@ import { MoneyInputDirective } from './money-input.directive'
       <span class="label">{{ label() }}</span>
       <div class="read-value">
         @if (value() !== 0) {
-          <strong class="currency-value" [class.income]="kind() === 'income' && value() > 0" [class.negative]="value() < 0">{{ value() | number: '1.0-0' }} €</strong>
+          <strong class="currency-value" [class.balance]="kind() === 'balance'" [class.income]="kind() === 'income' && value() > 0" [class.negative]="value() < 0">{{ value() | number: '1.0-0' }} €</strong>
         } @else { <span class="empty-value">Non inserito</span> }
         <button type="button" [aria-label]="(value() === 0 ? 'Inserisci ' : 'Modifica ') + label()" [title]="(value() === 0 ? 'Inserisci ' : 'Modifica ') + label()" (click)="startEditing()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
@@ -46,6 +46,7 @@ import { MoneyInputDirective } from './money-input.directive'
     .read-value { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 12px; }
     .read-value button { margin-left: auto; }
     .currency-value { font-size: 16px; font-weight: 600; font-variant-numeric: tabular-nums; color: #e2e8f0; overflow-wrap: anywhere; }
+    .currency-value.balance { font-size: 32px; font-weight: 700; }
     .currency-value.income { color: #6ee7b7; }
     .currency-value.negative { color: #fda4af; }
     .empty-value { color: #94a3b8; font-size: 14px; }

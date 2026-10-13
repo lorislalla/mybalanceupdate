@@ -61,7 +61,7 @@ async (page) => {
   await page.getByRole('button', { name: 'Inserisci 14ª mensilità', exact: true }).waitFor()
   await page.getByRole('button', { name: 'Seleziona mese', exact: true }).click()
   await page.getByRole('dialog', { name: 'Seleziona Mese', exact: true }).getByRole('button', { name: 'ott', exact: true }).click()
-  await page.getByRole('heading', { name: 'Confronto del mese', exact: true }).waitFor()
+  await page.getByRole('button', { name: 'Modifica Saldo al 1° del mese', exact: true }).waitFor()
   await resetScroll()
   return { desktopOrder, touchOrder, expenseDeletion: 'passed', incomeDeletion: 'passed', repeat: 'passed', extraSalaryFields: 'passed' }
 }

@@ -36,6 +36,8 @@ async (page) => {
   }, month)
   await waitMonth(10)
   const assert = (condition, message) => { if (!condition) throw new Error(message) }
+  assert(await page.getByRole('heading', { name: 'Confronto del mese', exact: true }).count() === 0, 'Month comparison is still displayed')
+  assert(await page.getByLabel('Informazioni sul saldo a fine mese', { exact: true }).count() === 0, 'Closing balance still has an info icon')
   const field = page.locator('app-money-field').first()
   assert(await field.getByRole('textbox').count() === 0, 'Balance is permanently editable instead of read-only')
   const openField = async target => {

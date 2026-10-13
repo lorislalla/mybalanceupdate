@@ -14,7 +14,7 @@ h3 { margin: 0 0 10px; font-size: 15px; font-weight: 600; color: #f1f5f9; }
 label { display: block; color: #b7c3d6; font-size: 14px; min-width: 0; }
 input:not([type=checkbox]), textarea { display: block; width: 100%; min-width: 0; min-height: 38px; padding: 7px 12px; margin-top: 4px; border: 1px solid #475569; border-radius: 8px; background: #111b2c; color: #f1f5f9; font-size: 16px; }
 input::placeholder, textarea::placeholder { color: #91a1b8; opacity: 1; }
-input:focus-visible, textarea:focus-visible, button:focus-visible, summary:focus-visible { outline: 2px solid #a5b4fc; outline-offset: 3px; }
+input:focus-visible, textarea:focus-visible, button:focus-visible { outline: 2px solid #a5b4fc; outline-offset: 3px; }
 input[appMoneyInput] { font-variant-numeric: tabular-nums; }
 input[type=date] { color-scheme: dark; }
 .shared-toggle { text-align: center; cursor: pointer; }
@@ -59,15 +59,13 @@ button:disabled { opacity: .45; cursor: not-allowed; }
 .payday-label { margin-top: 10px; }
 .balance-line { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 6px 10px; margin-top: 10px; font-size: 14px; color: #b7c3d6; }
 .balance-line > .amount, .balance-line > .unavailable { margin-left: auto; text-align: right; }
+.closing-balance { flex-direction: column; align-items: flex-start; gap: 4px; }
+.closing-balance > .amount, .closing-balance > .unavailable { margin-left: 0; text-align: left; }
 .unavailable { font-size: 12px; color: #a5b4c9; }
 .positive { color: #6ee7b7; }
 .negative { color: #fda4af; }
 .expense-row > .amount, .expense-section > .section-heading > .amount { color: #fda4af; }
 .income-row > .amount { color: #6ee7b7; }
-.info-label { position: relative; display: flex; align-items: center; gap: 8px; }
-.info-label summary { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border: 1px solid #64748b; border-radius: 50%; font-size: 13px; cursor: pointer; list-style: none; }
-.info-label summary::-webkit-details-marker { display: none; }
-.info-label details p { position: absolute; z-index: 30; bottom: calc(100% + 8px); left: 0; width: 270px; max-width: calc(100vw - 72px); padding: 12px; border: 1px solid #64748b; border-radius: 8px; color: #e2e8f0; background: #0f172a; box-shadow: 0 8px 20px #0006; font-size: 13px; line-height: 1.5; }
 .income-heading { font-size: 14px; color: #b7c3d6; }
 .income-form { display: grid; gap: 10px; margin: 10px 0; }
 .income-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; align-items: center; padding: 8px 0; font-size: 14px; }
@@ -105,7 +103,6 @@ textarea { resize: vertical; line-height: 1.6; }
   .icon-button { width: 36px; }
   .expense-row { grid-template-columns: 36px minmax(0, 1fr) auto 36px; }
   .drag-handle { width: 36px; }
-  .info-label summary { width: 32px; height: 32px; }
 }
 @media (max-width: 600px) {
   .composer-fields { grid-template-columns: minmax(0, 1fr) auto 40px; }

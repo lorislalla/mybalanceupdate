@@ -139,10 +139,8 @@
                 <input id="payday" type="date" #paydayInput [ngModel]="currentReport.payday" (change)="onPaydayChange(paydayInput.value)" />
               </label>
             } @else {
-              <div class="balance-line">
-                <div class="info-label"><span>Saldo a fine mese</span>
-                  <details #closingInfo><summary aria-label="Informazioni sul saldo a fine mese" (blur)="closingInfo.open = false" (keydown.escape)="closingInfo.open = false">i</summary><p>Corrisponde al saldo al 1° del mese successivo.</p></details>
-                </div>
+              <div class="balance-line closing-balance">
+                <span>Saldo a fine mese</span>
                 @if (monthlyBalanceSummary().closingBalance !== null) { <strong class="amount">{{ monthlyBalanceSummary().closingBalance | number: '1.0-0' }} €</strong> }
                 @else { <span class="unavailable">Non ancora disponibile</span> }
               </div>
@@ -185,24 +183,6 @@
             <div class="balance-line"><span>Spese registrate</span><strong class="amount negative">{{ totalExpenses() | number: '1.0-0' }} €</strong></div>
           </section>
 
-          @if (isCalendarMonth()) {
-            @let summary = monthlyBalanceSummary();
-            <section class="balance-section">
-              <h3>Confronto del mese</h3>
-              <div class="balance-line"><div class="info-label"><span>Variazione reale</span>
-                <details #changeInfo><summary aria-label="Informazioni sulla variazione reale del saldo" (blur)="changeInfo.open = false" (keydown.escape)="changeInfo.open = false">i</summary><p>Saldo finale meno saldo iniziale.</p></details>
-              </div>
-                @if (summary.balanceChange !== null) { <strong class="amount" [class.positive]="summary.balanceChange > 0" [class.negative]="summary.balanceChange < 0">{{ summary.balanceChange > 0 ? '+' : '' }}{{ summary.balanceChange | number: '1.0-0' }} €</strong> }
-                @else { <span class="unavailable">Non disponibile</span> }
-              </div>
-              <div class="balance-line"><div class="info-label"><span>Scostamento</span>
-                <details #discrepancyInfo><summary aria-label="Informazioni sullo scostamento" (blur)="discrepancyInfo.open = false" (keydown.escape)="discrepancyInfo.open = false">i</summary><p>Variazione reale − (entrate − spese registrate). Negativo: saldo inferiore a quanto spiegano i movimenti segnati; positivo: superiore. Può includere spese o altri movimenti non registrati.</p></details>
-              </div>
-                @if (summary.unrecordedChange !== null) { <strong class="amount" [class.positive]="summary.unrecordedChange > 0" [class.negative]="summary.unrecordedChange < 0">{{ summary.unrecordedChange > 0 ? '+' : '' }}{{ summary.unrecordedChange | number: '1.0-0' }} €</strong> }
-                @else { <span class="unavailable">Non disponibile</span> }
-              </div>
-            </section>
-          }
         </aside>
 
         <section class="month-notes" aria-labelledby="notes-heading">
