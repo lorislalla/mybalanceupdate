@@ -35,8 +35,8 @@
 
       <div class="grid grid-cols-1 gap-1.5">
         @for(result of searchResults(); track $index) {
-        <div (click)="requestNavigation(result)" class="flex justify-between items-center bg-gray-900/40 hover:bg-gray-750 p-2.5 rounded-lg border border-gray-700/30 transition-all animate-fade-in group cursor-pointer active:scale-[0.98]">
-          <div class="min-w-0">
+        <div (click)="requestNavigation(result)" class="flex justify-between items-center gap-3 bg-gray-900/40 hover:bg-gray-750 p-2.5 rounded-lg border border-gray-700/30 transition-all animate-fade-in group cursor-pointer active:scale-[0.98]">
+          <div class="min-w-0 flex-1">
             <div class="flex items-center gap-2">
               <p class="font-semibold text-gray-200 truncate group-hover:text-indigo-400 transition-colors text-sm">{{ result.description }}</p>
               @if (result.type === 'income') {
@@ -45,7 +45,7 @@
             </div>
             <p class="text-[10px] text-gray-500 font-medium">{{ getMonthName(result.month) }} {{ result.year }}</p>
           </div>
-          <div class="flex flex-col items-end">
+          <div class="flex flex-col items-end shrink-0 whitespace-nowrap">
             <span class="font-mono font-bold text-sm" [class.text-red-400]="result.type === 'expense'" [class.text-green-400]="result.type === 'income'"> {{ result.type === 'expense' ? '-' : '+' }}{{ result.amount | number : '1.0-0' }} € </span>
           </div>
         </div>

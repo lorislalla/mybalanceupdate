@@ -15,6 +15,33 @@ async (page) => {
   await page.getByRole('button', { name: 'Resoconto', exact: true }).click()
   await page.getByRole('button', { name: 'Cerca', exact: true }).click()
   await page.waitForFunction(() => document.activeElement === document.querySelector('app-search-expenses input'))
+  await page.evaluate(() => {
+    const component = ng.getComponent(document.querySelector('app-search-expenses'))
+    component.storageService.appData.set({ reports: [{ year: 2026, month: 10, payday: '', balance: 0, salary: 0, notes: '',
+      expenses: [
+        { id: 'small', description: 'Casa · Bolletta Luce & Gas agosto', amount: 50 },
+        { id: 'medium', description: 'Casa · Mediazione agenzia per vendita casa Rivoli', amount: 1586 },
+        { id: 'large', description: 'Casa · Acquisto casa Volvera', amount: 140000 },
+        { id: 'long', description: "Casa · Atto d’acquisto + atto di mutuo + imposte", amount: 1925 }
+      ], incomes: [{ id: 'refund', description: 'Casa · Rimborso agenzia per vendita casa Rivoli', amount: 4550 }]
+    }], globalNotes: '', calculatorItems: [] })
+  })
+  await query.fill('Casa')
+  await page.waitForFunction(() => document.querySelectorAll('app-search-expenses .font-mono').length === 5)
+  const searchDimensions = []
+  for (const width of [320, 374, 390, 768, 1280]) {
+    await page.setViewportSize({ width, height: 900 })
+    searchDimensions.push(await page.locator('app-search-expenses').evaluate(el => ({
+      width: innerWidth, scroll: document.documentElement.scrollWidth,
+      amounts: [...el.querySelectorAll('.font-mono')].map(amount => {
+        const range = document.createRange()
+        range.selectNodeContents(amount)
+        return { lines: range.getClientRects().length, right: amount.getBoundingClientRect().right }
+      })
+    })))
+  }
+  if (searchDimensions.some(d => d.scroll !== d.width || d.amounts.some(a => a.lines !== 1 || a.right > d.width))) throw new Error('Search amounts wrap or overflow on mobile: ' + JSON.stringify(searchDimensions))
+  await page.setViewportSize({ width: 1280, height: 900 })
   await page.getByRole('button', { name: 'Calcolo', exact: true }).click()
   await page.locator('app-calculator').waitFor()
   await page.context().grantPermissions(['clipboard-read', 'clipboard-write'])
@@ -46,5 +73,5 @@ async (page) => {
     dimensions.push(await page.evaluate(() => ({ width: innerWidth, scroll: document.documentElement.scrollWidth })))
   }
   if (dimensions.some(result => result.width !== result.scroll)) throw new Error('Calculator overflows horizontally')
-  return { searchFocusOnlyOnEntry: 'passed', roundedClipboard: 'passed', calculatorEditing: 'passed', dimensions }
+  return { searchFocusOnlyOnEntry: 'passed', searchAmounts: 'passed', roundedClipboard: 'passed', calculatorEditing: 'passed', searchDimensions, dimensions }
 }
