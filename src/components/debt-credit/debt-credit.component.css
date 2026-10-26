@@ -17,16 +17,19 @@ button:disabled, fieldset:disabled { opacity: .6; }
 button:disabled { cursor: default; }
 input:focus-visible, button:focus-visible { outline: 2px solid #a5b4fc; outline-offset: 2px; }
 .entries { list-style: none; padding: 0; margin-top: 1rem; }
-li { display: flex; align-items: center; flex-wrap: wrap; gap: .75rem; padding: 1rem 0; border-bottom: 1px solid #374151; }
-.entry-description { flex: 1; min-width: 100px; overflow-wrap: anywhere; }
-.drag-handle { flex-shrink: 0; width: 32px; padding: .375rem; border: 0; color: #9ca3af; cursor: grab; touch-action: none; }
+li { display: grid; grid-template-columns: 24px minmax(0, 1fr) max-content 68px; align-items: center; gap: .375rem; padding: .375rem 0; border-bottom: 1px solid #374151; }
+li.hint { display: block; }
+.entry-description { min-width: 0; font-size: .875rem; overflow-wrap: anywhere; }
+.drag-handle { width: 24px; height: 32px; padding: 2px; border: 0; color: #9ca3af; cursor: grab; touch-action: none; }
 .drag-handle svg { width: 20px; height: 24px; }
 .cdk-drag-preview { background: #1f2937; color: #e5e7eb; padding: 1rem; border-radius: .5rem; box-shadow: 0 8px 24px #0008; }
 .cdk-drag-placeholder { opacity: .3; }
 .entry-value { text-align: right; max-width: 100%; }
-.amount { font-variant-numeric: tabular-nums; font-weight: 600; overflow-wrap: anywhere; }
-small { display: block; }
-.entry-actions { display: flex; gap: .5rem; }
+.amount { font-size: .875rem; font-variant-numeric: tabular-nums; font-weight: 600; white-space: nowrap; }
+small { display: block; font-size: .65rem; line-height: 1.2; }
+.entry-actions { display: flex; gap: 4px; }
+.entry-actions button { display: grid; place-items: center; width: 32px; height: 32px; padding: 6px; }
+.entry-actions svg { width: 18px; height: 18px; }
 .positive { color: #4ade80; }
 .negative { color: #f87171; }
 footer { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
@@ -36,5 +39,4 @@ h2 { font-weight: 600; }
 .copy p { min-height: 1.5rem; font-size: .875rem; margin-top: .375rem; }
 @media (max-width: 540px) {
   .composer label { flex-basis: 100%; }
-  .entry-actions { flex-basis: 100%; justify-content: flex-end; }
 }

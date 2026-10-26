@@ -112,9 +112,11 @@ async (page) => {
   if (JSON.stringify(await labels()) !== JSON.stringify(expectedOrder)) throw new Error('Backup lost order')
   for (const width of [320, 390, 768, 1024, 1280]) {
     await page.setViewportSize({ width, height: 900 })
-    sizes.push(await form.evaluate(el => ({ width: innerWidth, documentWidth: document.documentElement.scrollWidth, contentWidth: el.scrollWidth })))
+    sizes.push(await form.evaluate(el => ({ width: innerWidth, documentWidth: document.documentElement.scrollWidth, contentWidth: el.scrollWidth,
+      rows: [...el.querySelectorAll('.entries li')].map(row => ({ height: row.getBoundingClientRect().height, actionText: row.querySelector('.entry-actions').textContent.trim() })) })))
   }
   if (sizes.some(s => s.documentWidth > s.width || s.contentWidth > s.width)) throw new Error('Responsive overflow: ' + JSON.stringify(sizes))
+  if (sizes.some(s => s.rows.some(row => row.height > 60 || row.actionText))) throw new Error('Rows are not compact with icon-only actions: ' + JSON.stringify(sizes))
   await page.setViewportSize({ width: 390, height: 900 })
   await page.locator('app-header .lg\\:hidden button').first().click()
   await page.getByRole('button', { name: 'Calcolatore', exact: true }).click()

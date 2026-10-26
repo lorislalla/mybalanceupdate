@@ -29,8 +29,12 @@
           <div class="entry-description"><strong>{{ itemLabel(item) }}</strong></div>
           <div class="entry-value"><span class="amount" [class.positive]="item.amount > 0" [class.negative]="item.amount < 0">{{ signedAmount(item.amount) }} €</span><small>{{ item.amount > 0 ? 'Da ricevere' : 'Da pagare' }}</small></div>
           <div class="entry-actions">
-            <button type="button" [disabled]="saving()" (click)="editItem(item)" [attr.aria-label]="'Modifica voce di ' + itemLabel(item)">Modifica</button>
-            <button type="button" class="negative" [disabled]="saving()" (click)="removeItem(item.id)" [attr.aria-label]="'Elimina voce di ' + itemLabel(item)">Elimina</button>
+            <button type="button" [disabled]="saving()" (click)="editItem(item)" [attr.aria-label]="'Modifica voce di ' + itemLabel(item)" title="Modifica">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m16 3 5 5-12 12H4v-5L16 3ZM14 5l5 5" /></svg>
+            </button>
+            <button type="button" class="negative" [disabled]="saving()" (click)="removeItem(item.id)" [attr.aria-label]="'Elimina voce di ' + itemLabel(item)" title="Elimina">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7M14 10v7" /></svg>
+            </button>
           </div>
         </li>
       } @empty { <li class="hint">Nessuna voce. Aggiungi qui ciò che devi ricevere o pagare.</li> }
