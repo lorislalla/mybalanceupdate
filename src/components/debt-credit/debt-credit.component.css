@@ -19,7 +19,10 @@ input:focus-visible, button:focus-visible { outline: 2px solid #a5b4fc; outline-
 .entries { list-style: none; padding: 0; margin-top: 1rem; }
 li { display: flex; align-items: center; flex-wrap: wrap; gap: .75rem; padding: 1rem 0; border-bottom: 1px solid #374151; }
 .entry-description { flex: 1; min-width: 100px; overflow-wrap: anywhere; }
-.entry-description p { color: #9ca3af; font-size: .875rem; white-space: pre-wrap; }
+.drag-handle { flex-shrink: 0; width: 32px; padding: .375rem; border: 0; color: #9ca3af; cursor: grab; touch-action: none; }
+.drag-handle svg { width: 20px; height: 24px; }
+.cdk-drag-preview { background: #1f2937; color: #e5e7eb; padding: 1rem; border-radius: .5rem; box-shadow: 0 8px 24px #0008; }
+.cdk-drag-placeholder { opacity: .3; }
 .entry-value { text-align: right; max-width: 100%; }
 .amount { font-variant-numeric: tabular-nums; font-weight: 600; overflow-wrap: anywhere; }
 small { display: block; }

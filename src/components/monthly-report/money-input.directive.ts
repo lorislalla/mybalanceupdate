@@ -9,8 +9,8 @@ export function parseMoneyAmount(text: string, integerOnly = false): number | nu
     const amount = Number(value)
     return Number.isSafeInteger(amount) ? amount : null
   }
-  if (/^-?\d{1,3}(\.\d{3})+(,\d{1,2})?$/.test(value)) value = value.replaceAll('.', '')
-  if (!/^-?\d+([.,]\d{1,2})?$/.test(value)) return null
+  if (/^[+-]?\d{1,3}(\.\d{3})+(,\d{1,2})?$/.test(value)) value = value.replaceAll('.', '')
+  if (!/^[+-]?\d+([.,]\d{1,2})?$/.test(value)) return null
   const amount = Number(value.replace(',', '.'))
   return Number.isFinite(amount) ? amount : null
 }

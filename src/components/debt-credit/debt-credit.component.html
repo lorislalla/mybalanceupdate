@@ -7,31 +7,30 @@
     <fieldset [disabled]="saving() || loadState() !== 'ready'">
       <legend>{{ editingId() ? 'Modifica voce' : 'Nuova voce' }}</legend>
       <div class="composer">
-        <label for="debt-person">Persona
-          <input id="debt-person" name="person" type="text" autocomplete="off" [ngModel]="person()" (ngModelChange)="person.set($event)" placeholder="Es. Anna" required />
+        <label for="debt-person">Persona/Motivo
+          <input id="debt-person" name="person" type="text" autocomplete="off" [ngModel]="person()" (ngModelChange)="person.set($event)" placeholder="Es. Anna · Cena" required />
         </label>
         <label for="debt-amount">Importo (€)
-          <input id="debt-amount" name="amount" type="text" appMoneyInput inputmode="decimal" [ngModel]="amount()" (ngModelChange)="amount.set($event)" #amountModel="ngModel" [attr.aria-invalid]="amountModel.invalid && (amountModel.dirty || amountModel.touched) ? 'true' : null" aria-describedby="debt-amount-help" placeholder="Es. -25,50" required />
-        </label>
-        <label for="debt-reason">Motivo (facoltativo)
-          <input id="debt-reason" name="reason" type="text" [ngModel]="reason()" (ngModelChange)="reason.set($event)" placeholder="Es. Cena" />
+          <input id="debt-amount" name="amount" type="text" appMoneyInput inputmode="decimal" [ngModel]="amount()" (ngModelChange)="amount.set($event)" #amountModel="ngModel" [attr.aria-invalid]="amountModel.invalid && (amountModel.dirty || amountModel.touched) ? 'true' : null" placeholder="Es. -25,50" required />
         </label>
         <button class="primary" type="submit" [disabled]="!person().trim() || !isValidAmount(amount())">{{ saving() ? 'Salvataggio…' : editingId() ? 'Salva' : 'Aggiungi' }}</button>
         @if (editingId()) { <button type="button" (click)="cancelEdit()">Annulla</button> }
       </div>
-      <p id="debt-amount-help" class="hint">Usa il segno meno per un debito. Sono ammessi fino a due decimali; l'importo deve essere diverso da zero.</p>
     </fieldset>
   </form>
   @if (error()) { <p class="negative" role="alert">{{ error() }}</p> }
   @if (loadState() === 'ready') {
-    <ul class="entries">
-      @for (item of items(); track item.id) {
-        <li>
-          <div class="entry-description"><strong>{{ item.person }}</strong>@if (item.reason) { <p>{{ item.reason }}</p> }</div>
+    <ul class="entries" cdkDropList [cdkDropListData]="items()" [cdkDropListDisabled]="saving()" (cdkDropListDropped)="drop($event)">
+      @for (item of items(); track item.id; let i = $index) {
+        <li cdkDrag [cdkDragStartDelay]="{ touch: 180, mouse: 0 }">
+          <button type="button" class="drag-handle" cdkDragHandle [disabled]="saving()" [attr.aria-label]="'Riordina ' + itemLabel(item)" title="Trascina per riordinare, oppure usa le frecce su e giù" (keydown.arrowup)="moveItem(i, i - 1, $event)" (keydown.arrowdown)="moveItem(i, i + 1, $event)">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="9" cy="5" r="1.5"/><circle cx="15" cy="5" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="19" r="1.5"/><circle cx="15" cy="19" r="1.5"/></svg>
+          </button>
+          <div class="entry-description"><strong>{{ itemLabel(item) }}</strong></div>
           <div class="entry-value"><span class="amount" [class.positive]="item.amount > 0" [class.negative]="item.amount < 0">{{ signedAmount(item.amount) }} €</span><small>{{ item.amount > 0 ? 'Da ricevere' : 'Da pagare' }}</small></div>
           <div class="entry-actions">
-            <button type="button" [disabled]="saving()" (click)="editItem(item)" [attr.aria-label]="'Modifica voce di ' + item.person">Modifica</button>
-            <button type="button" class="negative" [disabled]="saving()" (click)="removeItem(item.id)" [attr.aria-label]="'Elimina voce di ' + item.person">Elimina</button>
+            <button type="button" [disabled]="saving()" (click)="editItem(item)" [attr.aria-label]="'Modifica voce di ' + itemLabel(item)">Modifica</button>
+            <button type="button" class="negative" [disabled]="saving()" (click)="removeItem(item.id)" [attr.aria-label]="'Elimina voce di ' + itemLabel(item)">Elimina</button>
           </div>
         </li>
       } @empty { <li class="hint">Nessuna voce. Aggiungi qui ciò che devi ricevere o pagare.</li> }

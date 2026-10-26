@@ -52,6 +52,10 @@ test('signed cents total and clipboard preserve exact amounts without hundred-eu
   component.items.set([{ amount: -42.5 }])
   await component.copyBalance()
   assert.equal(copied, '-42,50')
+  assert.equal(component.signedAmount(110000), '+110.000,00')
+  component.items.set([{ amount: 110000 }])
+  await component.copyBalance()
+  assert.equal(copied, '+110000,00')
   navigator.clipboard.writeText = async () => { throw new Error('Denied') }
   await component.copyBalance()
   assert.equal(component.copyStatus(), 'error')
@@ -62,15 +66,14 @@ test('editor validates person and cents, preserves draft on failure, updates ide
   const c = Object.create(DebtCreditComponent.prototype)
   let items = []
   c.items = () => items
-  c.person = signal('  Anna  ')
+  c.person = signal('  Anna · Cena  ')
   c.amount = signal(12.35)
-  c.reason = signal(' Cena ')
   c.editingId = signal(null)
   c.saving = signal(false)
   c.error = signal('')
   c.storageService = { debtCreditLoadState: () => 'ready', updateDebtCreditItems: async next => { items = next } }
   await c.saveItem()
-  assert.deepEqual(items.map(({ person, amount, reason }) => ({ person, amount, reason })), [{ person: 'Anna', amount: 12.35, reason: 'Cena' }])
+  assert.deepEqual(items.map(({ person, amount, reason }) => ({ person, amount, reason })), [{ person: 'Anna · Cena', amount: 12.35, reason: '' }])
   const id = items[0].id
   c.editItem(items[0])
   c.amount.set(-10.2)
@@ -95,6 +98,51 @@ test('editor validates person and cents, preserves draft on failure, updates ide
   await c.removeItem(id)
   assert.deepEqual(items, [])
   assert.equal(c.editingId(), null)
+})
+
+test('explicit plus signs and grouped amounts are valid while malformed signs stay invalid', () => {
+  const { parseMoneyAmount } = require('../src/components/monthly-report/money-input.directive.ts')
+  for (const [text, expected] of [['+15000', 15000], ['+110.000,00', 110000], ['-110.000,50', -110000.5], ['+25.50', 25.5]]) {
+    assert.equal(parseMoneyAmount(text), expected)
+  }
+  for (const text of ['+', '+-12', '-+12', '++12', '1+2', '+12,345']) assert.equal(parseMoneyAmount(text), null)
+})
+
+test('legacy person and reason appear in a single field and survive editing without duplication', async () => {
+  const { DebtCreditComponent } = require('../src/components/debt-credit/debt-credit.component.ts')
+  const c = Object.create(DebtCreditComponent.prototype)
+  let items = [{ id: 'legacy', person: 'Anna', amount: 12.35, reason: 'Cena' }]
+  c.items = () => items
+  c.person = signal(''); c.amount = signal(null); c.editingId = signal(null); c.saving = signal(false); c.error = signal('')
+  c.storageService = { debtCreditLoadState: () => 'ready', updateDebtCreditItems: async next => { items = next } }
+  assert.equal(c.itemLabel(items[0]), 'Anna · Cena')
+  c.editItem(items[0])
+  assert.equal(c.person(), 'Anna · Cena')
+  await c.saveItem()
+  assert.equal(c.itemLabel(items[0]), 'Anna · Cena')
+  c.editItem(items[0])
+  await c.saveItem()
+  assert.equal(c.itemLabel(items[0]), 'Anna · Cena')
+})
+
+test('manual reordering persists the full order, preserves values, and keeps the old order on failure', async () => {
+  const { DebtCreditComponent } = require('../src/components/debt-credit/debt-credit.component.ts')
+  const c = Object.create(DebtCreditComponent.prototype)
+  let items = [{ id: 'a', person: 'Anna', amount: 20, reason: '' }, { id: 'b', person: 'Luca', amount: -5, reason: '' }, { id: 'c', person: 'Cena', amount: 10, reason: '' }]
+  c.items = () => items
+  c.saving = signal(false); c.error = signal('')
+  c.storageService = { debtCreditLoadState: () => 'ready', updateDebtCreditItems: async next => { items = next } }
+  await c.drop({ previousIndex: 2, currentIndex: 0 })
+  assert.deepEqual(items.map(item => item.id), ['c', 'a', 'b'])
+  assert.equal(c.calculateTotal(items), 25)
+  await c.moveItem(0, 1)
+  assert.deepEqual(items.map(item => item.id), ['a', 'c', 'b'])
+  await c.moveItem(0, -1)
+  assert.deepEqual(items.map(item => item.id), ['a', 'c', 'b'])
+  c.storageService.updateDebtCreditItems = async () => { throw new Error('Offline') }
+  await c.drop({ previousIndex: 0, currentIndex: 2 })
+  assert.deepEqual(items.map(item => item.id), ['a', 'c', 'b'])
+  assert.ok(c.error())
 })
 
 test('cloud persistence scopes the list to the account, loads it on another device, and reports errors', async () => {
