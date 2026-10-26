@@ -36,11 +36,19 @@ export interface CalculatorItem {
   color?: string
 }
 
+export interface DebtCreditItem {
+  id: string
+  person: string
+  amount: number
+  reason: string
+}
+
 // Struttura completa dei dati dell'applicazione
 export interface AppData {
   reports: MonthlyReport[]
   globalNotes: string
   calculatorItems: CalculatorItem[]
+  debtCreditItems?: DebtCreditItem[]
 }
 
 // Risultato di una ricerca tra spese e entrate

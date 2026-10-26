@@ -1,0 +1,81 @@
+// Run with playwright-cli run-code --filename in an isolated session. Guest data only.
+async (page) => {
+  page.setDefaultTimeout(5000)
+  await page.setViewportSize({ width: 1280, height: 900 })
+  await page.goto('http://localhost:3001')
+  await page.getByRole('button', { name: 'Entra come ospite (senza salvataggio dati)', exact: true }).click()
+  await page.getByRole('button', { name: 'Debiti/Crediti', exact: true }).click()
+  const form = page.locator('app-debt-credit')
+  const person = form.getByRole('textbox', { name: 'Persona', exact: true })
+  const amount = form.getByRole('textbox', { name: 'Importo (€)', exact: true })
+  const reason = form.getByRole('textbox', { name: 'Motivo (facoltativo)', exact: true })
+  const checkBalance = async text => {
+    await page.waitForFunction(text => document.querySelector('app-debt-credit .balance')?.textContent.trim() === text, text)
+  }
+  await checkBalance('0,00 €')
+  for (const [name, value, why] of [['Anna', '125,50', 'Cena'], ['Luca', '-25.20', 'Regalo'], ['Anna', '-0,10', 'Conguaglio']]) {
+    await person.fill(name)
+    await amount.fill(value)
+    await reason.fill(why)
+    await form.getByRole('button', { name: 'Aggiungi', exact: true }).click()
+    await page.waitForFunction(() => document.querySelector('#debt-person').value === '')
+  }
+  await checkBalance('+100,20 €')
+  await page.context().grantPermissions(['clipboard-read', 'clipboard-write'])
+  await form.getByRole('button', { name: 'Copia saldo', exact: true }).click()
+  if (await page.evaluate(() => navigator.clipboard.readText()) !== '+100,20') throw new Error('Copy lost signed cents')
+  await form.getByRole('button', { name: 'Modifica voce di Luca', exact: true }).click()
+  await page.waitForFunction(() => document.querySelector('#debt-amount').value === '-25,20')
+  await amount.fill('-225,20')
+  await form.getByRole('button', { name: 'Salva', exact: true }).click()
+  await checkBalance('-99,80 €')
+  await form.getByRole('button', { name: 'Copia saldo', exact: true }).click()
+  if (await page.evaluate(() => navigator.clipboard.readText()) !== '-99,80') throw new Error('Wrong negative clipboard')
+  await form.getByRole('button', { name: 'Modifica voce di Luca', exact: true }).click()
+  await page.waitForFunction(() => document.querySelector('#debt-amount').value === '-225,20')
+  await amount.fill('2,345')
+  if (await form.getByRole('button', { name: 'Salva', exact: true }).isEnabled()) throw new Error('Invalid decimals accepted')
+  await form.getByRole('button', { name: 'Annulla', exact: true }).click()
+  await form.getByRole('button', { name: 'Elimina voce di Luca', exact: true }).click()
+  await checkBalance('+125,40 €')
+  // Tab changes retain the list and clear old copy feedback.
+  await page.getByRole('button', { name: 'Calcolo', exact: true }).click()
+  await page.getByRole('button', { name: 'Debiti/Crediti', exact: true }).click()
+  await checkBalance('+125,40 €')
+  // Real export download, then restore the exact JSON through the public file input.
+  await page.getByRole('button', { name: 'Dati', exact: true }).click()
+  await page.getByRole('button', { name: 'Esporta Dati', exact: true }).click()
+  const downloadPromise = page.waitForEvent('download')
+  await page.getByRole('button', { name: 'Esporta in JSON', exact: true }).click()
+  const download = await downloadPromise
+  await download.saveAs('output/playwright/debt-credit-backup.json')
+  await page.getByRole('button', { name: 'Debiti/Crediti', exact: true }).click()
+  await form.getByRole('button', { name: 'Elimina voce di Anna', exact: true }).first().click()
+  await page.waitForFunction(() => document.querySelectorAll('app-debt-credit .entries li button[aria-label="Elimina voce di Anna"]').length === 1)
+  await form.getByRole('button', { name: 'Elimina voce di Anna', exact: true }).click()
+  await checkBalance('0,00 €')
+  await page.getByRole('button', { name: 'Dati', exact: true }).click()
+  await page.getByRole('button', { name: 'Importa con AI', exact: true }).click()
+  // The CLI intercepts native dialogs; auto-confirm only this isolated guest restore.
+  await page.evaluate(() => { window.confirm = () => true })
+  await page.locator('input[type=file][accept=".json"]').setInputFiles('output/playwright/debt-credit-backup.json')
+  await page.getByRole('button', { name: 'Debiti/Crediti', exact: true }).click()
+  await checkBalance('+125,40 €')
+  const sizes = []
+  for (const width of [320, 390, 768, 1024, 1280]) {
+    await page.setViewportSize({ width, height: 900 })
+    sizes.push(await form.evaluate(el => ({ width: innerWidth, documentWidth: document.documentElement.scrollWidth, contentWidth: el.scrollWidth })))
+  }
+  if (sizes.some(s => s.documentWidth > s.width || s.contentWidth > s.width)) throw new Error('Responsive overflow: ' + JSON.stringify(sizes))
+  await page.setViewportSize({ width: 390, height: 900 })
+  await page.locator('app-header .lg\\:hidden button').first().click()
+  await page.getByRole('button', { name: 'Calcolatore', exact: true }).click()
+  await page.locator('app-calculator').waitFor()
+  await page.locator('app-header .lg\\:hidden button').first().click()
+  await page.getByRole('button', { name: 'Debiti/Crediti', exact: true }).click()
+  await checkBalance('+125,40 €')
+  await page.screenshot({ path: 'output/playwright/debt-credit-mobile.png' })
+  await page.setViewportSize({ width: 1280, height: 900 })
+  await page.screenshot({ path: 'output/playwright/debt-credit-desktop.png' })
+  return { passed: 'guest CRUD, signed cents, clipboard, JSON export/restore, tab retention, mobile navigation, responsive 320–1280px', sizes }
+}

@@ -11,6 +11,7 @@ import { ImportExportComponent } from './components/import-export/import-export.
 import { GlobalNotesComponent } from './components/global-notes/global-notes.component'
 import { LoginComponent } from './components/login/login.component'
 import { CalculatorComponent } from './components/calculator/calculator.component'
+import { DebtCreditComponent } from './components/debt-credit/debt-credit.component'
 import { SearchExpensesComponent } from './components/search-expenses/search-expenses.component'
 
 @Component({
@@ -26,6 +27,7 @@ import { SearchExpensesComponent } from './components/search-expenses/search-exp
     GlobalNotesComponent,
     LoginComponent,
     CalculatorComponent,
+    DebtCreditComponent,
     SearchExpensesComponent
   ],
 })

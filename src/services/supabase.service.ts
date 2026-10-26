@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core'
 import { createClient, SupabaseClient, User, RealtimeChannel } from '@supabase/supabase-js'
 import { environment } from '../environments/environment'
-import { MonthlyReport, CalculatorItem } from '../models/financial-data.model'
+import { MonthlyReport, CalculatorItem, DebtCreditItem } from '../models/financial-data.model'
 import { BehaviorSubject } from 'rxjs'
 
 // Interfaccia per la riga della tabella monthly_reports su Supabase
@@ -51,6 +51,12 @@ export class SupabaseService {
 
   private calculatorItemsSubject = new BehaviorSubject<CalculatorItem[]>([])
   public calculatorItems$ = this.calculatorItemsSubject.asObservable()
+
+  private debtCreditItemsSubject = new BehaviorSubject<DebtCreditItem[]>([])
+  public debtCreditItems$ = this.debtCreditItemsSubject.asObservable()
+  private debtCreditLoadStateSubject = new BehaviorSubject<'loading' | 'ready' | 'error'>('loading')
+  public debtCreditLoadState$ = this.debtCreditLoadStateSubject.asObservable()
+  private debtCreditLoadVersion = 0
 
   constructor() {
     this.supabase = createClient(environment.supabaseUrl, environment.supabaseKey)
@@ -111,6 +117,9 @@ export class SupabaseService {
     this.reportsSubject.next([])
     this.globalNotesSubject.next('')
     this.calculatorItemsSubject.next([])
+    this.debtCreditItemsSubject.next([])
+    this.debtCreditLoadStateSubject.next('ready')
+    this.debtCreditLoadVersion++
   }
 
   async signOut() {
@@ -122,6 +131,7 @@ export class SupabaseService {
   // Carico i dati iniziali da Supabase (reports, note globali, calcolatore)
   private async loadInitialData() {
     if (!this.userSubject.value || this.isGuestSession) return
+    await this.loadDebtCreditItems()
 
     // Carico i reports mensili
     const { data: reportsData, error: reportsError } = await this.supabase
@@ -162,6 +172,38 @@ export class SupabaseService {
     } else {
       this.calculatorItemsSubject.next((calcData as CalculatorDataRow | null)?.items || [])
     }
+  }
+
+  private async loadDebtCreditItems() {
+    const userId = this.userSubject.value?.id
+    if (!userId || this.isGuestSession) return
+    const version = ++this.debtCreditLoadVersion
+    this.debtCreditLoadStateSubject.next('loading')
+    const { data, error } = await this.supabase.from('debt_credit_data')
+      .select('items').eq('user_id', userId).maybeSingle()
+    if (version !== this.debtCreditLoadVersion || this.userSubject.value?.id !== userId || this.isGuestSession) return
+    if (error) {
+      this.debtCreditLoadStateSubject.next('error')
+    } else {
+      this.debtCreditItemsSubject.next(data?.items || [])
+      this.debtCreditLoadStateSubject.next('ready')
+    }
+  }
+
+  async updateDebtCreditItems(items: DebtCreditItem[]) {
+    const user = this.userSubject.value
+    if (this.isGuestSession) {
+      this.debtCreditItemsSubject.next(items)
+      return
+    }
+    if (!user) throw new Error('Account richiesto')
+    const { error } = await this.supabase.from('debt_credit_data')
+      .upsert({ user_id: user.id, items }, { onConflict: 'user_id' })
+    if (error) throw error
+    if (this.userSubject.value?.id !== user.id || this.isGuestSession) throw new Error('Sessione cambiata')
+    this.debtCreditLoadVersion++
+    this.debtCreditItemsSubject.next(items)
+    this.debtCreditLoadStateSubject.next('ready')
   }
 
   async upsertReport(report: MonthlyReport) {
@@ -269,6 +311,11 @@ export class SupabaseService {
       .channel('public:data')
       .on(
         'postgres_changes',
+        { event: '*', schema: 'public', table: 'debt_credit_data', filter: `user_id=eq.${user.id}` },
+        () => { this.loadDebtCreditItems() }
+      )
+      .on(
+        'postgres_changes',
         { event: '*', schema: 'public', table: 'monthly_reports', filter: `user_id=eq.${user.id}` },
         (payload) => {
           this.handleReportChange(payload)
@@ -333,6 +380,7 @@ export class SupabaseService {
   }
 
   private cleanup() {
+    this.debtCreditLoadVersion++
     if (this.realtimeChannel) {
       this.supabase.removeChannel(this.realtimeChannel)
       this.realtimeChannel = null
@@ -340,5 +388,7 @@ export class SupabaseService {
     this.reportsSubject.next([])
     this.globalNotesSubject.next('')
     this.calculatorItemsSubject.next([])
+    this.debtCreditItemsSubject.next([])
+    this.debtCreditLoadStateSubject.next('loading')
   }
 }

@@ -1,5 +1,5 @@
 import { Injectable, signal, WritableSignal } from '@angular/core'
-import { AppData, CalculatorItem, MonthlyReport } from '../models/financial-data.model'
+import { AppData, CalculatorItem, DebtCreditItem, MonthlyReport } from '../models/financial-data.model'
 import { SupabaseService } from './supabase.service'
 
 @Injectable({
@@ -7,10 +7,15 @@ import { SupabaseService } from './supabase.service'
 })
 export class StorageService {
   // Mantengo la struttura a signal per compatibilità con i componenti esistenti
-  appData: WritableSignal<AppData> = signal({ reports: [], globalNotes: '', calculatorItems: [] })
+  appData: WritableSignal<AppData> = signal({ reports: [], globalNotes: '', calculatorItems: [], debtCreditItems: [] })
+  debtCreditLoadState = signal<'loading' | 'ready' | 'error'>('loading')
   activeMonthYear = signal<string>(this.getCurrentMonthYear())
 
   constructor(private supabase: SupabaseService) {
+    this.supabase.debtCreditItems$.subscribe(debtCreditItems => {
+      this.appData.update(current => ({ ...current, debtCreditItems }))
+    })
+    this.supabase.debtCreditLoadState$.subscribe(state => this.debtCreditLoadState.set(state))
     // Mi iscrivo ai flussi dati di Supabase per aggiornare lo stato locale
     this.supabase.reports$.subscribe(reports => {
       this.appData.update(current => ({ ...current, reports }))
@@ -89,8 +94,25 @@ export class StorageService {
     }
   }
 
+  async updateDebtCreditItems(items: DebtCreditItem[]) {
+    const ids = new Set<string>()
+    const validated = items.map(item => {
+      if (!item || typeof item.id !== 'string' || !item.id || ids.has(item.id) ||
+        typeof item.person !== 'string' || !item.person.trim() ||
+        typeof item.amount !== 'number' || !Number.isFinite(item.amount) || item.amount === 0 ||
+        !Number.isSafeInteger(Math.round(item.amount * 100)) || Math.abs(item.amount * 100 - Math.round(item.amount * 100)) >= 0.000001 ||
+        (item.reason !== undefined && typeof item.reason !== 'string')) throw new Error('Voce Debiti/Crediti non valida')
+      ids.add(item.id)
+      return { ...item, reason: item.reason ?? '' }
+    })
+    await this.supabase.updateDebtCreditItems(validated)
+  }
+
   // Ripristino completo da un file di backup
   async restoreBackup(data: AppData) {
+    if (Array.isArray(data.debtCreditItems)) {
+      await this.updateDebtCreditItems(data.debtCreditItems)
+    }
     if (data.reports && Array.isArray(data.reports)) {
       await this.importData(data.reports)
     }

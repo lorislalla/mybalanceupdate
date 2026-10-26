@@ -1,0 +1,44 @@
+<section class="debt-page">
+  <h1>Debiti/Crediti</h1>
+  <p class="hint">Positivo (+): devi riceverlo. Negativo (−): devi pagarlo.</p>
+  @if (loadState() === 'loading') { <p role="status">Caricamento…</p> }
+  @if (loadState() === 'error') { <p class="negative" role="alert">Impossibile caricare Debiti/Crediti. Ricarica la pagina per riprovare.</p> }
+  <form (ngSubmit)="saveItem()">
+    <fieldset [disabled]="saving() || loadState() !== 'ready'">
+      <legend>{{ editingId() ? 'Modifica voce' : 'Nuova voce' }}</legend>
+      <div class="composer">
+        <label for="debt-person">Persona
+          <input id="debt-person" name="person" type="text" autocomplete="off" [ngModel]="person()" (ngModelChange)="person.set($event)" placeholder="Es. Anna" required />
+        </label>
+        <label for="debt-amount">Importo (€)
+          <input id="debt-amount" name="amount" type="text" appMoneyInput inputmode="decimal" [ngModel]="amount()" (ngModelChange)="amount.set($event)" #amountModel="ngModel" [attr.aria-invalid]="amountModel.invalid && (amountModel.dirty || amountModel.touched) ? 'true' : null" aria-describedby="debt-amount-help" placeholder="Es. -25,50" required />
+        </label>
+        <label for="debt-reason">Motivo (facoltativo)
+          <input id="debt-reason" name="reason" type="text" [ngModel]="reason()" (ngModelChange)="reason.set($event)" placeholder="Es. Cena" />
+        </label>
+        <button class="primary" type="submit" [disabled]="!person().trim() || !isValidAmount(amount())">{{ saving() ? 'Salvataggio…' : editingId() ? 'Salva' : 'Aggiungi' }}</button>
+        @if (editingId()) { <button type="button" (click)="cancelEdit()">Annulla</button> }
+      </div>
+      <p id="debt-amount-help" class="hint">Usa il segno meno per un debito. Sono ammessi fino a due decimali; l'importo deve essere diverso da zero.</p>
+    </fieldset>
+  </form>
+  @if (error()) { <p class="negative" role="alert">{{ error() }}</p> }
+  @if (loadState() === 'ready') {
+    <ul class="entries">
+      @for (item of items(); track item.id) {
+        <li>
+          <div class="entry-description"><strong>{{ item.person }}</strong>@if (item.reason) { <p>{{ item.reason }}</p> }</div>
+          <div class="entry-value"><span class="amount" [class.positive]="item.amount > 0" [class.negative]="item.amount < 0">{{ signedAmount(item.amount) }} €</span><small>{{ item.amount > 0 ? 'Da ricevere' : 'Da pagare' }}</small></div>
+          <div class="entry-actions">
+            <button type="button" [disabled]="saving()" (click)="editItem(item)" [attr.aria-label]="'Modifica voce di ' + item.person">Modifica</button>
+            <button type="button" class="negative" [disabled]="saving()" (click)="removeItem(item.id)" [attr.aria-label]="'Elimina voce di ' + item.person">Elimina</button>
+          </div>
+        </li>
+      } @empty { <li class="hint">Nessuna voce. Aggiungi qui ciò che devi ricevere o pagare.</li> }
+    </ul>
+    <footer>
+      <div><h2>Saldo finale</h2><p class="balance" [class.positive]="total() > 0" [class.negative]="total() < 0">{{ signedAmount(total()) }} €</p><p class="hint">{{ total() > 0 ? 'Nel complesso devi ricevere' : total() < 0 ? 'Nel complesso devi pagare' : 'Debiti e crediti in pari' }}</p></div>
+      <div class="copy"><button type="button" (click)="copyBalance()">Copia saldo</button><p role="status">{{ copyStatus() === 'copied' ? 'Saldo copiato' : copyStatus() === 'error' ? 'Copia non riuscita. Riprova.' : '' }}</p></div>
+    </footer>
+  }
+</section>
