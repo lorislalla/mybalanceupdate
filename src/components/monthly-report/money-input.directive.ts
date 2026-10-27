@@ -37,7 +37,7 @@ export class MoneyInputDirective implements ControlValueAccessor, Validator {
   writeValue(value: number | null) {
     this.element.nativeElement.value = value == null ? '' : this.integerOnly
       ? String(value).replace('.', ',')
-      : value.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+      : value.toLocaleString('it-IT', { minimumFractionDigits: 0, maximumFractionDigits: 2 })
   }
 
   registerOnChange(fn: (value: number | null) => void) { this.onChange = fn }

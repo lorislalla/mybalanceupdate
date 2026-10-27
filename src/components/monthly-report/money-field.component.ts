@@ -30,7 +30,7 @@ import { InfoTipComponent } from '../shared/info-tip.component'
     } @else {
       <div class="read-value" [class.secondary]="secondary()">
         @if (hasValue()) {
-          <strong class="currency-value" [class.balance]="kind() === 'balance'" [class.income]="kind() === 'income' && (value() ?? 0) > 0" [class.negative]="(value() ?? 0) < 0">{{ value() | number: (integerOnly() ? '1.0-0' : '1.2-2') }} €</strong>
+          <strong class="currency-value" [class.balance]="kind() === 'balance'" [class.income]="kind() === 'income' && (value() ?? 0) > 0" [class.negative]="(value() ?? 0) < 0">{{ value() | number: (integerOnly() ? '1.0-0' : '1.0-2') }} €</strong>
         } @else { <span class="empty-value">Non inserito</span> }
         <button type="button" [aria-label]="(!hasValue() ? 'Inserisci ' : 'Modifica ') + label()" [title]="(!hasValue() ? 'Inserisci ' : 'Modifica ') + label()" (click)="startEditing()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
