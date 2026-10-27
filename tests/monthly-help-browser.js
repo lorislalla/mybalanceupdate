@@ -1,0 +1,61 @@
+// Local guest preview only: exercises visual hierarchy and hover/keyboard/touch help.
+async (page) => {
+  await page.setViewportSize({ width: 1280, height: 1000 })
+  await page.goto('http://localhost:3001')
+  await page.getByRole('button', { name: 'Entra come ospite (senza salvataggio dati)', exact: true }).click()
+  await page.getByRole('button', { name: 'Dati', exact: true }).click()
+  await page.evaluate(() => { window.confirm = () => true })
+  await page.locator('input[type=file][accept=".json"]').setInputFiles('output/playwright/resoconto-investimenti-demo.json')
+  await page.getByRole('button', { name: 'Resoconto', exact: true }).click()
+  if (await page.getByText('Scostamento dai movimenti', { exact: true }).count()) throw new Error('Scostamento still visible')
+  const sizes = []
+  for (const width of [320, 390, 768, 1280]) {
+    await page.setViewportSize({ width, height: 1000 })
+    const geometry = await page.locator('.balance-panel').evaluate(panel => {
+      const total = panel.querySelector('.financial-total .amount')
+      const fields = [...panel.querySelectorAll('app-money-field')].slice(0, 2)
+      return { width: innerWidth, scroll: document.documentElement.scrollWidth,
+        total: { top: total.getBoundingClientRect().top, left: total.getBoundingClientRect().left, font: parseFloat(getComputedStyle(total).fontSize) },
+        secondary: fields.map(field => { const amount = field.querySelector('.currency-value'); return { top: amount.getBoundingClientRect().top, left: amount.getBoundingClientRect().left, font: parseFloat(getComputedStyle(amount).fontSize) } }) }
+    })
+    if (geometry.width !== geometry.scroll || geometry.total.font !== 24 || geometry.secondary.some(field => field.top <= geometry.total.top || field.left <= geometry.total.left + 20 || field.font >= geometry.total.font || field.font < 21)) throw new Error('Wrong hierarchy: ' + JSON.stringify(geometry))
+    sizes.push(geometry)
+  }
+  const help = page.getByRole('button', { name: 'Spiegazione: Versamenti netti del mese', exact: true })
+  const panelHeight = await page.locator('.balance-panel').evaluate(el => el.getBoundingClientRect().height)
+  if (await page.getByRole('tooltip').count()) throw new Error('Help is permanently visible')
+  await help.hover()
+  const tooltip = page.getByRole('tooltip')
+  await tooltip.waitFor()
+  if (!(await tooltip.innerText()).includes('Versamenti meno prelievi')) throw new Error('Wrong help content')
+  await tooltip.hover()
+  await page.waitForTimeout(200)
+  if (!(await tooltip.isVisible())) throw new Error('Cannot hover help text')
+  if (await page.locator('.balance-panel').evaluate(el => el.getBoundingClientRect().height) !== panelHeight) throw new Error('Help takes layout space')
+  await page.keyboard.press('Escape')
+  await tooltip.waitFor({ state: 'hidden' })
+  await page.mouse.move(0, 0)
+  await help.focus()
+  await page.keyboard.press('Enter')
+  await tooltip.waitFor()
+  await page.keyboard.press('Escape')
+  await tooltip.waitFor({ state: 'hidden' })
+  await page.setViewportSize({ width: 390, height: 1000 })
+  await help.scrollIntoViewIfNeeded()
+  const rect = await help.boundingBox()
+  const cdp = await page.context().newCDPSession(page)
+  await cdp.send('Emulation.setTouchEmulationEnabled', { enabled: true })
+  await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: rect.x + rect.width / 2, y: rect.y + rect.height / 2 }] })
+  await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] })
+  await tooltip.waitFor()
+  const box = await tooltip.boundingBox()
+  if (box.x < 0 || box.x + box.width > 390 || box.y < 0 || box.y + box.height > 1000) throw new Error('Mobile help overflows: ' + JSON.stringify(box))
+  await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: 5, y: 5 }] })
+  await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] })
+  await tooltip.waitFor({ state: 'hidden' })
+  await cdp.detach()
+  await page.locator('.balance-panel').screenshot({ path: 'output/playwright/resoconto-help-mobile.png' })
+  await page.setViewportSize({ width: 1280, height: 1000 })
+  await page.locator('.balance-panel').screenshot({ path: 'output/playwright/resoconto-help-desktop.png' })
+  return { passed: 'total first/left at24px, secondary right at22px, no scostamento, help hover/keyboard/touch/dismissal/viewport, no layout space', sizes }
+}

@@ -133,18 +133,20 @@
           <h2 id="balance-heading" class="balance-title">Bilancio del mese</h2>
           <section class="balance-section">
             @if (isCalendarMonth()) {
-              <h3>Situazione al 1° del mese</h3>
+              @if (financialSummary(); as finances) {
+                <div class="financial-total">
+                  <div class="metric-label"><span>Totale al 1° del mese</span><app-info-tip label="Totale al 1° del mese" text="Liquidità più valore attuale degli investimenti all'inizio del mese. Si calcola automaticamente quando entrambi i valori sono compilati; non è soltanto il capitale che hai versato." /></div>
+                  @if (finances.openingTotal !== null) { <strong class="amount">{{ finances.openingTotal | number: '1.2-2' }} €</strong> } @else { <span class="unavailable">Completa liquidità e investimenti</span> }
+                </div>
+              }
               @if (investmentEditingDisabled()) { <p class="financial-hint" role="status">Anteprima locale: per modificare i nuovi campi usa la modalità ospite. Il salvataggio nel tuo account non è ancora abilitato.</p> }
               <fieldset [disabled]="investmentEditingDisabled()">
-              <app-money-field label="Liquidità al 1° del mese" [value]="liquidityValue(currentReport)" [integerOnly]="false" [zeroIsEmpty]="false" [month]="currentMonthYear()" (valueSaved)="updateLiquidity($event)" />
-              <app-money-field label="Investimenti al 1° del mese" [value]="currentReport.investmentValue ?? null" [integerOnly]="false" [zeroIsEmpty]="false" [month]="currentMonthYear()" (valueSaved)="updateReportField('investmentValue', $event)" />
+              <app-money-field label="Liquidità al 1° del mese" help="Denaro disponibile su conti e in contanti all'inizio del mese, esclusi gli strumenti investiti. Conta l'eventuale liquidità del broker una sola volta." [secondary]="true" [value]="liquidityValue(currentReport)" [integerOnly]="false" [zeroIsEmpty]="false" [month]="currentMonthYear()" (valueSaved)="updateLiquidity($event)" />
+              <app-money-field label="Investimenti al 1° del mese" help="Valore di mercato degli investimenti all'inizio del mese, comprese plusvalenze e minusvalenze non realizzate. Usa la valutazione attuale, non la somma dei versamenti, e non contare due volte la liquidità." [secondary]="true" [value]="currentReport.investmentValue ?? null" [integerOnly]="false" [zeroIsEmpty]="false" [month]="currentMonthYear()" (valueSaved)="updateReportField('investmentValue', $event)" />
               </fieldset>
-              @if (financialSummary(); as finances) {
-                <div class="balance-line financial-total"><span>Totale al 1° del mese</span>@if (finances.openingTotal !== null) { <strong class="amount">{{ finances.openingTotal | number: '1.2-2' }} €</strong> } @else { <span class="unavailable">Completa liquidità e investimenti</span> }</div>
-              }
             } @else {
               <h3>Saldo di riferimento</h3>
-              <app-money-field label="Saldo dopo stipendio" [value]="currentReport.balance" [month]="currentMonthYear()" (valueSaved)="updateReportField('balance', $event ?? 0)" />
+              <app-money-field label="Saldo dopo stipendio" help="Saldo manuale secondo il metodo storico, usato prima di ottobre 2026. Non viene ricostruito automaticamente dai movimenti annotati." [value]="currentReport.balance" [month]="currentMonthYear()" (valueSaved)="updateReportField('balance', $event ?? 0)" />
               <label class="payday-label" for="payday">Giorno dello stipendio
                 <input id="payday" type="date" #paydayInput [ngModel]="currentReport.payday" (change)="onPaydayChange(paydayInput.value)" />
               </label>
@@ -154,30 +156,27 @@
           @if (isCalendarMonth()) {
             <section class="balance-section">
               <h3>Risparmio e investimenti del mese</h3>
-              <fieldset [disabled]="investmentEditingDisabled()"><app-money-field label="Versamenti netti del mese" [value]="currentReport.investmentNetFlow ?? null" [integerOnly]="false" [zeroIsEmpty]="false" [month]="currentMonthYear()" (valueSaved)="updateReportField('investmentNetFlow', $event)" /></fieldset>
-              <p class="financial-hint">Versamenti meno prelievi e proventi passati in liquidità. Inserisci 0 se non ci sono movimenti. Non registrarli anche come entrate o spese.</p>
-              <div class="balance-line"><span>Liquidità a fine mese</span>@if (monthlyBalanceSummary().closingBalance !== null) { <strong class="amount">{{ monthlyBalanceSummary().closingBalance | number: '1.2-2' }} €</strong> } @else { <span class="unavailable">Non ancora disponibile</span> }</div>
+              <fieldset [disabled]="investmentEditingDisabled()"><app-money-field label="Versamenti netti del mese" kind="amount" help="Versamenti meno prelievi e proventi passati in liquidità. Positivo se aggiungi denaro agli investimenti, negativo se lo ritiri. Inserisci 0 se non ci sono movimenti. Non registrarli anche come entrate o spese." [value]="currentReport.investmentNetFlow ?? null" [integerOnly]="false" [zeroIsEmpty]="false" [month]="currentMonthYear()" (valueSaved)="updateReportField('investmentNetFlow', $event)" /></fieldset>
+              <div class="balance-line"><div class="metric-label"><span>Liquidità a fine mese</span><app-info-tip label="Liquidità a fine mese" text="È la liquidità registrata al 1° del mese successivo. Rimane non disponibile finché quel saldo non è compilato." /></div>@if (monthlyBalanceSummary().closingBalance !== null) { <strong class="amount">{{ monthlyBalanceSummary().closingBalance | number: '1.2-2' }} €</strong> } @else { <span class="unavailable">Non ancora disponibile</span> }</div>
               @if (financialSummary(); as finances) {
-                <div class="balance-line"><span>Totale a fine mese</span>@if (finances.closingTotal !== null) { <strong class="amount">{{ finances.closingTotal | number: '1.2-2' }} €</strong> } @else { <span class="unavailable">Non ancora disponibile</span> }</div>
-                <div class="balance-line"><span>Risparmio mensile</span>@if (finances.savings !== null) { <strong class="amount" [class.positive]="finances.savings > 0" [class.negative]="finances.savings < 0">{{ finances.savings | number: '1.2-2' }} €</strong> } @else { <span class="unavailable">Non ancora disponibile</span> }</div>
-                <div class="balance-line"><span>Risultato investimenti</span>@if (finances.investmentResult !== null) { <strong class="amount" [class.positive]="finances.investmentResult > 0" [class.negative]="finances.investmentResult < 0">{{ finances.investmentResult | number: '1.2-2' }} €</strong> } @else { <span class="unavailable">Non ancora disponibile</span> }</div>
-                <div class="balance-line"><span>Variazione totale</span>@if (finances.wealthChange !== null) { <strong class="amount" [class.positive]="finances.wealthChange > 0" [class.negative]="finances.wealthChange < 0">{{ finances.wealthChange | number: '1.2-2' }} €</strong> } @else { <span class="unavailable">Non ancora disponibile</span> }</div>
-                <div class="balance-line"><span title="Risparmio mensile meno entrate e spese registrate">Scostamento dai movimenti</span>@if (finances.unrecordedSavings !== null) { <strong class="amount" [class.positive]="finances.unrecordedSavings > 0" [class.negative]="finances.unrecordedSavings < 0">{{ finances.unrecordedSavings | number: '1.2-2' }} €</strong> } @else { <span class="unavailable">Non ancora disponibile</span> }</div>
-                @if (finances.savings === null || finances.investmentResult === null) { <p class="financial-hint">I valori di fine mese vengono dal 1° del mese successivo. Completa i saldi necessari e i versamenti netti per distinguere risparmio e risultato degli investimenti.</p> }
+                <div class="balance-line"><div class="metric-label"><span>Totale a fine mese</span><app-info-tip label="Totale a fine mese" text="Liquidità e investimenti al 1° del mese successivo, sommati automaticamente. Serve compilare entrambi i valori del mese successivo." /></div>@if (finances.closingTotal !== null) { <strong class="amount">{{ finances.closingTotal | number: '1.2-2' }} €</strong> } @else { <span class="unavailable">Non ancora disponibile</span> }</div>
+                <div class="balance-line"><div class="metric-label"><span>Risparmio mensile</span><app-info-tip label="Risparmio mensile" text="Liquidità finale meno liquidità iniziale, più versamenti netti agli investimenti. Spostare risparmi esistenti verso gli investimenti non diventa così una spesa. Servono entrambi i saldi di liquidità e i versamenti netti del mese." /></div>@if (finances.savings !== null) { <strong class="amount" [class.positive]="finances.savings > 0" [class.negative]="finances.savings < 0">{{ finances.savings | number: '1.2-2' }} €</strong> } @else { <span class="unavailable">Non ancora disponibile</span> }</div>
+                <div class="balance-line"><div class="metric-label"><span>Risultato investimenti</span><app-info-tip label="Risultato investimenti" text="Valore finale degli investimenti meno valore iniziale e meno versamenti netti. Misura il guadagno o la perdita in euro, separato dal denaro aggiunto o ritirato. Servono i valori al 1° di questo e del prossimo mese e i versamenti netti." /></div>@if (finances.investmentResult !== null) { <strong class="amount" [class.positive]="finances.investmentResult > 0" [class.negative]="finances.investmentResult < 0">{{ finances.investmentResult | number: '1.2-2' }} €</strong> } @else { <span class="unavailable">Non ancora disponibile</span> }</div>
+                <div class="balance-line"><div class="metric-label"><span>Variazione totale</span><app-info-tip label="Variazione totale" text="Totale di fine mese meno totale iniziale. Riunisce risparmio mensile e risultato degli investimenti: non è tutto risparmio e non è tutto rendimento." /></div>@if (finances.wealthChange !== null) { <strong class="amount" [class.positive]="finances.wealthChange > 0" [class.negative]="finances.wealthChange < 0">{{ finances.wealthChange | number: '1.2-2' }} €</strong> } @else { <span class="unavailable">Non ancora disponibile</span> }</div>
               }
             </section>
           }
 
           <section class="balance-section">
             <h3>Entrate e uscite</h3>
-            <app-money-field kind="income" [label]="salaryLabel()" [value]="currentReport.salary ?? 0" [month]="currentMonthYear()" (valueSaved)="updateReportField('salary', $event ?? 0)" />
+            <app-money-field kind="income" [label]="salaryLabel()" help="Stipendio base annotato nel mese. La data nell'etichetta indica il mese di competenza precedente, secondo il metodo già usato nell'app." [value]="currentReport.salary ?? 0" [month]="currentMonthYear()" (valueSaved)="updateReportField('salary', $event ?? 0)" />
             @if (currentReport.month === 6 || currentReport.salary14) {
-              <app-money-field kind="income" label="14ª mensilità" [value]="currentReport.salary14 || 0" [month]="currentMonthYear()" (valueSaved)="updateReportField('salary14', $event ?? 0)" />
+              <app-money-field kind="income" label="14ª mensilità" help="Importo della quattordicesima annotato in questo mese, sommato alle entrate registrate." [value]="currentReport.salary14 || 0" [month]="currentMonthYear()" (valueSaved)="updateReportField('salary14', $event ?? 0)" />
             }
             @if (currentReport.month === 12 || currentReport.salary13) {
-              <app-money-field kind="income" label="13ª mensilità" [value]="currentReport.salary13 || 0" [month]="currentMonthYear()" (valueSaved)="updateReportField('salary13', $event ?? 0)" />
+              <app-money-field kind="income" label="13ª mensilità" help="Importo della tredicesima annotato in questo mese, sommato alle entrate registrate." [value]="currentReport.salary13 || 0" [month]="currentMonthYear()" (valueSaved)="updateReportField('salary13', $event ?? 0)" />
             }
-            <div class="section-heading income-heading"><span>Altre entrate</span><button type="button" class="icon-button secondary-button" (click)="toggleAddIncome()" aria-label="Aggiungi altra entrata" title="Aggiungi altra entrata"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg></button></div>
+            <div class="section-heading income-heading"><div class="metric-label"><span>Altre entrate</span><app-info-tip label="Altre entrate" text="Incassi annotati oltre allo stipendio e alle mensilità aggiuntive. I trasferimenti tra liquidità e investimenti si segnano invece nei versamenti netti." /></div><button type="button" class="icon-button secondary-button" (click)="toggleAddIncome()" aria-label="Aggiungi altra entrata" title="Aggiungi altra entrata"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg></button></div>
             @if (isAddingIncome()) {
               <form class="income-form" [formGroup]="newIncomeForm" (ngSubmit)="addIncome()" (keydown.escape)="cancelAddingIncome(); $event.preventDefault()">
                 <label>Descrizione entrata<input type="text" formControlName="description" list="income-suggestions" placeholder="Es. rimborso" /></label>
@@ -200,8 +199,8 @@
                 </div>
               }
             }
-            <div class="balance-line"><span>Entrate registrate</span><strong class="amount positive">{{ totalSalary() | number: '1.0-0' }} €</strong></div>
-            <div class="balance-line"><span>Spese registrate</span><strong class="amount negative">{{ totalExpenses() | number: '1.0-0' }} €</strong></div>
+            <div class="balance-line"><div class="metric-label"><span>Entrate registrate</span><app-info-tip label="Entrate registrate" text="Somma di stipendio, tredicesima, quattordicesima e altre entrate annotate nel mese. Non comprende automaticamente movimenti che non hai registrato." /></div><strong class="amount positive">{{ totalSalary() | number: '1.0-0' }} €</strong></div>
+            <div class="balance-line"><div class="metric-label"><span>Spese registrate</span><app-info-tip label="Spese registrate" text="Somma delle spese annotate nel mese. Per le spese condivise conta soltanto la tua quota; non comprende le uscite che non hai registrato." /></div><strong class="amount negative">{{ totalExpenses() | number: '1.0-0' }} €</strong></div>
           </section>
 
         </aside>

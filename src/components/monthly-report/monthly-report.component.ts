@@ -9,12 +9,13 @@ import { TextFieldModule } from '@angular/cdk/text-field'
 import { integerAmountValidator, MoneyInputDirective } from './money-input.directive'
 import { MoneyFieldComponent } from './money-field.component'
 import { calculateFinancialSummary, liquidityValue } from './monthly-financial-summary'
+import { InfoTipComponent } from '../shared/info-tip.component'
 
 @Component({
   selector: 'app-monthly-report',
   templateUrl: './monthly-report.component.html',
   providers: [DatePipe],
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, DragDropModule, TextFieldModule, MoneyInputDirective, MoneyFieldComponent],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, DragDropModule, TextFieldModule, MoneyInputDirective, MoneyFieldComponent, InfoTipComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './monthly-report.component.css'
 })

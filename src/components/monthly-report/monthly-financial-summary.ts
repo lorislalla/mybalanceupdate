@@ -16,16 +16,11 @@ export function calculateFinancialSummary(report: MonthlyReport, next: MonthlyRe
   const closing = endCash === null || endInvestments === null ? null : endCash + endInvestments
   const savings = cash === null || endCash === null || flows === null ? null : endCash - cash + flows
   const investmentResult = investments === null || endInvestments === null || flows === null ? null : endInvestments - investments - flows
-  const recordedIncome = Math.round((report.salary || 0) * 100) + Math.round((report.salary13 || 0) * 100) + Math.round((report.salary14 || 0) * 100)
-    + (report.incomes || []).reduce((sum, item) => sum + Math.round(item.amount * 100), 0)
-  const recordedSavings = recordedIncome - report.expenses.reduce((sum, item) => sum + Math.round(item.amount * 100), 0)
   return {
     openingTotal: euros(opening),
     closingTotal: euros(closing),
     wealthChange: euros(opening === null || closing === null ? null : closing - opening),
     savings: euros(savings),
-    investmentResult: euros(investmentResult),
-    recordedSavings: euros(recordedSavings)!,
-    unrecordedSavings: euros(savings === null ? null : savings - recordedSavings)
+    investmentResult: euros(investmentResult)
   }
 }

@@ -17,8 +17,6 @@ test('cash and market snapshots distinguish monthly savings from investment perf
   assert.equal(result.wealthChange, 2250)
   assert.equal(result.savings, 1500)
   assert.equal(result.investmentResult, 750)
-  assert.equal(result.recordedSavings, 1500)
-  assert.equal(result.unrecordedSavings, 0)
 })
 
 test('investing existing cash is a transfer, not a loss or an expense', () => {
@@ -50,7 +48,7 @@ test('missing flows or snapshots never become fabricated zero performance', () =
   assert.equal(summary(report({ investmentNetFlow: 0 }), next).openingTotal, null)
   assert.equal(summary(report({ investmentNetFlow: 0 }), next).investmentResult, null)
   const missingEnd = summary(report({ investmentValue: 20000, investmentNetFlow: 0 }), undefined)
-  for (const field of ['closingTotal', 'wealthChange', 'savings', 'investmentResult', 'unrecordedSavings']) assert.equal(missingEnd[field], null)
+  for (const field of ['closingTotal', 'wealthChange', 'savings', 'investmentResult']) assert.equal(missingEnd[field], null)
 })
 
 test('explicit zeros are valid but legacy default zero cash remains unknown', () => {
@@ -60,13 +58,11 @@ test('explicit zeros are valid but legacy default zero cash remains unknown', ()
   assert.equal(summary(report({ balance: 0, investmentValue: 0, investmentNetFlow: 0 }), zero).savings, null)
 })
 
-test('cents, negative cash and additional incomes use the same exact monetary perimeter', () => {
+test('cents and negative cash use the same exact monetary perimeter', () => {
   const result = summary(report({ balance: -10.1, investmentValue: 20.2, investmentNetFlow: 0.1, salary: 10, salary13: 2, salary14: 3, incomes: [{ amount: 0.3 }], expenses: [{ amount: 5, shared: true, totalAmount: 10 }] }), report({ balance: 0.1, investmentValue: 20.5 }))
   assert.equal(result.openingTotal, 10.1)
   assert.equal(result.savings, 10.3)
   assert.equal(result.investmentResult, 0.2)
-  assert.equal(result.recordedSavings, 10.3)
-  assert.equal(result.unrecordedSavings, 0)
 })
 
 test('the money editor preserves explicit zero, decimal cents and missing values for snapshots', () => {

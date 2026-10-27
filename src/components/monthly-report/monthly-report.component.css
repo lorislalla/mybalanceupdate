@@ -56,8 +56,9 @@ button:disabled { opacity: .45; cursor: not-allowed; }
 .balance-section { padding-top: 14px; }
 .balance-section + .balance-section { border-top: 1px solid #475569; margin-top: 14px; }
 .balance-section app-money-field + app-money-field { margin-top: 10px; }
-.financial-total { padding-top: 12px; margin-top: 12px; border-top: 1px solid #475569; }
-.financial-total .amount { font-size: 24px; white-space: normal; overflow-wrap: anywhere; }
+.financial-total { padding-bottom: 12px; margin-bottom: 12px; border-bottom: 1px solid #475569; }
+.financial-total .amount { display: block; margin-top: 4px; font-size: 24px; text-align: left; white-space: normal; overflow-wrap: anywhere; }
+.metric-label { display: flex; align-items: center; gap: 2px; min-width: 0; }
 .financial-hint { margin-top: 8px; color: #94a3b8; font-size: 12px; line-height: 1.5; }
 .payday-label { margin-top: 10px; }
 .balance-line { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 6px 10px; margin-top: 10px; font-size: 14px; color: #b7c3d6; }

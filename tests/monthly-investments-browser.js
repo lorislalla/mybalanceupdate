@@ -6,7 +6,7 @@ async (page) => {
   await page.getByRole('button', { name: 'Entra come ospite (senza salvataggio dati)', exact: true }).click()
   const setMoney = async (label, text) => {
     const field = page.locator('app-money-field').filter({ has: page.getByText(label, { exact: true }) })
-    await field.getByRole('button').click()
+    await field.getByRole('button', { name: /^(Inserisci|Modifica) / }).click()
     const input = field.getByRole('textbox', { name: label, exact: true })
     await input.waitFor()
     await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))))
@@ -15,8 +15,8 @@ async (page) => {
     await input.waitFor({ state: 'detached' })
   }
   const checkLine = async (label, expected) => {
-    const row = page.locator('.balance-line').filter({ has: page.getByText(label, { exact: true }) })
-    await page.waitForFunction(({ label, expected }) => [...document.querySelectorAll('.balance-line')].some(row => row.querySelector('span')?.textContent === label && row.textContent.includes(expected)), { label, expected })
+    const row = page.locator('.balance-line, .financial-total').filter({ has: page.getByText(label, { exact: true }) })
+    await page.waitForFunction(({ label, expected }) => [...document.querySelectorAll('.balance-line, .financial-total')].some(row => row.querySelector('span')?.textContent === label && row.textContent.includes(expected)), { label, expected })
     if (!(await row.innerText()).includes(expected)) throw new Error(label + ' != ' + expected)
   }
   await setMoney('Liquidità al 1° del mese', '10.000,00')
@@ -32,7 +32,7 @@ async (page) => {
   await setMoney('Liquidità al 1° del mese', '9500')
   await setMoney('Investimenti al 1° del mese', '22750')
   await page.getByRole('button', { name: 'Mese precedente', exact: true }).click()
-  const expected = [['Totale a fine mese', '32.250,00 €'], ['Risparmio mensile', '1.500,00 €'], ['Risultato investimenti', '750,00 €'], ['Variazione totale', '2.250,00 €'], ['Scostamento dai movimenti', '0,00 €']]
+  const expected = [['Totale a fine mese', '32.250,00 €'], ['Risparmio mensile', '1.500,00 €'], ['Risultato investimenti', '750,00 €'], ['Variazione totale', '2.250,00 €']]
   for (const [label, value] of expected) await checkLine(label, value)
   await setMoney('Versamenti netti del mese', '')
   await checkLine('Risparmio mensile', 'Non ancora disponibile')

@@ -2,15 +2,16 @@ import { ChangeDetectionStrategy, Component, computed, effect, ElementRef, input
 import { DecimalPipe } from '@angular/common'
 import { FormsModule, NgModel } from '@angular/forms'
 import { MoneyInputDirective } from './money-input.directive'
+import { InfoTipComponent } from '../shared/info-tip.component'
 
 @Component({
   selector: 'app-money-field',
-  imports: [FormsModule, MoneyInputDirective, DecimalPipe],
+  imports: [FormsModule, MoneyInputDirective, DecimalPipe, InfoTipComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
+    <div class="field-label"><span class="label">{{ label() }}</span>@if (help()) { <app-info-tip [label]="label()" [text]="help()" /> }</div>
     @if (isEditing()) {
       <label>
-      <span class="label">{{ label() }}</span>
       <span class="input-wrap">
         <span aria-hidden="true">€</span>
         <input #amountInput type="text" appMoneyInput [integerOnly]="integerOnly()" [attr.inputmode]="integerOnly() ? 'numeric' : 'decimal'" autocomplete="off"
@@ -27,8 +28,7 @@ import { MoneyInputDirective } from './money-input.directive'
       </div>
       @if (model.invalid) { <p role="alert">{{ integerOnly() ? 'Inserisci un importo intero, senza virgole o decimali.' : 'Inserisci un importo valido, con al massimo due decimali.' }}</p> }
     } @else {
-      <span class="label">{{ label() }}</span>
-      <div class="read-value">
+      <div class="read-value" [class.secondary]="secondary()">
         @if (hasValue()) {
           <strong class="currency-value" [class.balance]="kind() === 'balance'" [class.income]="kind() === 'income' && (value() ?? 0) > 0" [class.negative]="(value() ?? 0) < 0">{{ value() | number: (integerOnly() ? '1.0-0' : '1.2-2') }} €</strong>
         } @else { <span class="empty-value">Non inserito</span> }
@@ -47,10 +47,14 @@ import { MoneyInputDirective } from './money-input.directive'
     .read-value button { margin-left: auto; }
     .currency-value { font-size: 16px; font-weight: 600; font-variant-numeric: tabular-nums; color: #e2e8f0; overflow-wrap: anywhere; }
     .currency-value.balance { font-size: 32px; font-weight: 700; }
+    .read-value.secondary { justify-content: flex-end; }
+    .read-value.secondary button { margin-left: 0; }
+    .read-value.secondary .currency-value { font-size: 22px; }
     .currency-value.income { color: #6ee7b7; }
     .currency-value.negative { color: #fda4af; }
     .empty-value { color: #94a3b8; font-size: 14px; }
-    .label { display: block; margin-bottom: 4px; color: #b7c3d6; font-size: 14px; }
+    .field-label { display: flex; align-items: center; gap: 2px; margin-bottom: 4px; }
+    .label { color: #b7c3d6; font-size: 14px; }
     .input-wrap { display: flex; align-items: center; gap: 8px; padding: 0 12px; background: #111b2c; border: 1px solid #475569; border-radius: 8px; }
     .input-wrap > span { color: #94a3b8; }
     input { width: 100%; min-width: 0; min-height: 38px; padding: 6px 0; background: transparent; color: #f1f5f9; border: 0; font-size: 16px; text-align: right; font-variant-numeric: tabular-nums; }
@@ -69,11 +73,13 @@ import { MoneyInputDirective } from './money-input.directive'
 })
 export class MoneyFieldComponent {
   label = input.required<string>()
+  help = input('')
+  secondary = input(false)
   value = input<number | null>(0)
   integerOnly = input(true)
   zeroIsEmpty = input(true)
   hasValue = computed(() => this.value() !== null && (!this.zeroIsEmpty() || this.value() !== 0))
-  kind = input<'balance' | 'income'>('balance')
+  kind = input<'balance' | 'income' | 'amount'>('balance')
   month = input.required<string>()
   valueSaved = output<number | null>()
   draft = signal<number | null>(null)
