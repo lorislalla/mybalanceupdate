@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core'
+import { Injectable, isDevMode } from '@angular/core'
 import { createClient, SupabaseClient, User, RealtimeChannel } from '@supabase/supabase-js'
 import { environment } from '../environments/environment'
 import { MonthlyReport, CalculatorItem, DebtCreditItem } from '../models/financial-data.model'
@@ -11,6 +11,9 @@ interface MonthlyReportRow {
   month: number
   payday: string
   balance: number
+  balance_recorded?: boolean | null
+  investment_value?: number | null
+  investment_net_flow?: number | null
   salary: number
   salary_13: number
   salary_14: number
@@ -66,6 +69,10 @@ export class SupabaseService {
 
   get isGuest(): boolean {
     return this.isGuestSession
+  }
+
+  get investmentPreviewLocked(): boolean {
+    return typeof window !== 'undefined' && isDevMode() && !this.isGuestSession
   }
 
   private async initializeAuth() {
@@ -228,6 +235,9 @@ export class SupabaseService {
         month: report.month,
         payday: report.payday,
         balance: report.balance,
+        ...(report.balanceRecorded !== undefined ? { balance_recorded: report.balanceRecorded } : {}),
+        ...(report.investmentValue !== undefined ? { investment_value: report.investmentValue } : {}),
+        ...(report.investmentNetFlow !== undefined ? { investment_net_flow: report.investmentNetFlow } : {}),
         salary: report.salary || 0,
         salary_13: report.salary13 || 0,
         salary_14: report.salary14 || 0,
@@ -379,6 +389,9 @@ export class SupabaseService {
   private mapReportRowToModel(row: MonthlyReportRow): MonthlyReport {
     return {
       ...row,
+      balanceRecorded: row.balance_recorded ?? undefined,
+      investmentValue: row.investment_value,
+      investmentNetFlow: row.investment_net_flow,
       salary13: row.salary_13,
       salary14: row.salary_14,
       incomes: row.incomes || []

@@ -94,7 +94,7 @@ export class ImportExportComponent {
         input.value = ''
       } catch (e: unknown) {
         console.error('Errore nel ripristino del backup:', e)
-        this.errorMessage.set('Errore: Il file non è un backup valido.')
+        this.errorMessage.set(e instanceof Error ? e.message : 'Errore: Il file non è un backup valido.')
         this.isLoading.set(false)
       }
     }
@@ -135,6 +135,9 @@ export class ImportExportComponent {
           month: r.month,
           payday: r.payday,
           balance: r.balance,
+          balanceRecorded: r.balanceRecorded,
+          investmentValue: r.investmentValue,
+          investmentNetFlow: r.investmentNetFlow,
           salary: r.salary || 0,
           salary13: r.salary13 || 0,
           salary14: r.salary14 || 0,
@@ -155,7 +158,9 @@ export class ImportExportComponent {
       'Anno',
       'Mese',
       'Data Stipendio',
-      'Saldo Attuale',
+      'Liquidità',
+      'Investimenti al 1° del mese',
+      'Versamenti netti del mese',
       'Stipendio Base',
       '13ª Mensilità',
       '14ª Mensilità',
@@ -168,7 +173,7 @@ export class ImportExportComponent {
     let csvContent = headers.join(',') + '\n'
 
     data.reports.forEach(report => {
-      const baseFields = [report.year, report.month, report.payday || '', report.balance, report.salary || 0, report.salary13 || 0, report.salary14 || 0]
+      const baseFields = [report.year, report.month, report.payday || '', report.balance, report.investmentValue ?? '', report.investmentNetFlow ?? '', report.salary || 0, report.salary13 || 0, report.salary14 || 0]
 
       // Aggiungo le entrate
       if (report.incomes && report.incomes.length > 0) {

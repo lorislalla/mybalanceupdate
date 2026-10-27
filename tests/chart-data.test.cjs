@@ -39,6 +39,11 @@ test('description exclusions are case-insensitive, comma-separated and never dou
 test('negative balances are visible while unfilled zero balances stay absent', () => {
   assert.deepEqual(chartPoints([report(10, { balance: -50 }), report(9, { balance: 0 })], 'overall', defaultSettings('overall'), now).map(p => p.y), [-50])
 })
+test('explicit zero liquidity stays in balance charts while legacy missing zero and salary zero stay absent', () => {
+  const reports = [report(8, { balance: 100 }), report(9, { balance: 0 }), report(10, { balance: 0, balanceRecorded: true, salary: 0 })]
+  for (const id of ['overall', 'last12']) assert.deepEqual(chartPoints(reports, id, defaultSettings(id), now).map(p => p.y), [100, 0])
+  assert.deepEqual(chartPoints([reports[2]], 'salary', defaultSettings('salary'), now), [])
+})
 test('last twelve calendar months cross the year boundary and exclude future reports', () => {
   const reports = [report(10, { year: 2025 }), report(11, { year: 2025 }), report(10), report(11)]
   assert.deepEqual(chartPoints(reports, 'last12', defaultSettings('last12'), now).map(p => [p.year, p.month]), [[2025, 11], [2026, 10]])

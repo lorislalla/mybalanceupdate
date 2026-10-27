@@ -11,6 +11,10 @@ export class StorageService {
   debtCreditLoadState = signal<'loading' | 'ready' | 'error' | 'stale'>('loading')
   activeMonthYear = signal<string>(this.getCurrentMonthYear())
 
+  get investmentPreviewLocked(): boolean {
+    return this.supabase.investmentPreviewLocked
+  }
+
   constructor(private supabase: SupabaseService) {
     this.supabase.debtCreditItems$.subscribe(debtCreditItems => {
       this.appData.update(current => ({ ...current, debtCreditItems }))
@@ -45,6 +49,9 @@ export class StorageService {
 
   // Aggiorno un report con update ottimistico locale + sync su Supabase
   async updateReport(report: MonthlyReport) {
+    if (this.investmentPreviewLocked && (report.balanceRecorded !== undefined || report.investmentValue !== undefined || report.investmentNetFlow !== undefined)) {
+      throw new Error('Per provare i nuovi campi in locale usa la modalità ospite: il database online non è ancora aggiornato.')
+    }
     this.appData.update(data => {
       const index = data.reports.findIndex(r => r.year === report.year && r.month === report.month)
       const reports = [...data.reports]

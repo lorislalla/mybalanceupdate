@@ -94,8 +94,8 @@ export function chartPoints(reports: MonthlyReport[], id: ChartId, settings: Cha
       y = (report.salary || 0) + (settings.includeExtraSalary ? (report.salary13 || 0) + (report.salary14 || 0) : 0)
       if (settings.includeOtherIncome) y += (report.incomes || []).reduce((sum, income) => sum + income.amount, 0)
     }
-    // Zero balances are unfilled fields in this app; expense months remain visible even when a filter leaves zero.
-    const populated = id === 'outgoings' ? (report.expenses || []).length > 0 : y !== 0
+    // Legacy zero balances are unfilled; explicitly recorded zero liquidity remains a real observation.
+    const populated = id === 'outgoings' ? (report.expenses || []).length > 0 : y !== 0 || ((id === 'overall' || id === 'last12') && report.balanceRecorded === true)
     return populated && Number.isFinite(y) ? {
       x: new Date(report.year, report.month - 1, 1).getTime(), y: Math.round(y * 100) / 100,
       year: report.year, month: report.month, excludedCount, excludedAmount: Math.round(excludedAmount * 100) / 100

@@ -20,6 +20,9 @@ export interface MonthlyReport {
   month: number
   payday: string
   balance: number
+  balanceRecorded?: boolean
+  investmentValue?: number | null
+  investmentNetFlow?: number | null
   salary?: number
   salary13?: number
   salary14?: number

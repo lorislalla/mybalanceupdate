@@ -132,29 +132,50 @@
         <aside class="balance-panel" aria-labelledby="balance-heading">
           <h2 id="balance-heading" class="balance-title">Bilancio del mese</h2>
           <section class="balance-section">
-            <h3>{{ isCalendarMonth() ? 'Saldi reali' : 'Saldo di riferimento' }}</h3>
-            <app-money-field [label]="isCalendarMonth() ? 'Saldo al 1° del mese' : 'Saldo dopo stipendio'" [value]="currentReport.balance" [month]="currentMonthYear()" (valueSaved)="updateReportField('balance', $event)" />
-            @if (!isCalendarMonth()) {
+            @if (isCalendarMonth()) {
+              <h3>Situazione al 1° del mese</h3>
+              @if (investmentEditingDisabled()) { <p class="financial-hint" role="status">Anteprima locale: per modificare i nuovi campi usa la modalità ospite. Il salvataggio nel tuo account non è ancora abilitato.</p> }
+              <fieldset [disabled]="investmentEditingDisabled()">
+              <app-money-field label="Liquidità al 1° del mese" [value]="liquidityValue(currentReport)" [integerOnly]="false" [zeroIsEmpty]="false" [month]="currentMonthYear()" (valueSaved)="updateLiquidity($event)" />
+              <app-money-field label="Investimenti al 1° del mese" [value]="currentReport.investmentValue ?? null" [integerOnly]="false" [zeroIsEmpty]="false" [month]="currentMonthYear()" (valueSaved)="updateReportField('investmentValue', $event)" />
+              </fieldset>
+              @if (financialSummary(); as finances) {
+                <div class="balance-line financial-total"><span>Totale al 1° del mese</span>@if (finances.openingTotal !== null) { <strong class="amount">{{ finances.openingTotal | number: '1.2-2' }} €</strong> } @else { <span class="unavailable">Completa liquidità e investimenti</span> }</div>
+              }
+            } @else {
+              <h3>Saldo di riferimento</h3>
+              <app-money-field label="Saldo dopo stipendio" [value]="currentReport.balance" [month]="currentMonthYear()" (valueSaved)="updateReportField('balance', $event ?? 0)" />
               <label class="payday-label" for="payday">Giorno dello stipendio
                 <input id="payday" type="date" #paydayInput [ngModel]="currentReport.payday" (change)="onPaydayChange(paydayInput.value)" />
               </label>
-            } @else {
-              <div class="balance-line closing-balance">
-                <span>Saldo a fine mese</span>
-                @if (monthlyBalanceSummary().closingBalance !== null) { <strong class="amount">{{ monthlyBalanceSummary().closingBalance | number: '1.0-0' }} €</strong> }
-                @else { <span class="unavailable">Non ancora disponibile</span> }
-              </div>
             }
           </section>
 
+          @if (isCalendarMonth()) {
+            <section class="balance-section">
+              <h3>Risparmio e investimenti del mese</h3>
+              <fieldset [disabled]="investmentEditingDisabled()"><app-money-field label="Versamenti netti del mese" [value]="currentReport.investmentNetFlow ?? null" [integerOnly]="false" [zeroIsEmpty]="false" [month]="currentMonthYear()" (valueSaved)="updateReportField('investmentNetFlow', $event)" /></fieldset>
+              <p class="financial-hint">Versamenti meno prelievi e proventi passati in liquidità. Inserisci 0 se non ci sono movimenti. Non registrarli anche come entrate o spese.</p>
+              <div class="balance-line"><span>Liquidità a fine mese</span>@if (monthlyBalanceSummary().closingBalance !== null) { <strong class="amount">{{ monthlyBalanceSummary().closingBalance | number: '1.2-2' }} €</strong> } @else { <span class="unavailable">Non ancora disponibile</span> }</div>
+              @if (financialSummary(); as finances) {
+                <div class="balance-line"><span>Totale a fine mese</span>@if (finances.closingTotal !== null) { <strong class="amount">{{ finances.closingTotal | number: '1.2-2' }} €</strong> } @else { <span class="unavailable">Non ancora disponibile</span> }</div>
+                <div class="balance-line"><span>Risparmio mensile</span>@if (finances.savings !== null) { <strong class="amount" [class.positive]="finances.savings > 0" [class.negative]="finances.savings < 0">{{ finances.savings | number: '1.2-2' }} €</strong> } @else { <span class="unavailable">Non ancora disponibile</span> }</div>
+                <div class="balance-line"><span>Risultato investimenti</span>@if (finances.investmentResult !== null) { <strong class="amount" [class.positive]="finances.investmentResult > 0" [class.negative]="finances.investmentResult < 0">{{ finances.investmentResult | number: '1.2-2' }} €</strong> } @else { <span class="unavailable">Non ancora disponibile</span> }</div>
+                <div class="balance-line"><span>Variazione totale</span>@if (finances.wealthChange !== null) { <strong class="amount" [class.positive]="finances.wealthChange > 0" [class.negative]="finances.wealthChange < 0">{{ finances.wealthChange | number: '1.2-2' }} €</strong> } @else { <span class="unavailable">Non ancora disponibile</span> }</div>
+                <div class="balance-line"><span title="Risparmio mensile meno entrate e spese registrate">Scostamento dai movimenti</span>@if (finances.unrecordedSavings !== null) { <strong class="amount" [class.positive]="finances.unrecordedSavings > 0" [class.negative]="finances.unrecordedSavings < 0">{{ finances.unrecordedSavings | number: '1.2-2' }} €</strong> } @else { <span class="unavailable">Non ancora disponibile</span> }</div>
+                @if (finances.savings === null || finances.investmentResult === null) { <p class="financial-hint">I valori di fine mese vengono dal 1° del mese successivo. Completa i saldi necessari e i versamenti netti per distinguere risparmio e risultato degli investimenti.</p> }
+              }
+            </section>
+          }
+
           <section class="balance-section">
             <h3>Entrate e uscite</h3>
-            <app-money-field kind="income" [label]="salaryLabel()" [value]="currentReport.salary" [month]="currentMonthYear()" (valueSaved)="updateReportField('salary', $event)" />
+            <app-money-field kind="income" [label]="salaryLabel()" [value]="currentReport.salary ?? 0" [month]="currentMonthYear()" (valueSaved)="updateReportField('salary', $event ?? 0)" />
             @if (currentReport.month === 6 || currentReport.salary14) {
-              <app-money-field kind="income" label="14ª mensilità" [value]="currentReport.salary14 || 0" [month]="currentMonthYear()" (valueSaved)="updateReportField('salary14', $event)" />
+              <app-money-field kind="income" label="14ª mensilità" [value]="currentReport.salary14 || 0" [month]="currentMonthYear()" (valueSaved)="updateReportField('salary14', $event ?? 0)" />
             }
             @if (currentReport.month === 12 || currentReport.salary13) {
-              <app-money-field kind="income" label="13ª mensilità" [value]="currentReport.salary13 || 0" [month]="currentMonthYear()" (valueSaved)="updateReportField('salary13', $event)" />
+              <app-money-field kind="income" label="13ª mensilità" [value]="currentReport.salary13 || 0" [month]="currentMonthYear()" (valueSaved)="updateReportField('salary13', $event ?? 0)" />
             }
             <div class="section-heading income-heading"><span>Altre entrate</span><button type="button" class="icon-button secondary-button" (click)="toggleAddIncome()" aria-label="Aggiungi altra entrata" title="Aggiungi altra entrata"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg></button></div>
             @if (isAddingIncome()) {

@@ -8,6 +8,7 @@ import { TextFieldModule } from '@angular/cdk/text-field'
 
 import { integerAmountValidator, MoneyInputDirective } from './money-input.directive'
 import { MoneyFieldComponent } from './money-field.component'
+import { calculateFinancialSummary, liquidityValue } from './monthly-financial-summary'
 
 @Component({
   selector: 'app-monthly-report',
@@ -150,7 +151,7 @@ export class MonthlyReportComponent {
     const reports = this.storageService.appData().reports
     const dataSet = new Set<string>()
     reports.forEach(r => {
-      if (r.payday || r.balance !== 0) {
+      if (r.payday || r.balance !== 0 || r.balanceRecorded || r.investmentValue != null || r.investmentNetFlow != null) {
         dataSet.add(`${r.year}-${r.month}`)
       }
     })
@@ -181,6 +182,14 @@ export class MonthlyReportComponent {
   })
 
   monthlyBalanceSummary = computed(() => this.getMonthlyBalanceSummary())
+  liquidityValue = liquidityValue
+  financialSummary = computed(() => {
+    const report = this.report()
+    if (!report || !this.isCalendarMonth()) return null
+    const nextMonth = report.month === 12 ? 1 : report.month + 1
+    const nextYear = report.month === 12 ? report.year + 1 : report.year
+    return calculateFinancialSummary(report, this.storageService.getReport(nextYear, nextMonth))
+  })
 
   isCalendarMonth(): boolean {
     const report = this.report()
@@ -196,9 +205,9 @@ export class MonthlyReportComponent {
     const nextMonth = report.month === 12 ? 1 : report.month + 1
     const nextReport = this.storageService.getReport(nextYear, nextMonth)
     // Nei dati esistenti, zero è il valore predefinito di un saldo non compilato
-    if (!nextReport?.balance) return unavailable
+    if (!nextReport || liquidityValue(nextReport) === null) return unavailable
     const closingBalance = nextReport.balance
-    if (!report.balance) return { ...unavailable, closingBalance }
+    if (liquidityValue(report) === null) return { ...unavailable, closingBalance }
 
     const balanceChange = closingBalance - report.balance
     const recordedIncome = (report.salary || 0) + (report.salary13 || 0) + (report.salary14 || 0)
@@ -281,12 +290,26 @@ export class MonthlyReportComponent {
   // =============================================
 
   updateReportField<K extends keyof MonthlyReport>(field: K, value: MonthlyReport[K]) {
+    if ((field === 'investmentValue' || field === 'investmentNetFlow') && this.investmentEditingDisabled()) return
     const currentReport = this.report()
     if (currentReport) {
       const updatedReport = { ...currentReport, [field]: value }
       this.report.set(updatedReport)
       this.storageService.updateReport(updatedReport)
     }
+  }
+
+  updateLiquidity(value: number | null) {
+    if (this.investmentEditingDisabled()) return
+    const current = this.report()
+    if (!current) return
+    const updated = { ...current, balance: value ?? 0, balanceRecorded: value !== null }
+    this.report.set(updated)
+    this.storageService.updateReport(updated)
+  }
+
+  investmentEditingDisabled(): boolean {
+    return !!this.storageService.investmentPreviewLocked
   }
 
   // =============================================

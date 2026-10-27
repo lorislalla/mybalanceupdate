@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, effect, ElementRef, input, output, signal, untracked, viewChild } from '@angular/core'
+import { ChangeDetectionStrategy, Component, computed, effect, ElementRef, input, output, signal, untracked, viewChild } from '@angular/core'
 import { DecimalPipe } from '@angular/common'
 import { FormsModule, NgModel } from '@angular/forms'
 import { MoneyInputDirective } from './money-input.directive'
@@ -13,7 +13,7 @@ import { MoneyInputDirective } from './money-input.directive'
       <span class="label">{{ label() }}</span>
       <span class="input-wrap">
         <span aria-hidden="true">€</span>
-        <input #amountInput type="text" appMoneyInput integerOnly inputmode="numeric" autocomplete="off"
+        <input #amountInput type="text" appMoneyInput [integerOnly]="integerOnly()" [attr.inputmode]="integerOnly() ? 'numeric' : 'decimal'" autocomplete="off"
           [aria-label]="label()" [ngModel]="draft()" (ngModelChange)="draft.set($event)"
           (input)="dirty.set(true)"
           #model="ngModel" placeholder="Inserisci importo" [attr.aria-invalid]="model.invalid"
@@ -25,16 +25,16 @@ import { MoneyInputDirective } from './money-input.directive'
         <button type="button" aria-label="Annulla" title="Annulla" (click)="cancel()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 6 12 12M6 18 18 6" /></svg></button>
         <button type="button" aria-label="Salva" title="Salva" [disabled]="model.invalid" (click)="save()" class="save"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m5 12 4 4L19 6" /></svg></button>
       </div>
-      @if (model.invalid) { <p role="alert">Inserisci un importo intero, senza virgole o decimali.</p> }
+      @if (model.invalid) { <p role="alert">{{ integerOnly() ? 'Inserisci un importo intero, senza virgole o decimali.' : 'Inserisci un importo valido, con al massimo due decimali.' }}</p> }
     } @else {
       <span class="label">{{ label() }}</span>
       <div class="read-value">
-        @if (value() !== 0) {
-          <strong class="currency-value" [class.balance]="kind() === 'balance'" [class.income]="kind() === 'income' && value() > 0" [class.negative]="value() < 0">{{ value() | number: '1.0-0' }} €</strong>
+        @if (hasValue()) {
+          <strong class="currency-value" [class.balance]="kind() === 'balance'" [class.income]="kind() === 'income' && (value() ?? 0) > 0" [class.negative]="(value() ?? 0) < 0">{{ value() | number: (integerOnly() ? '1.0-0' : '1.2-2') }} €</strong>
         } @else { <span class="empty-value">Non inserito</span> }
-        <button type="button" [aria-label]="(value() === 0 ? 'Inserisci ' : 'Modifica ') + label()" [title]="(value() === 0 ? 'Inserisci ' : 'Modifica ') + label()" (click)="startEditing()">
+        <button type="button" [aria-label]="(!hasValue() ? 'Inserisci ' : 'Modifica ') + label()" [title]="(!hasValue() ? 'Inserisci ' : 'Modifica ') + label()" (click)="startEditing()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-            @if (value() === 0) { <path d="M12 5v14M5 12h14" /> }
+            @if (!hasValue()) { <path d="M12 5v14M5 12h14" /> }
             @else { <path d="m16 3 5 5-12 12-6 1 1-6zM14 5l5 5" /> }
           </svg>
         </button>
@@ -69,10 +69,13 @@ import { MoneyInputDirective } from './money-input.directive'
 })
 export class MoneyFieldComponent {
   label = input.required<string>()
-  value = input(0)
+  value = input<number | null>(0)
+  integerOnly = input(true)
+  zeroIsEmpty = input(true)
+  hasValue = computed(() => this.value() !== null && (!this.zeroIsEmpty() || this.value() !== 0))
   kind = input<'balance' | 'income'>('balance')
   month = input.required<string>()
-  valueSaved = output<number>()
+  valueSaved = output<number | null>()
   draft = signal<number | null>(null)
   private model = viewChild<NgModel>('model')
   private amountInput = viewChild<ElementRef<HTMLInputElement>>('amountInput')
@@ -83,7 +86,7 @@ export class MoneyFieldComponent {
     let displayedMonth = ''
     effect(() => {
       const month = this.month()
-      const value = this.value() || null
+      const value = this.hasValue() ? this.value() : null
       const model = this.model()
       untracked(() => {
         if (month !== displayedMonth || !this.dirty()) {
@@ -104,24 +107,26 @@ export class MoneyFieldComponent {
   }
 
   startEditing() {
-    this.draft.set(this.value() || null)
+    this.draft.set(this.hasValue() ? this.value() : null)
     this.dirty.set(false)
     this.isEditing.set(true)
   }
 
   save() {
-    const value = this.draft() ?? 0
-    if (this.model()?.invalid || !Number.isSafeInteger(value)) return
-    this.valueSaved.emit(value)
+    const value = this.draft()
+    if (this.model()?.invalid || (value !== null && (!Number.isFinite(value) || (this.integerOnly()
+      ? !Number.isSafeInteger(value)
+      : !Number.isSafeInteger(Math.round(value * 100)) || Math.abs(value * 100 - Math.round(value * 100)) >= 0.000001)))) return
+    this.valueSaved.emit(value === null && this.zeroIsEmpty() ? 0 : value)
     this.dirty.set(false)
-    this.draft.set(value || null)
-    this.model()?.reset(value || null)
+    this.draft.set(value)
+    this.model()?.reset(value)
     this.isEditing.set(false)
   }
   cancel() {
     this.dirty.set(false)
-    this.draft.set(this.value() || null)
-    this.model()?.reset(this.value() || null)
+    this.draft.set(this.hasValue() ? this.value() : null)
+    this.model()?.reset(this.hasValue() ? this.value() : null)
     this.isEditing.set(false)
   }
 }
