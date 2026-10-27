@@ -41,7 +41,7 @@
       } @empty { <li class="hint">Nessuna voce. Aggiungi qui ciò che devi ricevere o pagare.</li> }
     </ul>
     <footer>
-      <div><h2>Saldo finale</h2><p class="balance" [class.positive]="total() > 0" [class.negative]="total() < 0">{{ signedAmount(total()) }} €</p><p class="hint">{{ total() > 0 ? 'Nel complesso devi ricevere' : total() < 0 ? 'Nel complesso devi pagare' : 'Debiti e crediti in pari' }}</p></div>
+      <div><h2>Saldo finale</h2><p class="balance" [class.positive]="total() > 0" [class.negative]="total() < 0">{{ signedAmount(total()) }} €</p><p class="hint">{{ total() > 0 ? 'Saldo a credito' : total() < 0 ? 'Saldo a debito' : 'Debiti e crediti in pari' }}</p></div>
       <div class="copy"><button type="button" (click)="copyBalance()">Copia saldo</button><p role="status">{{ copyStatus() === 'copied' ? 'Saldo copiato' : copyStatus() === 'error' ? 'Copia non riuscita. Riprova.' : '' }}</p></div>
     </footer>
   }
