@@ -28,7 +28,7 @@
             <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="9" cy="5" r="1.5"/><circle cx="15" cy="5" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="19" r="1.5"/><circle cx="15" cy="19" r="1.5"/></svg>
           </button>
           <div class="entry-description"><strong>{{ itemLabel(item) }}</strong></div>
-          <div class="entry-value"><span class="amount" [class.positive]="item.amount > 0" [class.negative]="item.amount < 0">{{ signedAmount(item.amount) }} €</span><small>{{ item.amount > 0 ? 'Da ricevere' : 'Da pagare' }}</small></div>
+          <div class="entry-value"><span class="amount" [class.positive]="item.amount > 0" [class.negative]="item.amount < 0">{{ signedAmount(item.amount) }} €</span><small>{{ item.amount > 0 ? 'Credito' : 'Debito' }}</small></div>
           <div class="entry-actions">
             <button type="button" [disabled]="saving() || loadState() !== 'ready'" (click)="editItem(item)" [attr.aria-label]="'Modifica voce di ' + itemLabel(item)" title="Modifica">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m16 3 5 5-12 12H4v-5L16 3ZM14 5l5 5" /></svg>
