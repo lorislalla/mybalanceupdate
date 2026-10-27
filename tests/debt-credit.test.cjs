@@ -182,7 +182,7 @@ test('cloud persistence scopes the list to the account, loads it on another devi
   offline = true
   await assert.rejects(() => service.updateDebtCreditItems([]), /Offline/)
   await service.loadDebtCreditItems()
-  assert.equal(service.debtCreditLoadStateSubject.value, 'error')
+  assert.equal(service.debtCreditLoadStateSubject.value, 'stale')
   assert.deepEqual(service.debtCreditItemsSubject.value, items)
   service.isGuestSession = true
   await service.updateDebtCreditItems([])
@@ -229,6 +229,67 @@ test('late account save and stale reads never replace newer session data', async
   const newSave = c.updateDebtCreditItems(b)
   finishSave({ error: null }); await newSave
   reads[2]({ data: { items: [] }, error: null }); await staleRead
+  assert.deepEqual(c.debtCreditItemsSubject.value, b)
+  assert.equal(c.debtCreditLoadStateSubject.value, 'ready')
+})
+
+test('background refocus/realtime reads keep ready content mounted and retain it on refresh failure', async () => {
+  const c = Object.create(SupabaseService.prototype)
+  c.debtCreditLoadVersion = 0
+  c.userSubject = new BehaviorSubject({ id: 'owner' })
+  c.debtCreditItemsSubject = new BehaviorSubject([])
+  c.debtCreditLoadStateSubject = new BehaviorSubject('loading')
+  const reads = []
+  c.supabase = { from: () => ({ select: () => ({ eq: () => ({ maybeSingle: () => new Promise(resolve => reads.push(resolve)) }) }) }) }
+  const initial = c.loadDebtCreditItems()
+  assert.equal(c.debtCreditLoadStateSubject.value, 'loading')
+  reads.shift()({ data: { items: [] }, error: new Error('Offline') }); await initial
+  assert.equal(c.debtCreditLoadStateSubject.value, 'error')
+  const retry = c.loadDebtCreditItems()
+  assert.equal(c.debtCreditLoadStateSubject.value, 'loading')
+  const items = [{ id: 'one', person: 'Anna', reason: '', amount: 12 }]
+  reads.shift()({ data: { items }, error: null }); await retry
+  const states = []
+  const sub = c.debtCreditLoadStateSubject.subscribe(state => states.push(state))
+  const refresh = c.loadDebtCreditItems()
+  assert.equal(c.debtCreditLoadStateSubject.value, 'ready')
+  assert.deepEqual(c.debtCreditItemsSubject.value, items)
+  const updated = [{ ...items[0], amount: 15 }]
+  reads.shift()({ data: { items: updated }, error: null }); await refresh
+  assert.deepEqual(c.debtCreditItemsSubject.value, updated)
+  const offline = c.loadDebtCreditItems()
+  reads.shift()({ data: null, error: new Error('Offline') }); await offline
+  assert.equal(c.debtCreditLoadStateSubject.value, 'stale')
+  assert.deepEqual(c.debtCreditItemsSubject.value, updated)
+  const recovery = c.loadDebtCreditItems()
+  assert.equal(c.debtCreditLoadStateSubject.value, 'stale')
+  reads.shift()({ data: { items: updated }, error: null }); await recovery
+  assert.equal(c.debtCreditLoadStateSubject.value, 'ready')
+  assert.equal(states.includes('loading'), false)
+  sub.unsubscribe()
+})
+
+test('switching accounts clears the previous list instead of treating it as a background refresh', async () => {
+  const c = Object.create(SupabaseService.prototype)
+  c.debtCreditLoadVersion = 0
+  c.userSubject = new BehaviorSubject({ id: 'A' })
+  c.debtCreditItemsSubject = new BehaviorSubject([])
+  c.debtCreditLoadStateSubject = new BehaviorSubject('loading')
+  const reads = []
+  c.supabase = { from: () => ({ select: () => ({ eq: () => ({ maybeSingle: () => new Promise(resolve => reads.push(resolve)) }) }) }) }
+  const a = [{ id: 'A-private', person: 'Anna', amount: 10, reason: '' }]
+  const b = [{ id: 'B-private', person: 'Luca', amount: 20, reason: '' }]
+  const first = c.loadDebtCreditItems()
+  reads.shift()({ data: { items: a }, error: null }); await first
+  c.userSubject.next({ id: 'B' })
+  const switchRead = c.loadDebtCreditItems()
+  assert.equal(c.debtCreditLoadStateSubject.value, 'loading')
+  assert.deepEqual(c.debtCreditItemsSubject.value, [])
+  reads.shift()({ data: null, error: new Error('Offline') }); await switchRead
+  assert.equal(c.debtCreditLoadStateSubject.value, 'error')
+  assert.deepEqual(c.debtCreditItemsSubject.value, [])
+  const retry = c.loadDebtCreditItems()
+  reads.shift()({ data: { items: b }, error: null }); await retry
   assert.deepEqual(c.debtCreditItemsSubject.value, b)
   assert.equal(c.debtCreditLoadStateSubject.value, 'ready')
 })

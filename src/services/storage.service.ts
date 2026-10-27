@@ -8,7 +8,7 @@ import { SupabaseService } from './supabase.service'
 export class StorageService {
   // Mantengo la struttura a signal per compatibilità con i componenti esistenti
   appData: WritableSignal<AppData> = signal({ reports: [], globalNotes: '', calculatorItems: [], debtCreditItems: [] })
-  debtCreditLoadState = signal<'loading' | 'ready' | 'error'>('loading')
+  debtCreditLoadState = signal<'loading' | 'ready' | 'error' | 'stale'>('loading')
   activeMonthYear = signal<string>(this.getCurrentMonthYear())
 
   constructor(private supabase: SupabaseService) {

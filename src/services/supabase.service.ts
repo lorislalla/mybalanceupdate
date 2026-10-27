@@ -54,9 +54,10 @@ export class SupabaseService {
 
   private debtCreditItemsSubject = new BehaviorSubject<DebtCreditItem[]>([])
   public debtCreditItems$ = this.debtCreditItemsSubject.asObservable()
-  private debtCreditLoadStateSubject = new BehaviorSubject<'loading' | 'ready' | 'error'>('loading')
+  private debtCreditLoadStateSubject = new BehaviorSubject<'loading' | 'ready' | 'error' | 'stale'>('loading')
   public debtCreditLoadState$ = this.debtCreditLoadStateSubject.asObservable()
   private debtCreditLoadVersion = 0
+  private debtCreditLoadedUserId: string | null = null
 
   constructor() {
     this.supabase = createClient(environment.supabaseUrl, environment.supabaseKey)
@@ -120,6 +121,7 @@ export class SupabaseService {
     this.debtCreditItemsSubject.next([])
     this.debtCreditLoadStateSubject.next('ready')
     this.debtCreditLoadVersion++
+    this.debtCreditLoadedUserId = null
   }
 
   async signOut() {
@@ -178,13 +180,20 @@ export class SupabaseService {
     const userId = this.userSubject.value?.id
     if (!userId || this.isGuestSession) return
     const version = ++this.debtCreditLoadVersion
-    this.debtCreditLoadStateSubject.next('loading')
+    const hasLoadedData = this.debtCreditLoadedUserId === userId &&
+      (this.debtCreditLoadStateSubject.value === 'ready' || this.debtCreditLoadStateSubject.value === 'stale')
+    if (!hasLoadedData) {
+      this.debtCreditLoadStateSubject.next('loading')
+      this.debtCreditItemsSubject.next([])
+      this.debtCreditLoadedUserId = null
+    }
     const { data, error } = await this.supabase.from('debt_credit_data')
       .select('items').eq('user_id', userId).maybeSingle()
     if (version !== this.debtCreditLoadVersion || this.userSubject.value?.id !== userId || this.isGuestSession) return
     if (error) {
-      this.debtCreditLoadStateSubject.next('error')
+      this.debtCreditLoadStateSubject.next(hasLoadedData ? 'stale' : 'error')
     } else {
+      this.debtCreditLoadedUserId = userId
       this.debtCreditItemsSubject.next(data?.items || [])
       this.debtCreditLoadStateSubject.next('ready')
     }
@@ -202,6 +211,7 @@ export class SupabaseService {
     if (error) throw error
     if (this.userSubject.value?.id !== user.id || this.isGuestSession) throw new Error('Sessione cambiata')
     this.debtCreditLoadVersion++
+    this.debtCreditLoadedUserId = user.id
     this.debtCreditItemsSubject.next(items)
     this.debtCreditLoadStateSubject.next('ready')
   }
@@ -381,6 +391,7 @@ export class SupabaseService {
 
   private cleanup() {
     this.debtCreditLoadVersion++
+    this.debtCreditLoadedUserId = null
     if (this.realtimeChannel) {
       this.supabase.removeChannel(this.realtimeChannel)
       this.realtimeChannel = null
