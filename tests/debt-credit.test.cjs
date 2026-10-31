@@ -48,14 +48,14 @@ test('signed cents total and clipboard preserve exact amounts without hundred-eu
   component.copyStatus = signal('idle')
   component.total = computed(() => component.calculateTotal(component.items()))
   await component.copyBalance()
-  assert.equal(copied, '+0,25')
+  assert.equal(copied, '0,25')
   component.items.set([{ amount: -42.5 }])
   await component.copyBalance()
   assert.equal(copied, '-42,50')
-  assert.equal(component.signedAmount(110000), '+110.000,00')
+  assert.equal(component.signedAmount(110000), '+110.000')
   component.items.set([{ amount: 110000 }])
   await component.copyBalance()
-  assert.equal(copied, '+110000,00')
+  assert.equal(copied, '110000')
   navigator.clipboard.writeText = async () => { throw new Error('Denied') }
   await component.copyBalance()
   assert.equal(component.copyStatus(), 'error')
@@ -102,7 +102,7 @@ test('editor validates person and cents, preserves draft on failure, updates ide
 
 test('explicit plus signs and grouped amounts are valid while malformed signs stay invalid', () => {
   const { parseMoneyAmount } = require('../src/components/monthly-report/money-input.directive.ts')
-  for (const [text, expected] of [['+15000', 15000], ['+110.000,00', 110000], ['-110.000,50', -110000.5], ['+25.50', 25.5]]) {
+  for (const [text, expected] of [['+15000', 15000], ['+110.000', 110000], ['-110.000,50', -110000.5], ['+25.50', 25.5]]) {
     assert.equal(parseMoneyAmount(text), expected)
   }
   for (const text of ['+', '+-12', '-+12', '++12', '1+2', '+12,345']) assert.equal(parseMoneyAmount(text), null)

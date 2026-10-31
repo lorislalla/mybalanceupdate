@@ -102,12 +102,12 @@ export class DebtCreditComponent {
   }
 
   signedAmount(amount: number, useGrouping = true): string {
-    return (amount > 0 ? '+' : '') + amount.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2, useGrouping })
+    return (amount > 0 ? '+' : '') + amount.toLocaleString('it-IT', { minimumFractionDigits: Number.isInteger(amount) ? 0 : 2, maximumFractionDigits: 2, useGrouping })
   }
 
   async copyBalance() {
     try {
-      await navigator.clipboard.writeText(this.signedAmount(this.total(), false))
+      await navigator.clipboard.writeText(this.signedAmount(this.total(), false).replace(/^\+/, ''))
       this.copyStatus.set('copied')
     } catch {
       this.copyStatus.set('error')

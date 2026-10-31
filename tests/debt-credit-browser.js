@@ -11,7 +11,7 @@ async (page) => {
   const checkBalance = async text => {
     await page.waitForFunction(text => document.querySelector('app-debt-credit .balance')?.textContent.trim() === text, text)
   }
-  await checkBalance('0,00 €')
+  await checkBalance('0 €')
   if (await form.getByRole('textbox').count() !== 2) throw new Error('Expected only Persona/Motivo and amount')
   if (await form.getByText('Usa il segno meno per un debito.', { exact: false }).count()) throw new Error('Obsolete help text remains')
   await person.fill('Credito di prova')
@@ -19,9 +19,9 @@ async (page) => {
   if (await form.getByRole('button', { name: 'Aggiungi', exact: true }).isEnabled()) throw new Error('Malformed sign accepted')
   await amount.fill('+15000')
   await form.getByRole('button', { name: 'Aggiungi', exact: true }).click()
-  await checkBalance('+15.000,00 €')
+  await checkBalance('+15.000 €')
   await form.getByRole('button', { name: 'Elimina voce di Credito di prova', exact: true }).click()
-  await checkBalance('0,00 €')
+  await checkBalance('0 €')
   for (const [name, value, why] of [['Anna', '+125,50', 'Cena'], ['Luca', '-25.20', 'Regalo'], ['Anna', '-0,10', 'Conguaglio']]) {
     await person.fill(name + ' · ' + why)
     await amount.fill(value)
@@ -31,7 +31,7 @@ async (page) => {
   await checkBalance('+100,20 €')
   await page.context().grantPermissions(['clipboard-read', 'clipboard-write'])
   await form.getByRole('button', { name: 'Copia saldo', exact: true }).click()
-  if (await page.evaluate(() => navigator.clipboard.readText()) !== '+100,20') throw new Error('Copy lost signed cents')
+  if (await page.evaluate(() => navigator.clipboard.readText()) !== '100,20') throw new Error('Copy lost signed cents')
   await form.getByRole('button', { name: 'Modifica voce di Luca · Regalo', exact: true }).click()
   await page.waitForFunction(() => document.querySelector('#debt-amount').value === '-25,20')
   await amount.fill('-225,20')
@@ -51,7 +51,7 @@ async (page) => {
   await form.getByRole('button', { name: 'Aggiungi', exact: true }).click()
   await checkBalance('+110.125,40 €')
   await form.getByRole('button', { name: 'Copia saldo', exact: true }).click()
-  if (await page.evaluate(() => navigator.clipboard.readText()) !== '+110125,40') throw new Error('Copy changed amount')
+  if (await page.evaluate(() => navigator.clipboard.readText()) !== '110125,40') throw new Error('Copy changed amount')
   await form.getByRole('button', { name: 'Elimina voce di Test migliaia', exact: true }).click()
   await checkBalance('+125,40 €')
   const labels = () => form.locator('.entry-description strong').allTextContents()
@@ -100,7 +100,7 @@ async (page) => {
   await form.getByRole('button', { name: 'Elimina voce di Anna · Cena', exact: true }).click()
   await page.waitForFunction(() => document.querySelectorAll('app-debt-credit .entries li button[aria-label^="Elimina voce di Anna"]').length === 1)
   await form.getByRole('button', { name: 'Elimina voce di Anna · Conguaglio', exact: true }).click()
-  await checkBalance('0,00 €')
+  await checkBalance('0 €')
   await page.getByRole('button', { name: 'Dati', exact: true }).click()
   await page.getByRole('button', { name: 'Importa con AI', exact: true }).click()
   // The CLI intercepts native dialogs; auto-confirm only this isolated guest restore.
