@@ -2,7 +2,8 @@
 async (page) => {
   await page.goto('http://localhost:3001')
   await page.getByRole('button', { name: 'Entra come ospite (senza salvataggio dati)', exact: true }).click()
-  await page.getByRole('button', { name: 'Debiti/Crediti', exact: true }).click()
+  await page.getByRole('button', { name: 'Calcolo', exact: true }).click()
+  await page.getByRole('button', { name: 'DEBITI/CREDITI', exact: true }).click()
   await page.getByRole('textbox', { name: 'Persona/Motivo', exact: true }).fill('Voce sintetica')
   await page.getByRole('textbox', { name: 'Importo (€)', exact: true }).fill('12')
   await page.getByRole('button', { name: 'Aggiungi', exact: true }).click()

@@ -1,5 +1,5 @@
-<section class="debt-page">
-  <h1>Debiti/Crediti</h1>
+<section class="debt-page" [class.embedded]="embedded()">
+  @if (!embedded()) { <h1>Debiti/Crediti</h1> }
   @if (loadState() === 'loading') { <p role="status">Caricamento…</p> }
   @if (loadState() === 'error') { <p class="negative" role="alert">Impossibile caricare Debiti/Crediti. Ricarica la pagina per riprovare.</p> }
   @if (loadState() === 'stale') { <p class="negative" role="alert">Sincronizzazione non riuscita. I dati precedenti sono visibili; ricarica la pagina per riprovare prima di modificarli.</p> }

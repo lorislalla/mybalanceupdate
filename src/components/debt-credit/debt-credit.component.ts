@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, computed, effect, inject, signal } from '@angular/core'
+import { Component, ChangeDetectionStrategy, computed, effect, inject, input, signal } from '@angular/core'
 import { CommonModule } from '@angular/common'
 import { FormsModule } from '@angular/forms'
 import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop'
@@ -14,6 +14,7 @@ import { MoneyInputDirective } from '../monthly-report/money-input.directive'
   imports: [CommonModule, FormsModule, MoneyInputDirective, DragDropModule]
 })
 export class DebtCreditComponent {
+  embedded = input(false)
   private storageService = inject(StorageService)
   loadState = this.storageService.debtCreditLoadState
   items = computed(() => this.storageService.appData().debtCreditItems || [])

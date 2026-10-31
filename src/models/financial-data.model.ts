@@ -37,6 +37,7 @@ export interface CalculatorItem {
   description: string
   amount: number
   color?: string
+  source?: 'debt-credit'
 }
 
 export interface DebtCreditItem {

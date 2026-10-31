@@ -1,4 +1,6 @@
 :host { display: block; }
+.subentries { grid-column: 1 / -1; min-width: 0; padding: 0 4px 12px; }
+.debt-toggle { display: flex; align-items: center; gap: 8px; padding: 4px 0; border: 0; white-space: normal; text-align: left; }
 .calculator-page { max-width: 960px; margin: 0 auto; padding: 1.25rem .5rem; }
 h1 { font-size: 1.5rem; font-weight: 700; }
 .hint, small { color: #9ca3af; font-size: .875rem; }

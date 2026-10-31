@@ -75,3 +75,30 @@ test('calculator creation accepts whole euro amounts including zero and negative
   component.addItem()
   assert.equal(items[1].amount, 0)
 })
+
+test('linked debts replace the legacy placeholder exactly once and retain identity and position', () => {
+  const { calculatorItems, storedCalculatorItems } = require('../src/components/calculator/calculator-items.ts')
+  const raw = [{ id: 'cash', description: 'Cash', amount: 500 }, { id: 'legacy', description: 'SOSPESI (Whatsapp)', amount: 9000, color: '#00ff00' }]
+  const debts = [{ amount: 100 }, { amount: -40.25 }]
+  const items = calculatorItems(raw, debts)
+  assert.equal(items.length, 2)
+  assert.equal(items[1].id, 'legacy')
+  assert.equal(items[1].amount, 59.75)
+  assert.equal(items.reduce((sum, item) => sum + item.amount, 0), 559.75)
+  assert.equal(raw[1].amount, 9000)
+  assert.equal(items[1].color, '#4ade80')
+  const saved = storedCalculatorItems(items)
+  assert.equal(saved[1].amount, 0)
+  assert.equal(calculatorItems(saved, [{ amount: -10.1 }])[1].amount, -10.1)
+  assert.equal(calculatorItems(saved, [{ amount: -10.1 }])[1].color, '#f87171')
+  assert.equal(calculatorItems(saved, [])[1].color, '#9ca3af')
+})
+
+test('accounts without a placeholder receive one automatic row without moving or copying debt data', () => {
+  const { calculatorItems } = require('../src/components/calculator/calculator-items.ts')
+  const items = calculatorItems([], [{ amount: 0.1 }, { amount: 0.2 }])
+  assert.equal(items.length, 1)
+  assert.equal(items[0].amount, 0.3)
+  assert.equal(items[0].source, 'debt-credit')
+  assert.equal(calculatorItems(items, []).length, 1)
+})

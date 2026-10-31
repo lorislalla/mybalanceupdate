@@ -28,11 +28,6 @@
                class="px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200">
                Grafici
             </button>
-            <button (click)="setView('debt-credit')"
-               [class]="currentView() === 'debt-credit' ? 'text-white bg-gray-800' : 'text-gray-400 hover:text-white hover:bg-gray-800/50'"
-               class="px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200 whitespace-nowrap">
-               Debiti/Crediti
-            </button>
             <button (click)="setView('calculator')" 
                [class]="currentView() === 'calculator' ? 'text-white bg-gray-800' : 'text-gray-400 hover:text-white hover:bg-gray-800/50'"
                class="px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200">
@@ -78,7 +73,6 @@
       <button (click)="setView('monthly')" [class]="currentView() === 'monthly' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30' : 'text-gray-300 hover:bg-gray-800 hover:text-white'" class="block w-full text-left px-4 py-3 rounded-xl text-base font-bold transition-all">Resoconto Mensile</button>
       <button (click)="setView('search')" [class]="currentView() === 'search' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30' : 'text-gray-300 hover:bg-gray-800 hover:text-white'" class="block w-full text-left px-4 py-3 rounded-xl text-base font-bold transition-all">Cerca Spese</button>
       <button (click)="setView('summary')" [class]="currentView() === 'summary' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30' : 'text-gray-300 hover:bg-gray-800 hover:text-white'" class="block w-full text-left px-4 py-3 rounded-xl text-base font-bold transition-all">Grafici</button>
-      <button (click)="setView('debt-credit')" [class]="currentView() === 'debt-credit' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30' : 'text-gray-300 hover:bg-gray-800 hover:text-white'" class="block w-full text-left px-4 py-3 rounded-xl text-base font-bold transition-all">Debiti/Crediti</button>
       <button (click)="setView('calculator')" [class]="currentView() === 'calculator' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30' : 'text-gray-300 hover:bg-gray-800 hover:text-white'" class="block w-full text-left px-4 py-3 rounded-xl text-base font-bold transition-all">Calcolatore</button>
       <button (click)="setView('import-export')" [class]="currentView() === 'import-export' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30' : 'text-gray-300 hover:bg-gray-800 hover:text-white'" class="block w-full text-left px-4 py-3 rounded-xl text-base font-bold transition-all">Dati</button>
     </div>

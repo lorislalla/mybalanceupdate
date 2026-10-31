@@ -5,12 +5,14 @@ import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-
 import { StorageService } from '../../services/storage.service'
 import { CalculatorItem } from '../../models/financial-data.model'
 import { MoneyInputDirective } from '../monthly-report/money-input.directive'
+import { DebtCreditComponent } from '../debt-credit/debt-credit.component'
+import { calculatorItems, storedCalculatorItems } from './calculator-items'
 
 @Component({
   selector: 'app-calculator',
   templateUrl: './calculator.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule, DragDropModule, MoneyInputDirective],
+  imports: [CommonModule, FormsModule, DragDropModule, MoneyInputDirective, DebtCreditComponent],
   styleUrl: './calculator.component.css'
 })
 export class CalculatorComponent {
@@ -25,8 +27,10 @@ export class CalculatorComponent {
   copyStatus = signal<'idle' | 'copied' | 'error'>('idle')
 
   // Calcolo gli items e il totale dal servizio di storage
-  items = computed(() => this.storageService.appData().calculatorItems || [])
-  total = computed(() => this.items().reduce((sum, item) => sum + (item.amount || 0), 0))
+  items = computed(() => calculatorItems(this.storageService.appData().calculatorItems || [], this.storageService.appData().debtCreditItems || []))
+  debtState = this.storageService.debtCreditLoadState
+  debtsExpanded = signal(false)
+  total = computed(() => this.items().reduce((sum, item) => sum + Math.round((item.amount || 0) * 100), 0) / 100)
 
   constructor() {
     effect(() => {
@@ -36,6 +40,7 @@ export class CalculatorComponent {
   }
 
   async copyRoundedTotal() {
+    if (this.debtState && this.debtState() !== 'ready') return
     try {
       await navigator.clipboard.writeText(String(Math.round(this.total() / 100) * 100))
       this.copyStatus.set('copied')
@@ -55,13 +60,14 @@ export class CalculatorComponent {
       color: this.newColor()
     }
 
-    this.storageService.updateCalculatorItems(this.editingId()
+    this.persist(this.editingId()
       ? this.items().map(item => item.id === newItem.id ? newItem : item)
       : [...this.items(), newItem])
     this.cancelEdit()
   }
 
   editItem(item: CalculatorItem) {
+    if (item.source === 'debt-credit') return
     this.editingId.set(item.id)
     this.newDescription.set(item.description)
     this.newAmount.set(item.amount)
@@ -81,12 +87,13 @@ export class CalculatorComponent {
     const updated = this.items().map(item =>
       item.id === id ? { ...item, [field]: value } : item
     )
-    this.storageService.updateCalculatorItems(updated)
+    this.persist(updated)
   }
 
   removeItem(id: string) {
+    if (this.items().find(item => item.id === id)?.source === 'debt-credit') return
     const filtered = this.items().filter(item => item.id !== id)
-    this.storageService.updateCalculatorItems(filtered)
+    this.persist(filtered)
     if (this.editingId() === id) this.cancelEdit()
   }
 
@@ -124,6 +131,10 @@ export class CalculatorComponent {
     if (from === to || to < 0 || to >= this.items().length) return
     const items = [...this.items()]
     moveItemInArray(items, from, to)
-    this.storageService.updateCalculatorItems(items)
+    this.persist(items)
+  }
+
+  private persist(items: CalculatorItem[]) {
+    this.storageService.updateCalculatorItems(storedCalculatorItems(items))
   }
 }

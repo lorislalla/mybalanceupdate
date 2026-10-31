@@ -25,21 +25,26 @@
         <button type="button" cdkDragHandle class="drag-handle" [attr.aria-label]="'Riordina ' + item.description" title="Trascina per riordinare, oppure usa le frecce su e giù" (keydown.arrowup)="moveItem(i, i - 1, $event)" (keydown.arrowdown)="moveItem(i, i + 1, $event)">
           <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="9" cy="5" r="1.5"/><circle cx="15" cy="5" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="19" r="1.5"/><circle cx="15" cy="19" r="1.5"/></svg>
         </button>
-        <div class="entry-description"><strong>{{ item.description }}</strong></div>
-        <div class="entry-value"><span class="amount" [class.positive]="item.amount > 0" [class.negative]="item.amount < 0">{{ item.amount | number: '1.0-0' }} €</span></div>
+        <div class="entry-description">@if (item.source === 'debt-credit') { <button type="button" class="debt-toggle" [attr.aria-expanded]="debtsExpanded()" aria-controls="calculator-debts" (click)="debtsExpanded.set(!debtsExpanded())"><strong>DEBITI/CREDITI</strong><span aria-hidden="true">{{ debtsExpanded() ? '▴' : '▾' }}</span></button> } @else { <strong>{{ item.description }}</strong> }</div>
+        <div class="entry-value"><span class="amount" [class.positive]="item.amount > 0" [class.negative]="item.amount < 0">@if (item.source !== 'debt-credit' || debtState() === 'ready' || debtState() === 'stale') { {{ item.amount | number: '1.0-2' }} € } @else { Saldo non disponibile }</span></div>
         <div class="entry-actions">
+          @if (item.source !== 'debt-credit') {
           <button type="button" (click)="editItem(item)" [attr.aria-label]="'Modifica ' + item.description" title="Modifica">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m16 3 5 5-12 12H4v-5L16 3ZM14 5l5 5" /></svg>
           </button>
           <button type="button" class="negative" (click)="removeItem(item.id)" [attr.aria-label]="'Elimina ' + item.description" title="Elimina">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7M14 10v7" /></svg>
           </button>
+          }
         </div>
+        @if (item.source === 'debt-credit' && debtsExpanded()) {
+          <div id="calculator-debts" class="subentries"><app-debt-credit [embedded]="true" /></div>
+        }
       </li>
     } @empty { <li class="hint">Nessuna voce. Aggiungi qui gli importi da sommare.</li> }
   </ul>
   <footer>
-    <div><h2>Totale calcolato</h2><p class="balance" [class.positive]="total() > 0" [class.negative]="total() < 0">{{ total() | number: '1.0-0' }} €</p></div>
-    <div class="copy"><button type="button" aria-label="Copia totale arrotondato alle centinaia" title="Copia totale arrotondato alle centinaia" (click)="copyRoundedTotal()">Copia totale</button><p role="status">{{ copyStatus() === 'copied' ? 'Importo arrotondato copiato.' : copyStatus() === 'error' ? 'Copia non riuscita. Riprova.' : '' }}</p></div>
+    <div><h2>Totale calcolato</h2>@if (debtState() === 'ready') { <p class="balance" [class.positive]="total() > 0" [class.negative]="total() < 0">{{ total() | number: '1.0-2' }} €</p> } @else { <p class="hint" role="status">{{ debtState() === 'loading' ? 'Caricamento debiti e crediti…' : 'Saldo Debiti/Crediti non aggiornato. Ricarica per riprovare.' }}</p> }</div>
+    <div class="copy"><button type="button" [disabled]="debtState() !== 'ready'" aria-label="Copia totale arrotondato alle centinaia" title="Copia totale arrotondato alle centinaia" (click)="copyRoundedTotal()">Copia totale</button><p role="status">{{ copyStatus() === 'copied' ? 'Importo arrotondato copiato.' : copyStatus() === 'error' ? 'Copia non riuscita. Riprova.' : '' }}</p></div>
   </footer>
 </section>
