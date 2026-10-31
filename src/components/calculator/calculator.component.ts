@@ -21,6 +21,7 @@ export class CalculatorComponent {
   newDescription = signal('')
   newAmount = signal<number | null>(null)
   newColor = signal('#6366f1')
+  editingId = signal<string | null>(null)
   copyStatus = signal<'idle' | 'copied' | 'error'>('idle')
 
   // Calcolo gli items e il totale dal servizio di storage
@@ -45,16 +46,31 @@ export class CalculatorComponent {
 
   addItem() {
     const amount = this.newAmount()
-    if (!this.newDescription() || !this.isValidAmount(amount)) return
+    if (!this.newDescription().trim() || !this.isValidAmount(amount)) return
 
     const newItem: CalculatorItem = {
-      id: crypto.randomUUID(),
-      description: this.newDescription(),
+      id: this.editingId() || crypto.randomUUID(),
+      description: this.newDescription().trim(),
       amount,
       color: this.newColor()
     }
 
-    this.storageService.updateCalculatorItems([...this.items(), newItem])
+    this.storageService.updateCalculatorItems(this.editingId()
+      ? this.items().map(item => item.id === newItem.id ? newItem : item)
+      : [...this.items(), newItem])
+    this.cancelEdit()
+  }
+
+  editItem(item: CalculatorItem) {
+    this.editingId.set(item.id)
+    this.newDescription.set(item.description)
+    this.newAmount.set(item.amount)
+    this.newColor.set(item.color || '#6366f1')
+    this.element.nativeElement.querySelector<HTMLInputElement>('#new-calculator-description')?.focus()
+  }
+
+  cancelEdit() {
+    this.editingId.set(null)
     this.newDescription.set('')
     this.newAmount.set(null)
     this.newColor.set('#6366f1')
@@ -71,6 +87,7 @@ export class CalculatorComponent {
   removeItem(id: string) {
     const filtered = this.items().filter(item => item.id !== id)
     this.storageService.updateCalculatorItems(filtered)
+    if (this.editingId() === id) this.cancelEdit()
   }
 
   updateAmount(id: string, value: number | null) {
@@ -99,8 +116,14 @@ export class CalculatorComponent {
 
   // Gestisco il riordinamento con drag & drop
   drop(event: CdkDragDrop<CalculatorItem[]>) {
+    this.moveItem(event.previousIndex, event.currentIndex)
+  }
+
+  moveItem(from: number, to: number, event?: KeyboardEvent) {
+    event?.preventDefault()
+    if (from === to || to < 0 || to >= this.items().length) return
     const items = [...this.items()]
-    moveItemInArray(items, event.previousIndex, event.currentIndex)
+    moveItemInArray(items, from, to)
     this.storageService.updateCalculatorItems(items)
   }
 }

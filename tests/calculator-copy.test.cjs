@@ -63,6 +63,7 @@ test('calculator creation accepts whole euro amounts including zero and negative
   component.newDescription = signal('Prestito')
   component.newAmount = signal(12.5)
   component.newColor = signal('#6366f1')
+  component.editingId = signal(null)
   component.addItem()
   assert.equal(items.length, 0)
   component.newAmount.set(-250)
