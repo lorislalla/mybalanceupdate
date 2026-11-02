@@ -51,3 +51,7 @@ h2 { font-weight: 600; }
   .composer-body:not(.composer-open) { display: none; }
   .composer-heading:has(+ .composer-body:not(.composer-open)) { margin-bottom: 0; }
 }
+@media (max-width: 600px) {
+  .composer-toggle { min-height: 38px; padding: 0; }
+  form:has(> fieldset > .composer-body:not(.composer-open)) { padding: 4px 12px; }
+}
