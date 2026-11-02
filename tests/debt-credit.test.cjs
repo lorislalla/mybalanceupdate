@@ -69,6 +69,7 @@ test('editor validates person and cents, preserves draft on failure, updates ide
   c.person = signal('  Anna · Cena  ')
   c.amount = signal(12.35)
   c.editingId = signal(null)
+  c.composerOpen = signal(false)
   c.saving = signal(false)
   c.error = signal('')
   c.storageService = { debtCreditLoadState: () => 'ready', updateDebtCreditItems: async next => { items = next } }
@@ -113,7 +114,8 @@ test('legacy person and reason appear in a single field and survive editing with
   const c = Object.create(DebtCreditComponent.prototype)
   let items = [{ id: 'legacy', person: 'Anna', amount: 12.35, reason: 'Cena' }]
   c.items = () => items
-  c.person = signal(''); c.amount = signal(null); c.editingId = signal(null); c.saving = signal(false); c.error = signal('')
+  c.person = signal(''); c.amount = signal(null); c.editingId = signal(null)
+  c.composerOpen = signal(false); c.saving = signal(false); c.error = signal('')
   c.storageService = { debtCreditLoadState: () => 'ready', updateDebtCreditItems: async next => { items = next } }
   assert.equal(c.itemLabel(items[0]), 'Anna · Cena')
   c.editItem(items[0])

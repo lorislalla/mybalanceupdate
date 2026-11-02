@@ -5,7 +5,7 @@
   @if (loadState() === 'stale') { <p class="negative" role="alert">Sincronizzazione non riuscita. I dati precedenti sono visibili; ricarica la pagina per riprovare prima di modificarli.</p> }
   <form (ngSubmit)="saveItem()">
     <fieldset [disabled]="saving() || loadState() !== 'ready'">
-      <legend>{{ editingId() ? 'Modifica voce' : 'Nuova voce' }}</legend>
+      <legend class="composer-heading"><span class="composer-desktop-title">{{ editingId() ? 'Modifica voce' : 'Nuova voce' }}</span><button type="button" class="composer-toggle" [attr.aria-expanded]="composerOpen()" aria-controls="debt-composer-fields" (click)="composerOpen.set(!composerOpen())">{{ editingId() ? 'Modifica voce' : 'Nuova voce' }}<span aria-hidden="true">{{ composerOpen() ? '−' : '+' }}</span></button></legend><div id="debt-composer-fields" class="composer-body" [class.composer-open]="composerOpen()">
       <div class="composer">
         <label for="debt-person">Persona/Motivo
           <input id="debt-person" name="person" type="text" autocomplete="off" [ngModel]="person()" (ngModelChange)="person.set($event)" placeholder="Es. Anna · Cena" required />
@@ -16,7 +16,7 @@
         <button class="primary" type="submit" [disabled]="!person().trim() || !isValidAmount(amount())">{{ saving() ? 'Salvataggio…' : editingId() ? 'Salva' : 'Aggiungi' }}</button>
         @if (editingId()) { <button type="button" (click)="cancelEdit()">Annulla</button> }
       </div>
-    </fieldset>
+    </div></fieldset>
   </form>
   @if (error()) { <p class="negative" role="alert">{{ error() }}</p> }
   @if (loadState() === 'ready' || loadState() === 'stale') {

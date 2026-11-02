@@ -116,3 +116,13 @@ textarea { resize: vertical; line-height: 1.6; }
 @media (prefers-reduced-motion: reduce) {
   .cdk-drag-animating, .cdk-drop-list-dragging .cdk-drag { transition: none; }
 }
+
+.composer-toggle { display: none; }
+.composer-heading { width: 100%; }
+@media (max-width: 600px) {
+  .composer-desktop-title { display: none; }
+  .composer-toggle { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; padding: 4px 0; border: 0; border-radius: 0; background: transparent; color: inherit; font: inherit; font-weight: 600; text-align: left; cursor: pointer; }
+  .composer-toggle span { font-size: 20px; }
+  .composer-body:not(.composer-open) { display: none; }
+  .composer-heading:has(+ .composer-body:not(.composer-open)) { margin-bottom: 0; }
+}

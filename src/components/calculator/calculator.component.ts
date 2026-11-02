@@ -24,6 +24,7 @@ export class CalculatorComponent {
   newAmount = signal<number | null>(null)
   newColor = signal('#6366f1')
   editingId = signal<string | null>(null)
+  composerOpen = signal(false)
   copyStatus = signal<'idle' | 'copied' | 'error'>('idle')
 
   // Calcolo gli items e il totale dal servizio di storage
@@ -68,6 +69,7 @@ export class CalculatorComponent {
 
   editItem(item: CalculatorItem) {
     if (item.source === 'debt-credit') return
+    this.composerOpen.set(true)
     this.editingId.set(item.id)
     this.newDescription.set(item.description)
     this.newAmount.set(item.amount)

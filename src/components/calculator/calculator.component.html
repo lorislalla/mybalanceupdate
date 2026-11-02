@@ -2,7 +2,7 @@
   <h1>Calcolo</h1>
   <form (ngSubmit)="addItem()">
     <fieldset>
-      <legend>{{ editingId() ? 'Modifica voce' : 'Nuova voce' }}</legend>
+      <legend class="composer-heading"><span class="composer-desktop-title">{{ editingId() ? 'Modifica voce' : 'Nuova voce' }}</span><button type="button" class="composer-toggle" [attr.aria-expanded]="composerOpen()" aria-controls="calculator-composer-fields" (click)="composerOpen.set(!composerOpen())">{{ editingId() ? 'Modifica voce' : 'Nuova voce' }}<span aria-hidden="true">{{ composerOpen() ? '−' : '+' }}</span></button></legend><div id="calculator-composer-fields" class="composer-body" [class.composer-open]="composerOpen()">
       <div class="composer">
         <label for="new-calculator-description">Descrizione
           <input id="new-calculator-description" name="description" type="text" autocomplete="off" [ngModel]="newDescription()" (ngModelChange)="newDescription.set($event)" placeholder="Es. Conto in banca" required />
@@ -17,7 +17,7 @@
         @if (editingId()) { <button type="button" (click)="cancelEdit()">Annulla</button> }
       </div>
       @if (amountModel.invalid && (amountModel.dirty || amountModel.touched)) { <p class="negative hint" role="alert">Inserisci un importo intero, senza virgole o decimali.</p> }
-    </fieldset>
+    </div></fieldset>
   </form>
   <ul class="entries" cdkDropList [cdkDropListData]="items()" (cdkDropListDropped)="drop($event)">
     @for (item of items(); track item.id; let i = $index) {

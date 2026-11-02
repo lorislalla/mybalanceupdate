@@ -71,7 +71,7 @@
         <form #expenseComposer class="expense-composer" [formGroup]="editingExpenseId() ? editExpenseForm : newExpenseForm"
           (ngSubmit)="editingExpenseId() ? saveExpense() : addExpense(); expenseDescription.focus()"
           (keydown.escape)="cancelEditing(); $event.preventDefault(); expenseDescription.focus()">
-          <h2>{{ editingExpenseId() ? 'Modifica spesa' : 'Segna una spesa' }}</h2>
+          <h2 class="composer-heading"><span class="composer-desktop-title">{{ editingExpenseId() ? 'Modifica spesa' : 'Segna una spesa' }}</span><button type="button" class="composer-toggle" [attr.aria-expanded]="composerOpen()" aria-controls="expense-composer-fields" (click)="composerOpen.set(!composerOpen())">{{ editingExpenseId() ? 'Modifica spesa' : 'Segna una spesa' }}<span aria-hidden="true">{{ composerOpen() ? '−' : '+' }}</span></button></h2><div id="expense-composer-fields" class="composer-body" [class.composer-open]="composerOpen()">
           <div class="composer-fields">
             <label for="expense-description">Spesa
               <input #expenseDescription id="expense-description" type="text" formControlName="description" list="expense-suggestions" placeholder="Es. spesa al supermercato" />
@@ -105,7 +105,7 @@
           @if ((expenseForm.controls.amount.dirty || editingExpenseId()) && expenseForm.controls.amount.invalid) {
             <p class="field-error" role="alert">Inserisci un importo intero, maggiore o uguale a zero, senza virgole o decimali.</p>
           }
-        </form>
+        </div></form>
 
         <div class="section-heading"><h2>Spese registrate</h2><strong class="amount">{{ totalExpenses() | number: '1.0-0' }} €</strong></div>
         <div class="expense-list" cdkDropList [cdkDropListData]="currentReport.expenses" (cdkDropListDropped)="drop($event)">

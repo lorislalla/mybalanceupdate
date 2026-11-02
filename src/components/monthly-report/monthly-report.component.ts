@@ -54,6 +54,7 @@ export class MonthlyReportComponent {
   // =============================================
 
   editingExpenseId = signal<string | null>(null)
+  composerOpen = signal(false)
   editingExpense = computed(() => this.report()?.expenses.find(expense => expense.id === this.editingExpenseId()))
   editExpenseForm = this.fb.group({
     description: ['', Validators.required],
@@ -348,6 +349,7 @@ export class MonthlyReportComponent {
   }
 
   startEditing(expense: Expense) {
+    this.composerOpen.set(true)
     this.editingExpenseId.set(expense.id)
     this.editExpenseForm.setValue({
       description: expense.description,

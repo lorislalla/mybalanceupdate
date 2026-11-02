@@ -40,6 +40,7 @@ function componentFor(current, otherReports = []) {
   component.newExpenseForm = fb.group(expenseControls())
   component.editExpenseForm = fb.group(expenseControls())
   component.editingExpenseId = signal(null)
+  component.composerOpen = signal(false)
   component.isEditingNotes = signal(false)
   component.notesDraft = signal('')
   storage.supabase = { upsertReport: async () => {} }

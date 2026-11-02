@@ -22,6 +22,7 @@ export class DebtCreditComponent {
   person = signal('')
   amount = signal<number | null>(null)
   editingId = signal<string | null>(null)
+  composerOpen = signal(false)
   saving = signal(false)
   error = signal('')
   copyStatus = signal<'idle' | 'copied' | 'error'>('idle')
@@ -52,6 +53,7 @@ export class DebtCreditComponent {
   }
 
   editItem(item: DebtCreditItem) {
+    this.composerOpen.set(true)
     this.editingId.set(item.id)
     this.person.set(this.itemLabel(item))
     this.amount.set(item.amount)
