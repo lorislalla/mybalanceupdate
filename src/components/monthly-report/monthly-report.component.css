@@ -69,6 +69,7 @@ button:disabled { opacity: .45; cursor: not-allowed; }
 .positive { color: #6ee7b7; }
 .negative { color: #fda4af; }
 .expense-row > .amount, .expense-section > .section-heading > .amount { color: #fda4af; }
+.expense-section > .section-heading > .amount { font-size: 16px; }
 .income-row > .amount { color: #6ee7b7; }
 .income-total { font-size: 15px; }
 .income-total > .amount { font-size: 17px; }
