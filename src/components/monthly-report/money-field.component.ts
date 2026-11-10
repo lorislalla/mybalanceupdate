@@ -49,7 +49,7 @@ import { InfoTipComponent } from '../shared/info-tip.component'
     .currency-value.balance { font-size: 32px; font-weight: 700; }
     .read-value.secondary { justify-content: flex-end; }
     .read-value.secondary button { margin-left: 0; }
-    .read-value.secondary .currency-value { font-size: 22px; font-weight: 400; }
+    .read-value.secondary .currency-value { font-size: 20px; font-weight: 600; }
     .currency-value.income { color: #6ee7b7; }
     .currency-value.negative { color: #fda4af; }
     .empty-value { color: #94a3b8; font-size: 14px; }
