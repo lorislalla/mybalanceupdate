@@ -1,7 +1,8 @@
 import { Component, ChangeDetectionStrategy, signal, inject } from '@angular/core'
 import { CommonModule } from '@angular/common'
 import { SwUpdate } from '@angular/service-worker'
-import { toSignal } from '@angular/core/rxjs-interop'
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
+import { exhaustMap, filter, fromEvent, merge, timer } from 'rxjs'
 import { View } from './types/view.type'
 import { SupabaseService } from './services/supabase.service'
 import { HeaderComponent } from './components/header/header.component'
@@ -42,18 +43,32 @@ export class AppComponent {
   updateAvailable = signal(false)
 
   constructor() {
-    // Verifico se è disponibile un aggiornamento del service worker
     if (this.swUpdate.isEnabled) {
-      this.swUpdate.versionUpdates.subscribe(event => {
+      this.swUpdate.versionUpdates.pipe(takeUntilDestroyed()).subscribe(event => {
         if (event.type === 'VERSION_READY') {
           this.updateAvailable.set(true)
         }
       })
+
+      merge(
+        timer(0, 5 * 60_000),
+        fromEvent(document, 'visibilitychange'),
+        fromEvent(window, 'focus'),
+        fromEvent(window, 'online'),
+        fromEvent(window, 'pageshow')
+      ).pipe(
+        filter(() => document.visibilityState === 'visible' && !this.updateAvailable()),
+        exhaustMap(() => this.swUpdate.checkForUpdate().catch(error => {
+          console.warn('Controllo aggiornamenti non riuscito', error)
+          return false
+        })),
+        takeUntilDestroyed()
+      ).subscribe()
     }
   }
 
   applyUpdate() {
-    this.swUpdate.activateUpdate().then(() => document.location.reload())
+    window.location.reload()
   }
 
   handleViewChange(view: View) {
