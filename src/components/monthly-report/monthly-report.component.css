@@ -70,6 +70,8 @@ button:disabled { opacity: .45; cursor: not-allowed; }
 .negative { color: #fda4af; }
 .expense-row > .amount, .expense-section > .section-heading > .amount { color: #fda4af; }
 .income-row > .amount { color: #6ee7b7; }
+.income-total { font-size: 15px; }
+.income-total > .amount { font-size: 17px; }
 .income-heading { font-size: 14px; color: #b7c3d6; }
 .income-form { display: grid; gap: 10px; margin: 10px 0; }
 .income-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; align-items: center; padding: 8px 0; font-size: 14px; }
