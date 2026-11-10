@@ -167,18 +167,28 @@ test('cancelled expense edits reset the draft and allow adding a separate new ex
   const expenses = storage.getReport(2026, 10).expenses
   assert.equal(expenses.length, 2)
   assert.equal(expenses[0].amount, 1500)
-  assert.equal(expenses[1].amount, 65)
-  assert.equal(expenses[1].totalAmount, 130)
+  assert.equal(expenses[1].amount, 32.5)
+  assert.equal(expenses[1].totalAmount, 65)
 })
 
-test('saving an edited shared expense preserves its identity and personal share', () => {
-  const current = report()
+test('editing a saved shared expense starts with its total and splits the new total in half', () => {
+  const current = report({ expenses: [{ id: 'expense', description: 'Spesa', amount: 65, shared: true, totalAmount: 130 }] })
   const { component, storage } = componentFor(current)
   component.startEditing(current.expenses[0])
+  assert.equal(component.editExpenseForm.value.amount, 130)
   component.editExpenseForm.setValue({ description: 'Aggiornata', amount: 75, shared: true })
   component.saveExpense()
-  assert.deepEqual(storage.getReport(2026, 10).expenses, [{ id: 'expense', description: 'Aggiornata', amount: 75, shared: true, totalAmount: 150 }])
+  assert.deepEqual(storage.getReport(2026, 10).expenses, [{ id: 'expense', description: 'Aggiornata', amount: 37.5, shared: true, totalAmount: 75 }])
   assert.equal(component.editingExpenseId(), null)
+})
+
+test('editing a legacy shared expense without a stored total reconstructs it from the share', () => {
+  const current = report({ expenses: [{ id: 'expense', description: 'Spesa', amount: 65, shared: true }] })
+  const { component, storage } = componentFor(current)
+  component.startEditing(current.expenses[0])
+  assert.equal(component.editExpenseForm.value.amount, 130)
+  component.saveExpense()
+  assert.deepEqual(storage.getReport(2026, 10).expenses, [{ ...current.expenses[0], totalAmount: 130 }])
 })
 
 test('month notes save only on confirmation and preserve long multiline text exactly', () => {

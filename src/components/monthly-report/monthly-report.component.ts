@@ -330,16 +330,16 @@ export class MonthlyReportComponent {
 
   addExpense() {
     if (this.newExpenseForm.valid) {
-      const { description, amount, shared } = this.newExpenseForm.value
+      const { description, amount: totalAmount, shared } = this.newExpenseForm.value
       const currentReport = this.report()
 
-      if (currentReport && description && amount != null) {
+      if (currentReport && description && totalAmount != null) {
         const newExpense: Expense = {
           id: crypto.randomUUID(),
           description,
-          amount,
+          amount: shared ? totalAmount / 2 : totalAmount,
           shared: !!shared,
-          totalAmount: shared ? amount * 2 : amount
+          totalAmount
         }
         const updatedExpenses = [...currentReport.expenses, newExpense]
         this.updateReportField('expenses', updatedExpenses)
@@ -353,7 +353,7 @@ export class MonthlyReportComponent {
     this.editingExpenseId.set(expense.id)
     this.editExpenseForm.setValue({
       description: expense.description,
-      amount: expense.amount,
+      amount: expense.shared ? (expense.totalAmount ?? expense.amount * 2) : expense.amount,
       shared: !!expense.shared
     })
   }
@@ -369,17 +369,17 @@ export class MonthlyReportComponent {
     }
 
     const currentReport = this.report()
-    const { description, amount, shared } = this.editExpenseForm.value
+    const { description, amount: totalAmount, shared } = this.editExpenseForm.value
 
-    if (currentReport && description && amount != null) {
+    if (currentReport && description && totalAmount != null) {
       const updatedExpenses = currentReport.expenses.map(exp =>
         exp.id === this.editingExpenseId()
           ? {
             ...exp,
             description,
-            amount,
+            amount: shared ? totalAmount / 2 : totalAmount,
             shared: !!shared,
-            totalAmount: shared ? amount * 2 : amount
+            totalAmount
           }
           : exp
       )

@@ -24,7 +24,7 @@ async (page) => {
   await setMoney('Versamenti netti del mese', '2.000,00')
   await setMoney('Stipendio 9/2026', '2000')
   await page.getByRole('combobox', { name: 'Spesa', exact: true }).fill('Spesa sintetica')
-  await page.getByRole('textbox', { name: 'Importo · tua quota', exact: true }).fill('500')
+  await page.getByRole('textbox', { name: 'Importo totale', exact: true }).fill('500')
   await page.getByRole('button', { name: 'Aggiungi spesa', exact: true }).click()
   await checkLine('Totale al 1° del mese', '30.000,00 €')
   await checkLine('Risparmio mensile', 'Non ancora disponibile')

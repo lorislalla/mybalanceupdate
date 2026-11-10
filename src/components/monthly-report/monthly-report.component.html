@@ -76,7 +76,7 @@
             <label for="expense-description">Spesa
               <input #expenseDescription id="expense-description" type="text" formControlName="description" list="expense-suggestions" placeholder="Es. spesa al supermercato" />
             </label>
-            <label for="expense-amount">Importo · tua quota
+            <label for="expense-amount">Importo totale
               <input id="expense-amount" type="text" appMoneyInput integerOnly inputmode="numeric" formControlName="amount" autocomplete="off" placeholder="0 €" />
             </label>
             <label class="shared-toggle"><span>Condivisa a metà</span>
@@ -107,7 +107,7 @@
           }
         </div></form>
 
-        <div class="section-heading"><h2>Spese registrate</h2><strong class="amount">{{ totalExpenses() | number: '1.0-0' }} €</strong></div>
+        <div class="section-heading"><h2>Spese registrate</h2><strong class="amount">{{ totalExpenses() | number: '1.0-2' }} €</strong></div>
         <div class="expense-list" cdkDropList [cdkDropListData]="currentReport.expenses" (cdkDropListDropped)="drop($event)">
           @for (expense of currentReport.expenses; track expense.id) {
             <div class="expense-row" cdkDrag [cdkDragStartDelay]="{ touch: 180, mouse: 0 }" [class.is-editing]="editingExpenseId() === expense.id">
@@ -116,9 +116,9 @@
               </button>
               <div class="expense-description">
                 <span>{{ expense.description }}</span>
-                @if (expense.shared) { <small>Condivisa · totale {{ (expense.totalAmount ?? expense.amount * 2) | number: '1.0-0' }} €</small> }
+                @if (expense.shared) { <small>Condivisa · totale {{ (expense.totalAmount ?? expense.amount * 2) | number: '1.0-2' }} €</small> }
               </div>
-              <strong class="amount">{{ expense.amount | number: '1.0-0' }} €</strong>
+              <strong class="amount">{{ expense.amount | number: '1.0-2' }} €</strong>
               <button type="button" class="icon-button edit-expense" [attr.aria-label]="'Modifica ' + expense.description" title="Modifica spesa"
                 (click)="startEditing(expense); expenseDescription.focus(); expenseComposer.scrollIntoView({block: 'nearest', behavior: 'smooth'})">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m16 3 5 5-12 12-6 1 1-6zM14 5l5 5" /></svg>
